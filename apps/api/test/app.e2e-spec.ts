@@ -1,7 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { AppModule } from '@app/app.module';
+import { beforeEach, describe, it } from '@jest/globals';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { Test, TestingModule } from '@nestjs/testing';
+import request from 'supertest';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -16,6 +17,7 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
