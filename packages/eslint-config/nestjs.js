@@ -27,9 +27,22 @@ export const nestJsConfig = [
       import: importPlugin,
     },
     rules: {
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
+      'object-shorthand': 'error',
+      'no-unused-vars': 'off',
+
+      // Use type imports instead of value imports for types
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports',
+        },
+      ],
+
       // Import sorting and ordering rules
       'import/order': [
         'error',
