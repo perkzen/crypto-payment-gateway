@@ -15,7 +15,7 @@ export class AppController {
     description: 'Health check status',
   })
   @Get('health')
-  async getHello() {
+  async getHealth() {
     return this.appService.healthCheck();
   }
 }
