@@ -3,23 +3,52 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["NODE_ENV"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"],
-      "env": ["NODE_ENV"]
+      "dependsOn": [
+        "^lint"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"],
-      "env": ["NODE_ENV"]
+    "type-check": {
+      "dependsOn": [
+        "^type-check"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["NODE_ENV"]
+      "env": [
+        "NODE_ENV"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^test"
+      ],
+      "env": [
+        "NODE_ENV",
+        "DATABASE_URL"
+      ]
     }
   }
 }

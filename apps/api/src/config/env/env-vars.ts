@@ -1,7 +1,6 @@
 import { NodeEnv } from '@app/config/env/enums/node-env.enum';
 import { z } from 'zod';
 
-
 export const environmentVariablesSchema = z.object({
   NODE_ENV: z.nativeEnum(NodeEnv),
   PORT: z.coerce.number().int().positive(),
