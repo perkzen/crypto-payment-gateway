@@ -2,21 +2,27 @@ import assert from 'node:assert/strict';
 import { describe, it, beforeEach } from 'node:test';
 
 import { network } from 'hardhat';
-import { parseEther, keccak256, toHex } from 'viem';
-
-type WalletAddress = `0x${string}`;
+import { parseEther, keccak256, toHex, type Hash } from 'viem';
 
 describe('CryptoPay', async function () {
   const { viem } = await network.connect();
   const publicClient = await viem.getPublicClient();
 
-  let cryptoPay: Awaited<ReturnType<typeof viem.deployContract>>;
-  let mockToken: Awaited<ReturnType<typeof viem.deployContract>>;
-  let owner: WalletAddress;
-  let platform: WalletAddress;
-  let merchant: WalletAddress;
-  let payer: WalletAddress;
-  let nonOwner: WalletAddress;
+  async function deployCryptoPay(platform: Hash, fee: bigint) {
+    return await viem.deployContract('CryptoPay', [platform, fee]);
+  }
+
+  async function deployMockERC20Permit(name: string, symbol: string) {
+    return await viem.deployContract('MockERC20Permit', [name, symbol]);
+  }
+
+  let cryptoPay: Awaited<ReturnType<typeof deployCryptoPay>>;
+  let mockToken: Awaited<ReturnType<typeof deployMockERC20Permit>>;
+  let owner: Hash;
+  let platform: Hash;
+  let merchant: Hash;
+  let payer: Hash;
+  let nonOwner: Hash;
 
   const INITIAL_FEE_BPS = 250n; // 2.5%
   const INITIAL_TOKEN_SUPPLY = parseEther('1000000');
@@ -30,10 +36,7 @@ describe('CryptoPay', async function () {
     nonOwner = '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65';
 
     // Deploy CryptoPay contract
-    cryptoPay = await viem.deployContract('CryptoPay', [
-      platform,
-      INITIAL_FEE_BPS,
-    ]);
+    cryptoPay = await deployCryptoPay(platform, INITIAL_FEE_BPS);
 
     // Deploy MockERC20Permit token
     mockToken = await viem.deployContract('MockERC20Permit', [
