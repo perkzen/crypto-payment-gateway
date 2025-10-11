@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IERC20Permit} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 
 /**
  * @title CryptoPay
@@ -29,8 +29,8 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     uint96 public constant MAX_FEE_BPS = 1_000; // 10%
 
     // --- Config ---
-    address public platform;    // fee recipient
-    uint96  public feeBps;      // platform fee in basis points
+    address public platform; // fee recipient
+    uint96 public feeBps; // platform fee in basis points
 
     // --- Invoice replay protection ---
     mapping(bytes32 => bool) public invoicePaid; // invoiceId => consumed
@@ -53,7 +53,10 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
         uint256 feeAmount
     );
 
-    event PlatformUpdated(address indexed oldPlatform, address indexed newPlatform);
+    event PlatformUpdated(
+        address indexed oldPlatform,
+        address indexed newPlatform
+    );
     event FeeUpdated(uint96 oldFeeBps, uint96 newFeeBps);
     event InvoiceConsumed(bytes32 indexed invoiceId);
 
@@ -87,8 +90,13 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
         feeBps = _feeBps;
     }
 
-    function pause() external onlyOwner { _pause(); }
-    function unpause() external onlyOwner { _unpause(); }
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
+    }
 
     // ==========================
     //        Payments
@@ -99,12 +107,10 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
    * @param invoiceId Unique id for idempotency (cannot be reused).
    * @param merchant Recipient of the net proceeds.
    */
-    function payNative(bytes32 invoiceId, address merchant)
-    external
-    payable
-    nonReentrant
-    whenNotPaused
-    {
+    function payNative(
+        bytes32 invoiceId,
+        address merchant
+    ) external payable nonReentrant whenNotPaused {
         if (merchant == address(0)) revert ZeroAddress();
         if (msg.value == 0) revert ZeroAmount();
         if (invoicePaid[invoiceId]) revert AlreadyPaid();
@@ -133,11 +139,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
         address merchant,
         address token,
         uint256 amount
-    )
-    external
-    nonReentrant
-    whenNotPaused
-    {
+    ) external nonReentrant whenNotPaused {
         if (merchant == address(0) || token == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
         if (invoicePaid[invoiceId]) revert AlreadyPaid();
@@ -170,11 +172,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
         uint8 v,
         bytes32 r,
         bytes32 s
-    )
-    external
-    nonReentrant
-    whenNotPaused
-    {
+    ) external nonReentrant whenNotPaused {
         if (merchant == address(0) || token == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
         if (invoicePaid[invoiceId]) revert AlreadyPaid();
@@ -182,7 +180,15 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
         emit InvoiceConsumed(invoiceId);
 
         // Give this contract allowance via permit, then pull.
-        IERC20Permit(token).permit(msg.sender, address(this), amount, deadline, v, r, s);
+        IERC20Permit(token).permit(
+            msg.sender,
+            address(this),
+            amount,
+            deadline,
+            v,
+            r,
+            s
+        );
 
         uint256 fee = (amount * feeBps) / BPS_DENOMINATOR;
         uint256 toMerchant = amount - fee;
@@ -201,16 +207,16 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     // ==========================
 
     function _sendNative(address to, uint256 amount) internal {
-        (bool ok, ) = to.call{value: amount}("");
+        (bool ok,) = to.call{value: amount}('');
         if (!ok) revert TransferFailed();
     }
 
     // Reject stray ETH; only accept via payNative
     receive() external payable {
-        revert("Direct receive disabled");
+        revert('Direct receive disabled');
     }
 
     fallback() external payable {
-        revert("Fallback disabled");
+        revert('Fallback disabled');
     }
 }
