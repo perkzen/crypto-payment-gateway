@@ -11,5 +11,8 @@ export const getDatabaseClient = async (configService: ConfigService) => {
     connectionString: dbUrl,
   });
 
-  return drizzle(pool, { logger: true, schema: {} });
+  return drizzle(pool, {
+    logger: true,
+    schema: {},
+  });
 };

@@ -6,12 +6,6 @@
     "deleteOutDir": true,
     "typeCheck": true,
     "assets": [],
-    "watchAssets": true,
-    "builder": {
-      "type": "swc",
-      "options": {
-        "swcrcPath": ".swcrc"
-      }
-    }
+    "watchAssets": true
   }
 }

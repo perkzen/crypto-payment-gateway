@@ -1,10 +1,11 @@
 import {
   DATABASE_CONNECTION,
   getDatabaseClient,
-} from '@app/modules/database/utls/get-database-client';
-import { Module } from '@nestjs/common';
+} from '@app/modules/database/utils/get-database-client';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+@Global()
 @Module({
   providers: [
     {
@@ -13,5 +14,6 @@ import { ConfigService } from '@nestjs/config';
       useFactory: getDatabaseClient,
     },
   ],
+  exports: [DATABASE_CONNECTION],
 })
 export class DatabaseModule {}

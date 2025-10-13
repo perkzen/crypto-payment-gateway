@@ -29,9 +29,6 @@ export const nestJsConfig = [
       drizzle: drizzlePlugin,
     },
     rules: {
-      // Drizzle rules
-      ...drizzlePlugin.configs.all.rules,
-
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',

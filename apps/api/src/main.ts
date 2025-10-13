@@ -11,7 +11,10 @@ import { AppModule } from './app.module';
 loadEnv();
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+  });
+
   const configService = app.get(ConfigService);
 
   new MiddlewareSetup(app).init();
