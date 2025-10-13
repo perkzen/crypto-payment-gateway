@@ -4,21 +4,18 @@
   "private": true,
   "description": "Shared Zod validation schemas for the crypto payment gateway monorepo",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/cjs/index.js"
-    },
-    "./package.json": "./package.json"
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc && tsc --project tsconfig.cjs.json",
+    "build": "tsc --build",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "type-check": "tsc --noEmit"
