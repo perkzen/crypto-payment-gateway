@@ -19,12 +19,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db: migrate": "dotenv -e .env.local drizzle-kit migrate",
+    "db:migrate": "dotenv -e .env.local drizzle-kit migrate",
     "db:generate": "dotenv -e .env.local drizzle-kit generate",
     "db:push": "dotenv -e .env.local drizzle-kit push",
     "db:pull": "dotenv -e .env.local drizzle-kit pull",
     "db:studio": "dotenv -e .env.local drizzle-kit studio",
-    "db:seed": "dotenv -e .env.local tsx src/modules/database/scripts/seed.ts"
+    "db:seed": "dotenv -e .env.local tsx src/modules/database/scripts/seed.ts",
+    "auth:generate": "pnpx @better-auth/cli generate --config=./src/modules/auth/config/auth.ts --output=./src/modules/database/schemas/auth.schema.ts --yes"
   },
   "dependencies": {
     "@bull-board/api": "^6.13.0",

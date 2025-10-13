@@ -1,10 +1,11 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import * as schemas from '../schemas';
 import type { ConfigService } from '@nestjs/config';
 
 export const DATABASE_CONNECTION = Symbol('DATABASE_CONNECTION');
 
-export const getDatabaseClient = async (configService: ConfigService) => {
+export const getDatabaseConnection = async (configService: ConfigService) => {
   const dbUrl = configService.getOrThrow('DATABASE_URL');
 
   const pool = new Pool({
@@ -13,6 +14,6 @@ export const getDatabaseClient = async (configService: ConfigService) => {
 
   return drizzle(pool, {
     logger: true,
-    schema: {},
+    schema: schemas,
   });
 };

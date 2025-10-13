@@ -1,7 +1,7 @@
 import {
   DATABASE_CONNECTION,
-  getDatabaseClient,
-} from '@app/modules/database/utils/get-database-client';
+  getDatabaseConnection,
+} from '@app/modules/database/utils/get-database-connection';
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
     {
       provide: DATABASE_CONNECTION,
       inject: [ConfigService],
-      useFactory: getDatabaseClient,
+      useFactory: getDatabaseConnection,
     },
   ],
   exports: [DATABASE_CONNECTION],

@@ -8,6 +8,13 @@
       "when": 1760377462341,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760386664700,
+      "tag": "0001_chemical_doctor_doom",
+      "breakpoints": true
     }
   ]
 }
