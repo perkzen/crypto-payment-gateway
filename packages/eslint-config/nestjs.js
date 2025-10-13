@@ -1,5 +1,6 @@
 import globals from 'globals';
 import importPlugin from 'eslint-plugin-import';
+import drizzlePlugin from 'eslint-plugin-drizzle';
 import { config as baseConfig } from './base.js';
 
 /**
@@ -25,8 +26,12 @@ export const nestJsConfig = [
   {
     plugins: {
       import: importPlugin,
+      drizzle: drizzlePlugin,
     },
     rules: {
+      // Drizzle rules
+      ...drizzlePlugin.configs.all.rules,
+
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
