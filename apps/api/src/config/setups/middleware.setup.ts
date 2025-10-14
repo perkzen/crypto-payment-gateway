@@ -19,7 +19,28 @@ export class MiddlewareSetup extends BaseSetup {
   }
 
   private setupHelmet() {
-    this.app.use(helmet());
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            scriptSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              "https://cdn.jsdelivr.net",
+              "https://unpkg.com",
+            ],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            objectSrc: ["'none'"],
+            mediaSrc: ["'self'"],
+            frameSrc: ["'none'"],
+          },
+        },
+      }),
+    );
   }
 
   private setupCors() {

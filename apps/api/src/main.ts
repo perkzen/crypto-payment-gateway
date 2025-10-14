@@ -1,7 +1,7 @@
 import { loadEnv } from '@app/config/env/dotenv';
 import { BullBoardSetup } from '@app/config/setups/bull-board.setup';
+import { DocsSetup } from '@app/config/setups/docs.setup';
 import { MiddlewareSetup } from '@app/config/setups/middleware.setup';
-import { SwaggerSetup } from '@app/config/setups/swagger.setup';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -18,17 +18,12 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   new MiddlewareSetup(app).init();
-  new SwaggerSetup(app).init();
   new BullBoardSetup(app).init();
+  await new DocsSetup(app).init();
 
   const PORT = configService.get('PORT');
-  const SWAGGER_PATH = configService.get('SWAGGER_PATH');
 
   await app.listen(PORT);
-  Logger.log(
-    `Documentation is available at http://localhost:${PORT}/${SWAGGER_PATH}`,
-    'Bootstrap',
-  );
 }
 
 (async (): Promise<void> => {
