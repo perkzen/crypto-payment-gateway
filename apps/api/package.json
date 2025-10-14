@@ -25,8 +25,7 @@
     "db:pull": "dotenv -e .env.local drizzle-kit pull",
     "db:studio": "dotenv -e .env.local drizzle-kit studio",
     "db:seed": "dotenv -e .env.local tsx src/modules/database/scripts/seed.ts",
-    "auth:generate": "pnpx @better-auth/cli generate --config=./src/modules/auth/config/auth.ts --output=./src/modules/database/schemas/auth.schema.ts --yes",
-    "auth:migrate": "pnpx @better-auth/cli migrate --config=./src/modules/auth/config/auth.ts --schema=./src/modules/database/schemas/auth.schema.ts --yes"
+    "auth:generate": "pnpx @better-auth/cli generate --config=./src/modules/auth/config/auth.ts --output=./src/modules/database/schemas/auth.schema.ts --yes"
   },
   "dependencies": {
     "@bull-board/api": "^6.13.0",

@@ -15,6 +15,13 @@
       "when": 1760386664700,
       "tag": "0001_chemical_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760455056302,
+      "tag": "0002_amusing_jane_foster",
+      "breakpoints": true
     }
   ]
 }

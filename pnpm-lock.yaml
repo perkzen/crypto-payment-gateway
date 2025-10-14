@@ -329,6 +329,28 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
+  packages/sdk:
+    dependencies:
+      '@workspace/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      react:
+        specifier: ^19.1.1
+        version: 19.1.1
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.9
+        version: 19.1.9
+      '@workspace/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@workspace/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
+
   packages/typescript-config: {}
 
   packages/ui:
