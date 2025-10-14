@@ -7,7 +7,9 @@
  */
 export function validateAmount(amount: string): boolean {
   // TODO: Implement amount validation
-  return true;
+  // Basic validation - check if amount is a positive number
+  const numAmount = parseFloat(amount);
+  return !isNaN(numAmount) && numAmount > 0;
 }
 
 /**

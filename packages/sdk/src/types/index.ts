@@ -11,7 +11,7 @@ export interface PaymentRequest {
   amount: string;
   currency: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PaymentResponse {
@@ -34,5 +34,5 @@ export enum PaymentStatus {
 export interface PaymentError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
