@@ -7,7 +7,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
-// https://guides.scalar.com/scalar/scalar-api-references/integrations/nestjs
 export class DocsSetup extends BaseSetup {
   static readonly DOCS_PATH = '/docs';
 
