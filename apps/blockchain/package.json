@@ -6,7 +6,7 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "test": "hardhat test",
-    "node": "hardhat node"
+    "dev": "hardhat node"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "^3.0.0",

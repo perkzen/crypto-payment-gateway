@@ -69,7 +69,7 @@ export function useRainbowKitAuthAdapter() {
       }
 
       // Refetch session after successful verification to update auth state
-      await refetchSession();
+      refetchSession();
 
       return true;
     },

@@ -42,7 +42,11 @@ export function NavMain({
       <SidebarMenu>
         {items.map((item) => {
           const hasSubItems = item.items && item.items.length > 0
-          const isActive = pathname === item.url || pathname?.startsWith(item.url + "/")
+          // For items with sub-items, match if pathname starts with the item URL
+          // For items without sub-items, only match exact pathname
+          const isActive = hasSubItems
+            ? pathname === item.url || pathname?.startsWith(item.url + "/")
+            : pathname === item.url
 
           if (hasSubItems) {
             return (
@@ -105,3 +109,4 @@ export function NavMain({
     </SidebarGroup>
   )
 }
+

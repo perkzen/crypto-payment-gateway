@@ -7,14 +7,13 @@ import {
   Settings2,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { WalletConnect } from "@/components/wallet-connect"
+import { NavMain } from "@/components/sidebar/nav-main"
+import { NavUser } from "@/components/sidebar/nav-user"
+import { SidebarHeaderComponent } from "@/components/sidebar/sidebar-header"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 
@@ -23,26 +22,11 @@ const navItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
-    isActive: true,
   },
   {
     title: "Payments",
     url: "/dashboard/payments",
     icon: CreditCard,
-    items: [
-      {
-        title: "All Transactions",
-        url: "/dashboard/payments",
-      },
-      {
-        title: "Pending",
-        url: "/dashboard/payments?status=pending",
-      },
-      {
-        title: "Completed",
-        url: "/dashboard/payments?status=completed",
-      },
-    ],
   },
   {
     title: "Settings",
@@ -68,9 +52,7 @@ const navItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <WalletConnect />
-      </SidebarHeader>
+      <SidebarHeaderComponent />
       <SidebarContent>
         <NavMain items={navItems} />
       </SidebarContent>
@@ -81,3 +63,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   )
 }
+
