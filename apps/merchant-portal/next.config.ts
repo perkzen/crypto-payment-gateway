@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: true,
   },
+  turbopack: {
+    resolveAlias: {
+      // Ignore optional dependencies that aren't needed for web builds
+      // These match the webpack fallbacks above
+      '@react-native-async-storage/async-storage': 'false',
+      'pino-pretty': 'false',
+    },
+  },
   webpack: (config) => {
     // Ignore optional dependencies that aren't needed for web builds
     config.resolve.fallback = {
