@@ -24,16 +24,24 @@ export class MiddlewareSetup extends BaseSetup {
         contentSecurityPolicy: {
           directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
             scriptSrc: [
               "'self'",
               "'unsafe-inline'",
-              "https://cdn.jsdelivr.net",
-              "https://unpkg.com",
+              "'unsafe-eval'", // Required for WebAssembly in Scalar
+              'https://cdn.jsdelivr.net',
+              'https://unpkg.com',
             ],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'"],
-            fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            connectSrc: [
+              "'self'",
+              'https://cdn.jsdelivr.net', // Required for source maps
+            ],
+            fontSrc: [
+              "'self'",
+              'https://cdn.jsdelivr.net',
+              'https://fonts.scalar.com', // Required for Scalar fonts
+            ],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
             frameSrc: ["'none'"],
@@ -45,7 +53,7 @@ export class MiddlewareSetup extends BaseSetup {
 
   private setupCors() {
     this.app.enableCors({
-      origin: this.configService.getOrThrow('CORS_ORIGIN'),
+      origin: ['http://localhost:3000'],
       credentials: true,
     });
   }

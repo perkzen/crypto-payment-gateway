@@ -5,7 +5,8 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { config } from '@/wagmi';
+import { config } from '@/lib/wagmi';
+import { AuthProvider } from '@/components/auth-provider';
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
           enableColorScheme
         >
-          <RainbowKitProvider>{children}</RainbowKitProvider>
+          <AuthProvider>
+            <RainbowKitProvider>{children}</RainbowKitProvider>
+          </AuthProvider>
         </NextThemesProvider>
       </QueryClientProvider>
     </WagmiProvider>

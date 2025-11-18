@@ -1,33 +1,46 @@
+import { randomBytes } from 'crypto';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
+import { verifyMessage } from 'viem';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-// Configuration function for runtime use
+/**
+ * Generates an alphanumeric nonce for SIWE (Sign-In with Ethereum)
+ * SIWE specification requires nonces to be alphanumeric (a-z, A-Z, 0-9) only
+ */
+function generateAlphanumericNonce(length: number = 32): string {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = randomBytes(length);
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+}
+
 export const getAuthConfig = (database: NodePgDatabase) =>
   betterAuth({
+    trustedOrigins: ['http://localhost:3000'],
     plugins: [
       openAPI(),
       apiKey(),
       siwe({
-        domain: 'example.com',
+        domain: 'localhost:3000',
         emailDomainName: 'example.com', // optional
-        anonymous: false, // optional, default is true
-        getNonce: async () => {
-          // Implement your nonce generation logic here
-          return 'your-secure-random-nonce';
-        },
-        verifyMessage: async (args) => {
-          // Implement your SIWE message verification logic here
-          // This should verify the signature against the message
-          return true; // return true if signature is valid
-        },
-        ensLookup: async (args) => {
-          // Optional: Implement ENS lookup for user names and avatars
-          return {
-            name: 'user.eth',
-            avatar: 'https://example.com/avatar.png',
-          };
+        anonymous: false, // optional, default is true, requires to send email in body
+        getNonce: async () => generateAlphanumericNonce(32),
+        verifyMessage: async ({ message, signature, address }) => {
+          try {
+            return await verifyMessage({
+              address: address as `0x${string}`,
+              message,
+              signature: signature as `0x${string}`,
+            });
+          } catch {
+            return false;
+          }
         },
       }),
     ],
