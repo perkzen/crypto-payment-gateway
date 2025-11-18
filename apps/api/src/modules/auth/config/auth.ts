@@ -29,7 +29,7 @@ export const getAuthConfig = (database: NodePgDatabase) =>
       siwe({
         domain: 'localhost:3000',
         emailDomainName: 'example.com', // optional
-        anonymous: false, // optional, default is true, requires to send email in body
+        anonymous: true, // optional, default is true, requires to send email in body
         getNonce: async () => generateAlphanumericNonce(32),
         verifyMessage: async ({ message, signature, address }) => {
           try {
