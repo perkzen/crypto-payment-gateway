@@ -11,13 +11,29 @@ module.exports = {
   testRegex: ['/src/.*\\.(spec)\\.ts$', '/test/e2e/.*\\.(e2e-spec).ts$'],
   testPathIgnorePatterns: ['/node_modules/'],
   transform: {
-    '^.+\\.(t|j)s$': [
+    '^.+\\.(t|m?j)s$': [
       '@swc/jest',
       {
         sourceMaps: 'inline',
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            decorators: true,
+            dynamicImport: true,
+          },
+          target: 'es2020',
+          loose: false,
+          externalHelpers: false,
+        },
+        module: {
+          type: 'commonjs',
+        },
       },
     ],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!.*jose.*|.*@better-auth.*|.*@thallesp.*|.*@noble.*)',
+  ],
   collectCoverageFrom: [
     'src/**/*.(t|j)s',
     'test/**/*.(t|j)s',
