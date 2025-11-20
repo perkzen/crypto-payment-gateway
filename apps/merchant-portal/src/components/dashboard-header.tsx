@@ -13,32 +13,18 @@ import {
 } from '@workspace/ui/components/breadcrumb';
 import { Separator } from '@workspace/ui/components/separator';
 import { SidebarTrigger } from '@workspace/ui/components/sidebar';
+import { formatRouteSegment } from '@/lib/route-config';
 
 export function DashboardHeader() {
   const pathname = usePathname();
 
   const getBreadcrumbs = () => {
     const segments = pathname.split('/').filter(Boolean);
-    const breadcrumbs: { label: string; href: string }[] = [];
 
-    segments.forEach((segment, index) => {
-      const href = '/' + segments.slice(0, index + 1).join('/');
-      const label =
-        segment === 'dashboard'
-          ? 'Dashboard'
-          : segment === 'payments'
-            ? 'Payments'
-            : segment === 'settings'
-              ? 'Settings'
-              : segment === 'api-keys'
-                ? 'API Keys'
-                : segment === 'webhooks'
-                  ? 'Webhooks'
-                  : segment.charAt(0).toUpperCase() + segment.slice(1);
-      breadcrumbs.push({ label, href });
-    });
-
-    return breadcrumbs;
+    return segments.map((segment, index) => ({
+      label: formatRouteSegment(segment),
+      href: '/' + segments.slice(0, index + 1).join('/'),
+    }));
   };
 
   const breadcrumbs = getBreadcrumbs();
