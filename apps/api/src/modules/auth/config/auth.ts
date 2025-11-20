@@ -1,24 +1,9 @@
-import { randomBytes } from 'crypto';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { generateRandomString } from 'better-auth/crypto';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
 import { verifyMessage } from 'viem';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-
-/**
- * Generates an alphanumeric nonce for SIWE (Sign-In with Ethereum)
- * SIWE specification requires nonces to be alphanumeric (a-z, A-Z, 0-9) only
- */
-function generateAlphanumericNonce(length: number = 32): string {
-  const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const bytes = randomBytes(length);
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars[bytes[i] % chars.length];
-  }
-  return result;
-}
 
 export const getAuthConfig = (database: NodePgDatabase) =>
   betterAuth({
@@ -30,7 +15,7 @@ export const getAuthConfig = (database: NodePgDatabase) =>
         domain: 'localhost:3000',
         emailDomainName: 'example.com', // optional
         anonymous: true, // optional, default is true, requires to send email in body
-        getNonce: async () => generateAlphanumericNonce(32),
+        getNonce: async () => generateRandomString(32, 'a-z', 'A-Z', '0-9'),
         verifyMessage: async ({ message, signature, address }) => {
           try {
             return await verifyMessage({
