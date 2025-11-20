@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { generateRandomString } from 'better-auth/crypto';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
-import { verifyMessage } from 'viem';
+import { type VerifyMessageParameters, verifyMessage } from 'viem';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 export const getAuthConfig = (database: NodePgDatabase) =>
@@ -19,10 +19,10 @@ export const getAuthConfig = (database: NodePgDatabase) =>
         verifyMessage: async ({ message, signature, address }) => {
           try {
             return await verifyMessage({
-              address: address as `0x${string}`,
+              address,
               message,
-              signature: signature as `0x${string}`,
-            });
+              signature,
+            } as VerifyMessageParameters);
           } catch {
             return false;
           }
