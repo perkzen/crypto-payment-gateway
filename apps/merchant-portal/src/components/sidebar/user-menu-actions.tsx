@@ -10,7 +10,7 @@ import {
 } from '@workspace/ui/components/dropdown-menu';
 import { copyToClipboard, getBlockExplorerUrl } from '@/lib/utils';
 import { UserInfo } from './user-info';
-import { signOut } from '@/lib/auth';
+import { signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { useSidebar } from '@workspace/ui/components/sidebar';
 import { useAccount } from 'wagmi';
@@ -24,7 +24,7 @@ export function UserMenuActions() {
 
   const handleSignOut = async () => {
     signOut();
-    router.push('/');
+    router.push('/sign-in');
   };
 
   return (

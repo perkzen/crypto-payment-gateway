@@ -3,6 +3,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from '@workspace/ui/components/sidebar';
+import { DashboardHeader } from '@/components/dashboard-header';
 
 export default function DashboardLayout({
   children,
@@ -12,7 +13,10 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <DashboardHeader />
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

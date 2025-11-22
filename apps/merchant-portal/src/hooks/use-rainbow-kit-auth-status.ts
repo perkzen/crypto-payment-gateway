@@ -1,4 +1,4 @@
-import { useSession } from '@/lib/auth';
+import { useSession } from '@/lib/auth-client';
 
 export function useRainbowKitAuthStatus() {
   const { data: session, isPending } = useSession();

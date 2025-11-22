@@ -1,51 +1,89 @@
-import type { ApiKey } from '../_types';
-import { ApiKeyItem } from './api-key-item';
-import { ApiKeysEmptyState } from './api-keys-empty-state';
+import { useQuery } from '@tanstack/react-query';
+import { listApiKeysOptions } from '../_hooks/queries';
+import { ReactNode } from 'react';
+import { ApiKey } from '@/app/dashboard/settings/api-keys/_types/api-key';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+} from '@tanstack/react-table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@workspace/ui/components/table';
+import { useApiKeysTableColumns } from '@/app/dashboard/settings/api-keys/_hooks/use-api-keys-table-columns';
+import { ApiKeysEmptyState } from '@/app/dashboard/settings/api-keys/_components/api-keys-empty-state';
 
-type ApiKeysListProps = {
-  apiKeys: ApiKey[];
-  showKeys: Record<string, boolean>;
-  copiedKey: string | null;
-  onToggleShowKey: (id: string) => void;
-  onCopyKey: (key: string, id: string) => void;
-  onDeleteKey: (id: string) => void;
-};
-
-export function ApiKeysList({
-  apiKeys,
-  showKeys,
-  copiedKey,
-  onToggleShowKey,
-  onCopyKey,
-  onDeleteKey,
-}: ApiKeysListProps) {
+function ApiKeysListContainer({ children }: { children: ReactNode }) {
   return (
-    <div className="bg-card rounded-lg border">
-      <div className="border-b p-6">
+    <div>
+      <div className="mb-4">
         <h2 className="text-lg font-semibold">Active API Keys</h2>
         <p className="text-muted-foreground text-sm">
           Your API keys are used to authenticate requests to the payment gateway
         </p>
       </div>
-
-      {apiKeys.length === 0 ? (
-        <ApiKeysEmptyState />
-      ) : (
-        <div className="divide-y">
-          {apiKeys.map((apiKey) => (
-            <ApiKeyItem
-              key={apiKey.id}
-              apiKey={apiKey}
-              isVisible={showKeys[apiKey.id] ?? false}
-              isCopied={copiedKey === apiKey.id}
-              onToggleVisibility={() => onToggleShowKey(apiKey.id)}
-              onCopy={() => onCopyKey(apiKey.key, apiKey.id)}
-              onDelete={() => onDeleteKey(apiKey.id)}
-            />
-          ))}
-        </div>
-      )}
+      {children}
     </div>
   );
 }
 
+function ApiKeysTable({ data }: { data: ApiKey[] }) {
+  const columns = useApiKeysTableColumns();
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <div className="bg-card rounded-lg border">
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+export function ApiKeyListView() {
+  const { data: apiKeys = [] } = useQuery(listApiKeysOptions);
+
+  if (apiKeys.length === 0) return <ApiKeysEmptyState />;
+
+  return (
+    <ApiKeysListContainer>
+      <ApiKeysTable data={apiKeys} />
+    </ApiKeysListContainer>
+  );
+}

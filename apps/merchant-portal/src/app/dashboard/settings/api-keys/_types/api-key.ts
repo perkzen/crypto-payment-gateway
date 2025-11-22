@@ -1,8 +1,7 @@
-export type ApiKey = {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: string;
-  lastUsed?: string;
-};
+import { listApiKeysOptions } from '../_hooks/queries';
 
+type ListApiKeysQueryFn = typeof listApiKeysOptions.queryFn;
+
+export type ApiKey = NonNullable<
+  Awaited<ReturnType<NonNullable<ListApiKeysQueryFn>>>
+>[number];

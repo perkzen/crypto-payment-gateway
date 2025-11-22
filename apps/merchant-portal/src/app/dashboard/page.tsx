@@ -1,21 +1,15 @@
-import { DashboardHeader } from '@/components/dashboard-header';
 import { CreditCard, DollarSign, TrendingUp } from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
 import Link from 'next/link';
+import { PageHeader } from '@/components/page-header';
 
 export default function DashboardPage() {
   return (
-    <>
-      <DashboardHeader />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Overview of your payment gateway activity
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <PageHeader
+          title="Dashboard"
+          description="Overview of your payment gateway activity"
+        />
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-6">
@@ -90,6 +84,5 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { PageHeader } from '@/components/page-header';
 
 type PaymentStatus = 'all' | 'pending' | 'completed' | 'failed';
 
@@ -82,14 +83,10 @@ export function PaymentsContent() {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-          <p className="text-muted-foreground">
-            View and manage all your payment transactions
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Payments"
+        description="View and manage all your payment transactions"
+      />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-sm">

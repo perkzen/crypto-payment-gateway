@@ -16,9 +16,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // If authenticated and on sign-in page, redirect to dashboard
-  if (pathname === '/sign-in' && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
+  // if (pathname === '/sign-in' && isAuthenticated) {
+  //   return NextResponse.redirect(new URL('/dashboard', request.url));
+  // }
 
   return NextResponse.next();
 }

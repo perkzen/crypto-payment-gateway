@@ -13,13 +13,13 @@ import {
 } from '@workspace/ui/components/breadcrumb';
 import { Separator } from '@workspace/ui/components/separator';
 import { SidebarTrigger } from '@workspace/ui/components/sidebar';
-import { formatRouteSegment } from '@/lib/route-config';
+import { formatRouteSegment, Route } from '@/lib/routes';
 
 export function DashboardHeader() {
   const pathname = usePathname();
 
   const getBreadcrumbs = () => {
-    const segments = pathname.split('/').filter(Boolean);
+    const segments = pathname.split('/').filter(Boolean) as Route[];
 
     return segments.map((segment, index) => ({
       label: formatRouteSegment(segment),
@@ -30,7 +30,7 @@ export function DashboardHeader() {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear">
       <div className="flex items-center gap-2 px-4">
         <SidebarTrigger className="-ml-1" />
         <Separator
@@ -59,4 +59,3 @@ export function DashboardHeader() {
     </header>
   );
 }
-

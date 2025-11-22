@@ -1,6 +1,5 @@
 'use client';
 
-import { DashboardHeader } from '@/components/dashboard-header';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import {
@@ -12,6 +11,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useState } from 'react';
+import { PageHeader } from '@/components/page-header';
 
 type WebhookEndpoint = {
   id: string;
@@ -85,17 +85,11 @@ export default function WebhooksPage() {
   };
 
   return (
-    <>
-      <DashboardHeader />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Webhooks</h1>
-            <p className="text-muted-foreground">
-              Configure webhook endpoints to receive payment events
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <PageHeader
+          title="Webhooks"
+          description="Configure webhook endpoints to receive payment events"
+        />
 
         <div className="rounded-lg border bg-card p-6">
           <div className="mb-6 flex items-center gap-3">
@@ -273,7 +267,6 @@ export default function WebhooksPage() {
           </ul>
         </div>
       </div>
-    </>
   );
 }
 

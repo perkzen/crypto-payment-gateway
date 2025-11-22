@@ -1,6 +1,6 @@
 import { createAuthenticationAdapter } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
-import { authClient, useSession } from '@/lib/auth';
+import { authClient, useSession } from '@/lib/auth-client';
 import { createSiweMessage } from 'viem/siwe';
 
 /**
@@ -26,7 +26,6 @@ export function useRainbowKitAuthAdapter() {
         });
 
       if (nonceError) {
-        console.error('Nonce error:', nonceError);
         throw new Error(
           nonceError.message || 'Could not get nonce from server.',
         );

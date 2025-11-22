@@ -1,22 +1,16 @@
-import { DashboardHeader } from '@/components/dashboard-header';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import { Settings2, Key, Webhook, User } from 'lucide-react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/page-header';
 
 export default function SettingsPage() {
   return (
-    <>
-      <DashboardHeader />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-            <p className="text-muted-foreground">
-              Manage your account and integration settings
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <PageHeader
+          title="Settings"
+          description="Manage your account and integration settings"
+        />
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="bg-card rounded-lg border p-6">
@@ -111,6 +105,5 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-    </>
   );
 }

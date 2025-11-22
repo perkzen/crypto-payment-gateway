@@ -10,7 +10,15 @@ export const getAuthConfig = (database: NodePgDatabase) =>
     trustedOrigins: ['http://localhost:3000'],
     plugins: [
       openAPI(),
-      apiKey(),
+      apiKey({
+        requireName: true,
+        defaultPrefix: 'cpg-',
+        minimumNameLength: 3,
+        startingCharactersConfig: {
+          charactersLength: 10,
+          shouldStore: true,
+        },
+      }),
       siwe({
         domain: 'localhost:3000',
         emailDomainName: 'example.com', // optional

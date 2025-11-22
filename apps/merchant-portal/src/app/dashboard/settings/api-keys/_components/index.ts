@@ -1,6 +1,3 @@
-export { ApiKeyPageHeader } from './api-key-page-header';
-export { CreateApiKeyForm } from './create-api-key-form';
-export { ApiKeysList } from './api-keys-list';
-export { ApiKeyItem } from './api-key-item';
+export { CreateApiKeyView } from './create-api-key-form';
+export { ApiKeyListView } from './api-keys-list';
 export { ApiKeysEmptyState } from './api-keys-empty-state';
-

@@ -1,14 +1,25 @@
 import { Key } from 'lucide-react';
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from '@workspace/ui/components/empty';
 
 export function ApiKeysEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-12">
-      <Key className="text-muted-foreground mb-4 h-12 w-12" />
-      <h3 className="mb-2 text-lg font-semibold">No API keys</h3>
-      <p className="text-muted-foreground mb-4 text-center text-sm">
-        Create your first API key to start integrating
-      </p>
-    </div>
+    <Empty className="bg-card rounded-lg border p-12">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Key />
+        </EmptyMedia>
+        <EmptyTitle>No API keys</EmptyTitle>
+        <EmptyDescription>
+          Create your first API key to start integrating with the payment
+          gateway
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   );
 }
-
