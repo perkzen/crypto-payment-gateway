@@ -1,6 +1,5 @@
 'use client';
 
-import { Copy, ExternalLink, LogOut } from 'lucide-react';
 import {
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -8,12 +7,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@workspace/ui/components/dropdown-menu';
-import { copyToClipboard, getBlockExplorerUrl } from '@/lib/utils';
+import { useSidebar } from '@workspace/ui/components/sidebar';
+import { Copy, ExternalLink, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAccount } from 'wagmi';
 import { UserInfo } from './user-info';
 import { signOut } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
-import { useSidebar } from '@workspace/ui/components/sidebar';
-import { useAccount } from 'wagmi';
+import { copyToClipboard, getBlockExplorerUrl } from '@/lib/utils';
 
 export function UserMenuActions() {
   const { isMobile } = useSidebar();

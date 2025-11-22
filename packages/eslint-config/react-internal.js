@@ -67,6 +67,14 @@ export const config = [
             "object",
             "type",
           ],
+          pathGroups: [
+            {
+              pattern: "react",
+              group: "external",
+              position: "before",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["react"],
           alphabetize: {
             order: "asc",
             orderImportKind: "asc",

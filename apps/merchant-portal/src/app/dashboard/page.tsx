@@ -1,5 +1,5 @@
-import { CreditCard, DollarSign, TrendingUp } from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
+import { CreditCard, DollarSign, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 

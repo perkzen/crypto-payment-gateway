@@ -3,8 +3,8 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { DropdownMenu } from '@workspace/ui/components/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from '@workspace/ui/components/sidebar';
-import { UserMenuTrigger } from './user-menu-trigger';
 import { UserMenuActions } from './user-menu-actions';
+import { UserMenuTrigger } from './user-menu-trigger';
 
 export function NavUser() {
   return (

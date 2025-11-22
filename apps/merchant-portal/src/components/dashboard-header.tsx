@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +11,9 @@ import {
 } from '@workspace/ui/components/breadcrumb';
 import { Separator } from '@workspace/ui/components/separator';
 import { SidebarTrigger } from '@workspace/ui/components/sidebar';
-import { formatRouteSegment, Route } from '@/lib/routes';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { type Route, formatRouteSegment } from '@/lib/routes';
 
 export function DashboardHeader() {
   const pathname = usePathname();

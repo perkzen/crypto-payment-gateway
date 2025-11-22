@@ -1,6 +1,6 @@
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
-import { Settings2, Key, Webhook, User } from 'lucide-react';
+import { Key, Settings2, User, Webhook } from 'lucide-react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 

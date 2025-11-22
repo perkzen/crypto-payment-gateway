@@ -1,9 +1,5 @@
 "use client"
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +15,10 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@workspace/ui/components/sidebar"
+import { ChevronRight, type LucideIcon } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+
 
 export function NavMain({
   items,

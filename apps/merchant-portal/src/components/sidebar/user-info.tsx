@@ -4,8 +4,8 @@ import {
   AvatarImage,
 } from '@workspace/ui/components/avatar';
 import { cn } from '@workspace/ui/lib/utils';
-import { formatAddress } from '@/lib/utils';
 import { useAccount } from 'wagmi';
+import { formatAddress } from '@/lib/utils';
 
 type UserInfoProps = {
   className?: string;

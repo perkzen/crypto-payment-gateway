@@ -1,7 +1,7 @@
 import { createAuthenticationAdapter } from '@rainbow-me/rainbowkit';
+import { createSiweMessage } from 'viem/siwe';
 import { useAccount } from 'wagmi';
 import { authClient, useSession } from '@/lib/auth-client';
-import { createSiweMessage } from 'viem/siwe';
 
 /**
  *  Creates a RainbowKit authentication adapter using SIWE and better-auth.

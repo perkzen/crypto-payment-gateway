@@ -2,20 +2,19 @@
 
 import * as React from "react"
 import {
-  LayoutDashboard,
-  CreditCard,
-  Settings2,
-} from "lucide-react"
-
-import { NavMain } from "@/components/sidebar/nav-main"
-import { NavUser } from "@/components/sidebar/nav-user"
-import { SidebarHeaderComponent } from "@/components/sidebar/sidebar-header"
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
+import {
+  CreditCard,
+  LayoutDashboard,
+  Settings2,
+} from "lucide-react"
+import { NavMain } from "@/components/sidebar/nav-main"
+import { NavUser } from "@/components/sidebar/nav-user"
+import { SidebarHeaderComponent } from "@/components/sidebar/sidebar-header"
 
 const navItems = [
   {

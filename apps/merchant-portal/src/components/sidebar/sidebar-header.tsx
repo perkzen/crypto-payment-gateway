@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
 import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
+import Image from "next/image"
 
 const ETHEREUM_ICON_URL =
   'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040'

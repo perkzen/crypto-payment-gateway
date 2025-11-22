@@ -1,14 +1,14 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
-import { config } from '@/lib/wagmi';
-import { AuthProvider } from '@/components/providers/auth-provider';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Toaster as ToastProvider } from '@workspace/ui/components/sonner';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { WagmiProvider } from 'wagmi';
+import { AuthProvider } from '@/components/providers/auth-provider';
 import { getQueryClient } from '@/lib/query-client';
+import { config } from '@/lib/wagmi';
 
 export function Providers({ children }: { children: ReactNode }) {
   const queryClient = getQueryClient();

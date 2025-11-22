@@ -1,6 +1,6 @@
-import { ChevronsUpDown } from 'lucide-react';
 import { DropdownMenuTrigger } from '@workspace/ui/components/dropdown-menu';
 import { SidebarMenuButton } from '@workspace/ui/components/sidebar';
+import { ChevronsUpDown } from 'lucide-react';
 import { UserInfo } from './user-info';
 
 export function UserMenuTrigger() {

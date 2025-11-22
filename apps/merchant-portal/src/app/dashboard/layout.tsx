@@ -1,9 +1,9 @@
-import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import {
   SidebarInset,
   SidebarProvider,
 } from '@workspace/ui/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
+import { AppSidebar } from '@/components/sidebar/app-sidebar';
 
 export default function DashboardLayout({
   children,

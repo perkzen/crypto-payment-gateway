@@ -1,16 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import {
-  Webhook,
+  CheckCircle2,
+  ExternalLink,
   Plus,
   Trash2,
-  CheckCircle2,
+  Webhook,
   XCircle,
-  ExternalLink,
 } from 'lucide-react';
-import { useState } from 'react';
 import { PageHeader } from '@/components/page-header';
 
 type WebhookEndpoint = {
