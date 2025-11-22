@@ -1,16 +1,16 @@
-import { Button } from '@workspace/ui/components/button';
-import { Input } from '@workspace/ui/components/input';
-import { Field, FieldError } from '@workspace/ui/components/field';
-import { Key, Plus } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createApiKeyOptions } from '../_hooks/mutations';
+import { Button } from '@workspace/ui/components/button';
+import { Field, FieldError } from '@workspace/ui/components/field';
+import { Input } from '@workspace/ui/components/input';
 import { toast } from '@workspace/ui/components/sonner';
-import { listApiKeysOptions } from '../_hooks/queries';
+import { Key, Plus } from 'lucide-react';
 import { apiKeyFormOptions } from '../_forms/api-key';
+import { createApiKeyOptions } from '../_hooks/mutations';
+import { listApiKeysOptions } from '../_hooks/queries';
 import { ApiKeySuccessDialog } from './api-key-success-dialog';
-import { CreateApiKeyResult } from '@/app/dashboard/settings/api-keys/_types/api-key';
+import { type CreateApiKeyResult } from '@/app/dashboard/settings/api-keys/_types/api-key';
 
 type CreateApiKeyFormContainerProps = {
   children: ReactNode;
@@ -45,9 +45,7 @@ function CreateApiKeyForm() {
     ...createApiKeyOptions,
     onSuccess: () => {
       toast.success('API key created successfully!');
-      void queryClient.invalidateQueries({
-        queryKey: listApiKeysOptions.queryKey,
-      });
+      void queryClient.invalidateQueries(listApiKeysOptions);
     },
     onError: () => {
       toast.error('Failed to create API key.');

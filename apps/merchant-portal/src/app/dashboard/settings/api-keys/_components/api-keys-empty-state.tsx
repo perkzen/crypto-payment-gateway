@@ -1,11 +1,11 @@
-import { Key } from 'lucide-react';
 import {
   Empty,
+  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-  EmptyDescription,
 } from '@workspace/ui/components/empty';
+import { Key } from 'lucide-react';
 
 export function ApiKeysEmptyState() {
   return (

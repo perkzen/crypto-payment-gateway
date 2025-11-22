@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
-import type { ApiKey } from '../_types/api-key';
 import { ApiKeyTableActions } from '../_components/api-key-table-actions';
+import type { ApiKey } from '../_types/api-key';
 
 const columnHelper = createColumnHelper<ApiKey>();
 

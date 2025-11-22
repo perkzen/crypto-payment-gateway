@@ -1,11 +1,9 @@
+import { type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { listApiKeysOptions } from '../_hooks/queries';
-import { ReactNode } from 'react';
-import { ApiKey } from '@/app/dashboard/settings/api-keys/_types/api-key';
 import {
-  useReactTable,
-  getCoreRowModel,
   flexRender,
+  getCoreRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 import {
   Table,
@@ -15,8 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
-import { useApiKeysTableColumns } from '@/app/dashboard/settings/api-keys/_hooks/use-api-keys-table-columns';
-import { ApiKeysEmptyState } from '@/app/dashboard/settings/api-keys/_components/api-keys-empty-state';
+import { ApiKeysEmptyState } from '../_components/api-keys-empty-state';
+import { listApiKeysOptions } from '../_hooks/queries';
+import { useApiKeysTableColumns } from '../_hooks/use-api-keys-table-columns';
+import { type ApiKey } from '../_types/api-key';
 
 function ApiKeysListContainer({ children }: { children: ReactNode }) {
   return (
