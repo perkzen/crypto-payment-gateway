@@ -1,6 +1,6 @@
 'use client';
 
-import { CreateApiKeyView, ApiKeyListView } from './_components';
+import { ApiKeyListView, CreateApiKeyView } from './_components';
 import { PageHeader } from '@/components/page-header';
 
 export default function ApiKeysPage() {

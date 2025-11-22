@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <PageHeader
           title="Dashboard"
           description="Overview of your payment gateway activity"

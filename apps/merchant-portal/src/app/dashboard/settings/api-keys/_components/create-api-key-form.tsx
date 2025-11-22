@@ -10,6 +10,7 @@ import { toast } from '@workspace/ui/components/sonner';
 import { listApiKeysOptions } from '../_hooks/queries';
 import { apiKeyFormOptions } from '../_forms/api-key';
 import { ApiKeySuccessDialog } from './api-key-success-dialog';
+import { CreateApiKeyResult } from '@/app/dashboard/settings/api-keys/_types/api-key';
 
 type CreateApiKeyFormContainerProps = {
   children: ReactNode;
@@ -38,31 +39,27 @@ function CreateApiKeyFormContainer({
 
 function CreateApiKeyForm() {
   const queryClient = useQueryClient();
-  const [newApiKey, setNewApiKey] = useState<{
-    name: string;
-    key: string;
-  } | null>(null);
+  const [newApiKey, setNewApiKey] = useState<CreateApiKeyResult>();
 
   const { mutateAsync } = useMutation({
     ...createApiKeyOptions,
     onSuccess: () => {
+      toast.success('API key created successfully!');
       void queryClient.invalidateQueries({
         queryKey: listApiKeysOptions.queryKey,
       });
+    },
+    onError: () => {
+      toast.error('Failed to create API key.');
     },
   });
 
   const form = useForm({
     ...apiKeyFormOptions,
     onSubmit: async ({ value, formApi }) => {
-      try {
-        const result = await mutateAsync(value);
-        setNewApiKey({ name: value.name, key: result.key });
-        formApi.reset();
-        toast.success('API key created successfully!');
-      } catch (error) {
-        toast.error('Failed to create API key.');
-      }
+      const result = await mutateAsync(value);
+      setNewApiKey(result);
+      formApi.reset();
     },
   });
 
@@ -110,10 +107,12 @@ function CreateApiKeyForm() {
         </form.Field>
       </form>
 
-      <ApiKeySuccessDialog
-        apiKey={newApiKey}
-        onClose={() => setNewApiKey(null)}
-      />
+      {newApiKey && (
+        <ApiKeySuccessDialog
+          apiKey={newApiKey}
+          onClose={() => setNewApiKey(undefined)}
+        />
+      )}
     </>
   );
 }
