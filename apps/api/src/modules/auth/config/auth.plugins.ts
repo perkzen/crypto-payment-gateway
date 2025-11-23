@@ -1,9 +1,8 @@
-import { type BetterAuthPlugin } from 'better-auth';
 import { generateRandomString } from 'better-auth/crypto';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
 import { type VerifyMessageParameters, verifyMessage } from 'viem';
 
-export const authPlugins: BetterAuthPlugin[] = [
+export const getAuthPlugins = () => [
   openAPI(),
   apiKey({
     enableSessionForAPIKeys: true,
@@ -32,4 +31,4 @@ export const authPlugins: BetterAuthPlugin[] = [
       }
     },
   }),
-] as const;
+];
