@@ -1,7 +1,9 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { type NodePgDatabase, drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schemas from '../schemas';
 import type { ConfigService } from '@nestjs/config';
+
+export type Database = NodePgDatabase<typeof schemas>;
 
 export const DATABASE_CONNECTION = Symbol('DATABASE_CONNECTION');
 

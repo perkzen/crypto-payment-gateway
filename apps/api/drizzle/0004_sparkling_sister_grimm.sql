@@ -1,0 +1,1 @@
+ALTER TABLE "merchants" ALTER COLUMN "display_name" DROP NOT NULL;

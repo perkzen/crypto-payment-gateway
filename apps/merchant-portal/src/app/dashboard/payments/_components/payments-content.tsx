@@ -89,8 +89,8 @@ export function PaymentsContent() {
       />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-sm flex-1">
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
             placeholder="Search payments..."
             value={searchQuery}
@@ -100,7 +100,7 @@ export function PaymentsContent() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Filter className="text-muted-foreground h-4 w-4" />
           <div className="flex gap-1 rounded-lg border p-1">
             <Button
               variant={status === 'all' ? 'default' : 'ghost'}
@@ -128,10 +128,10 @@ export function PaymentsContent() {
       </div>
 
       {filteredPayments.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center rounded-lg border bg-card py-12">
-          <CreditCard className="mb-4 h-12 w-12 text-muted-foreground" />
+        <div className="bg-card flex flex-1 flex-col items-center justify-center rounded-lg border py-12">
+          <CreditCard className="text-muted-foreground mb-4 h-12 w-12" />
           <h3 className="mb-2 text-lg font-semibold">No payments found</h3>
-          <p className="mb-4 text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground mb-4 text-center text-sm">
             {searchQuery || status !== 'all'
               ? 'Try adjusting your filters or search query'
               : 'Your payment transactions will appear here'}
@@ -149,24 +149,24 @@ export function PaymentsContent() {
           )}
         </div>
       ) : (
-        <div className="rounded-lg border bg-card">
+        <div className="bg-card rounded-lg border">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
                     ID
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
                     Amount
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
                     Transaction
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
                     Date
                   </th>
                 </tr>
@@ -192,7 +192,7 @@ export function PaymentsContent() {
                           href={`https://etherscan.io/tx/${payment.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono text-sm text-primary hover:underline"
+                          className="text-primary font-mono text-sm hover:underline"
                         >
                           {payment.txHash.slice(0, 10)}...
                         </a>
@@ -200,7 +200,7 @@ export function PaymentsContent() {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                    <td className="text-muted-foreground px-4 py-3 text-sm">
                       {new Date(payment.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -213,4 +213,3 @@ export function PaymentsContent() {
     </div>
   );
 }
-

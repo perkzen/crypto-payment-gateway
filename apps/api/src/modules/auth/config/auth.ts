@@ -1,11 +1,12 @@
+import { authHooks } from '@app/modules/auth/config/auth.hooks';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { generateRandomString } from 'better-auth/crypto';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
 import { type VerifyMessageParameters, verifyMessage } from 'viem';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { Database } from '@app/modules/database/utils/get-database-connection';
 
-export const getAuthConfig = (database: NodePgDatabase) =>
+export const getAuthConfig = (database: Database) =>
   betterAuth({
     trustedOrigins: ['http://localhost:3000'],
     plugins: [
@@ -39,8 +40,9 @@ export const getAuthConfig = (database: NodePgDatabase) =>
     ],
 
     database: drizzleAdapter(database, { provider: 'pg' }),
+    hooks: authHooks(database),
   });
 
 // Default auth instance for CLI usage (with dummy database)
 // The CLI needs this to be exported as 'auth'
-export const auth = getAuthConfig({} as NodePgDatabase);
+export const auth = getAuthConfig({} as Database);
