@@ -9,7 +9,7 @@ export const merchants = pgTable('merchants', {
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: 'cascade' }),
-  displayName: text('display_name').notNull().default(null),
+  displayName: text('display_name').default(null),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

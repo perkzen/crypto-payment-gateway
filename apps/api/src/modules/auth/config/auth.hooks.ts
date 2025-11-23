@@ -2,16 +2,22 @@ import { merchants, walletAddress } from '@app/modules/database/schemas';
 import { Logger } from '@nestjs/common';
 import { createAuthMiddleware } from 'better-auth/api';
 import { eq } from 'drizzle-orm';
-import type { SIWEVerifyMessageArgs } from '@app/modules/auth/config/auth';
 import type { Database } from '@app/modules/database/utils/get-database-connection';
 
 const logger = new Logger('AuthHooks');
+
+type SiweVerifyPayload = {
+  walletAddress: string;
+  message: string;
+  chainId: number;
+  signature: string;
+};
 
 /**
  * Handles SIWE verification - ensures a merchant record exists for the user
  */
 async function handleSiweVerify(database: Database, body: unknown) {
-  const { address } = body as SIWEVerifyMessageArgs;
+  const { walletAddress: address } = body as SiweVerifyPayload;
 
   const wallet = await database.query.walletAddress.findFirst({
     where: eq(walletAddress.address, address),
@@ -30,7 +36,7 @@ async function handleSiweVerify(database: Database, body: unknown) {
 
   if (!wallet?.user) {
     // This should not happen if the SIWE verification passed
-    logger.warn(`No user found for wallet address ${address}`);
+    logger.warn(`No user found for wallet address ${JSON.stringify(body)}`);
     return;
   }
 
@@ -41,15 +47,14 @@ async function handleSiweVerify(database: Database, body: unknown) {
       .insert(merchants)
       .values({
         userId: user.id,
-        displayName: user.name || 'New Merchant',
       })
       .onConflictDoNothing({
         target: merchants.userId,
       });
 
-    logger.log(`Ensured merchant record exists for user ${user.id}`);
+    logger.log(`Merchant record exists for user ${user.id}`);
   } catch (error) {
-    logger.error(`Failed to ensure merchant for user ${user.id}:`, error);
+    logger.error(`Failed to insert merchant for user ${user.id}:`, error);
   }
 }
 

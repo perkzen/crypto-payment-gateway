@@ -2,18 +2,9 @@ import { authHooks } from '@app/modules/auth/config/auth.hooks';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { generateRandomString } from 'better-auth/crypto';
-import {
-  type SIWEPluginOptions,
-  apiKey,
-  openAPI,
-  siwe,
-} from 'better-auth/plugins';
+import { apiKey, openAPI, siwe } from 'better-auth/plugins';
 import { type VerifyMessageParameters, verifyMessage } from 'viem';
 import type { Database } from '@app/modules/database/utils/get-database-connection';
-
-export type SIWEVerifyMessageArgs = Parameters<
-  SIWEPluginOptions['verifyMessage']
->[0];
 
 export const getAuthConfig = (database: Database) =>
   betterAuth({
