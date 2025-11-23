@@ -8,7 +8,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { merchants } from './merchant.schema';
+import { merchant } from './merchant.schema';
 
 export const paymentStatusEnum = pgEnum('payment_status', [
   'pending',
@@ -23,7 +23,7 @@ export const paymentStatusEnum = pgEnum('payment_status', [
 
 export const payment = pgTable('payments', {
   id: uuid('id').primaryKey().defaultRandom(),
-  merchantId: uuid('merchant_id').references(() => merchants.id, {
+  merchantId: uuid('merchant_id').references(() => merchant.id, {
     onDelete: 'cascade',
   }),
 
@@ -50,8 +50,8 @@ export const payment = pgTable('payments', {
 });
 
 export const paymentRelations = relations(payment, ({ one }) => ({
-  merchant: one(merchants, {
+  merchant: one(merchant, {
     fields: [payment.merchantId],
-    references: [merchants.id],
+    references: [merchant.id],
   }),
 }));

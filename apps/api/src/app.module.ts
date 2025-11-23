@@ -8,6 +8,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { CheckoutSessionsModule } from './modules/checkout-sessions/checkout-sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 
@@ -21,6 +22,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     DatabaseModule,
     AuthModule,
     PaymentsModule,
+    CheckoutSessionsModule,
   ],
   controllers: [AppController],
   providers: [

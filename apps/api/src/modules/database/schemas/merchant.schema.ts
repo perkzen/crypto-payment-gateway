@@ -3,13 +3,15 @@ import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
 import { payment } from './payment.schema';
 
-export const merchants = pgTable('merchants', {
+export const merchant = pgTable('merchants', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id')
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: 'cascade' }),
-  displayName: text('display_name').default(null),
+
+  displayName: text('display_name'),
+  contactEmail: text('contact_email'),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
@@ -18,9 +20,9 @@ export const merchants = pgTable('merchants', {
     .notNull(),
 });
 
-export const merchantRelations = relations(merchants, ({ one, many }) => ({
+export const merchantRelations = relations(merchant, ({ one, many }) => ({
   user: one(user, {
-    fields: [merchants.userId],
+    fields: [merchant.userId],
     references: [user.id],
   }),
   payments: many(payment),

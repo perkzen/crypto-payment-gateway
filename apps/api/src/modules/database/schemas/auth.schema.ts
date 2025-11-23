@@ -7,7 +7,7 @@ import {
   text,
   timestamp,
 } from 'drizzle-orm/pg-core';
-import { merchants } from './merchant.schema';
+import { merchant } from './merchant.schema';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -123,9 +123,9 @@ export const userRelations = relations(user, ({ many, one }) => ({
   accounts: many(account),
   apikeys: many(apikey),
   walletAddresss: many(walletAddress),
-  merchant: one(merchants, {
+  merchant: one(merchant, {
     fields: [user.id],
-    references: [merchants.userId],
+    references: [merchant.userId],
   }),
 }));
 

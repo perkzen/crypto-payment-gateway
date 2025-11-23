@@ -43,6 +43,13 @@
       "when": 1763918479752,
       "tag": "0005_normal_lockjaw",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763929506215,
+      "tag": "0006_exotic_the_fallen",
+      "breakpoints": true
     }
   ]
 }

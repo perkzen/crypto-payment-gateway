@@ -1,4 +1,6 @@
 import { getAuthConfig } from '@app/modules/auth/config/auth';
+import { SignUpHook } from '@app/modules/auth/hooks/sign-up.hook';
+import { SignUpService } from '@app/modules/auth/serivces/sign-up.service';
 import { DatabaseModule } from '@app/modules/database/database.module';
 import * as schemas from '@app/modules/database/schemas';
 import { DATABASE_CONNECTION } from '@app/modules/database/utils/get-database-connection';
@@ -16,5 +18,6 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
       }),
     }),
   ],
+  providers: [SignUpHook, SignUpService],
 })
 export class AuthModule {}
