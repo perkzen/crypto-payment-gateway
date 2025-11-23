@@ -84,7 +84,7 @@ export function PaymentsContent() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <PageHeader
-        title="PaymentsService"
+        title="Payments"
         description="View and manage all your payment transactions"
       />
 

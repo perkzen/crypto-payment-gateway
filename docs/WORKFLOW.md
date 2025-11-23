@@ -1,43 +1,55 @@
-You can think of a crypto payment gateway API as “Stripe PaymentIntents + blockchain stuff.”
-
-Here’s a concrete example of **how your REST API could look**, with endpoints and JSON payloads you could actually implement.
 
 ---
 
-## 1. Auth
+## 1. Two core resources
 
-Simple API key in header (like Stripe):
+You’ll have **both**:
 
-```http
-Authorization: Bearer sk_test_123...
-Content-Type: application/json
-```
+* **Payment** – on-chain payment record (what we already designed)
+* **CheckoutSession** – short-lived object that:
+
+    * Handles redirect
+    * Controls which coins / networks / UI options are allowed
+    * Links merchant → customer → payment
+
+Conceptually:
+
+* Merchant creates a **CheckoutSession**
+* Customer is redirected to **your hosted checkout**
+* Checkout internally creates/uses a **Payment**
+* Smart contract / wallet interaction happens in your frontend
+* Backend watches blockchain and updates **Payment** (and Session status)
+* Webhooks tell merchant when the payment is confirmed
 
 ---
 
-## 2. Core concept: `Payment`
+## 2. Checkout Session model (API-facing)
 
-A **Payment** represents a single on-chain payment for an order.
-
-Basic fields:
+Example JSON for a checkout session:
 
 ```json
 {
-  "id": "pay_123",
-  "status": "pending",              // pending | underpaid | overpaid | confirmed | expired | canceled
-  "amount_fiat": "50.00",
+  "id": "cs_123",
+  "status": "open",               // open | completed | expired | canceled
+  "mode": "payment",              // maybe later subscription, donation, etc.
+  "amount_fiat_cents": 5000,
   "fiat_currency": "EUR",
-  "amount_crypto": "0.001234",
-  "crypto_currency": "BTC",
-  "network": "bitcoin",             // or ethereum, polygon, etc.
-  "address": "bc1qxyz...",
-  "tx_hash": null,
-  "min_confirmations": 1,
-  "confirmations": 0,
-  "expires_at": "2025-11-23T13:05:00Z",
+
+  "allowed_crypto_currencies": ["ETH", "USDT"],
+  "allowed_networks": ["ethereum", "polygon"],
+
+  "payment_id": "pay_123",        // or null until created
+  "success_url": "https://merchant.com/checkout/success?order_id=order_987",
+  "cancel_url": "https://merchant.com/checkout/cancel?order_id=order_987",
+
+  "customer_email": "user@example.com",
   "metadata": {
     "order_id": "order_987"
   },
+
+  "checkout_url": "https://pay.yourgateway.com/checkout/cs_123",
+
+  "expires_at": "2025-11-23T13:05:00Z",
   "created_at": "2025-11-23T12:50:00Z",
   "updated_at": "2025-11-23T12:50:00Z"
 }
@@ -45,258 +57,211 @@ Basic fields:
 
 ---
 
-## 3. Create a payment
+## 3. Create Checkout Session endpoint
 
-**Endpoint**
+### Endpoint
 
 ```http
-POST /v1/payments
+POST /v1/checkout/sessions
+Authorization: Bearer sk_test_123...
+Content-Type: application/json
+Idempotency-Key: order_987
 ```
 
-**Request body**
+### Request body (merchant → you)
 
 ```json
 {
-  "amount": "50.00",
+  "amount_fiat": "50.00",          // or "amount_fiat_cents": 5000 in your internal model
   "currency": "EUR",
-  "crypto_currency": "BTC",
-  "network": "bitcoin",
-  "min_confirmations": 1,
-  "expires_in": 900,
+
+  "allowed_crypto_currencies": ["ETH", "USDT"],
+  "allowed_networks": ["ethereum"],
+
   "customer_email": "user@example.com",
+
   "success_url": "https://merchant.com/checkout/success?order_id=order_987",
   "cancel_url": "https://merchant.com/checkout/cancel?order_id=order_987",
-  "callback_url": "https://merchant.com/webhooks/crypto",
+
+  "expires_in": 900,
+
   "metadata": {
     "order_id": "order_987"
   }
 }
 ```
 
-**What your gateway does internally**
-
-* Fetches a crypto rate (BTC/EUR)
-* Calculates `amount_crypto`
-* Generates a **unique deposit address** for that payment
-* Stores everything and starts watching the blockchain for that address
-
-**Response**
+### Response
 
 ```json
 {
-  "id": "pay_123",
-  "status": "pending",
-  "amount_fiat": "50.00",
+  "id": "cs_123",
+  "status": "open",
+  "amount_fiat_cents": 5000,
   "fiat_currency": "EUR",
-  "amount_crypto": "0.001234",
-  "crypto_currency": "BTC",
-  "network": "bitcoin",
-  "address": "bc1qxyz...",
-  "qr_code_url": "https://api.yourgateway.com/v1/payments/pay_123/qr",
-  "min_confirmations": 1,
+
+  "allowed_crypto_currencies": ["ETH", "USDT"],
+  "allowed_networks": ["ethereum"],
+
+  "payment_id": null,
+  "success_url": "https://merchant.com/checkout/success?order_id=order_987",
+  "cancel_url": "https://merchant.com/checkout/cancel?order_id=order_987",
+
+  "customer_email": "user@example.com",
+  "metadata": { "order_id": "order_987" },
+
+  "checkout_url": "https://pay.yourgateway.com/checkout/cs_123",
+
   "expires_at": "2025-11-23T13:05:00Z",
-  "callback_url": "https://merchant.com/webhooks/crypto",
-  "metadata": {
-    "order_id": "order_987"
-  }
+  "created_at": "2025-11-23T12:50:00Z",
+  "updated_at": "2025-11-23T12:50:00Z"
 }
 ```
 
-The merchant shows the **address**, **amount**, and maybe the **QR** to the customer.
+The merchant:
+
+* Gets `checkout_url`
+* On “Pay with crypto” button click → **redirects the user there**
 
 ---
 
-## 4. Get payment status
+## 4. What happens on your hosted checkout page
 
-**Endpoint**
+At `https://pay.yourgateway.com/checkout/cs_123`:
+
+1. **Frontend loads Checkout Session**
+
+    * `GET /v1/checkout/sessions/cs_123` (from your frontend, via your backend)
+2. Shows:
+
+    * Amount in fiat + approximate crypto preview
+    * Networks / tokens to choose from (ETH, USDT, etc.)
+    * “Connect wallet” button (WalletConnect, MetaMask, etc.)
+3. User selects:
+
+    * Network
+    * Token (e.g. ETH on Ethereum)
+4. When user clicks **Pay**:
+
+    * Your frontend calls your backend to **create a Payment** for this session (if not already created)
+    * Backend:
+
+        * Creates `Payment` row (`status = pending`, `min_confirmations` based on network)
+        * Returns payment details needed for smart contract call (amount, contract address, method, etc.)
+    * Frontend triggers wallet transaction to your **payment smart contract**
+
+Internally, you might implement:
 
 ```http
-GET /v1/payments/{payment_id}
-```
-
-**Sample response (after user paid, 0 confs)**
-
-```json
-{
-  "id": "pay_123",
-  "status": "pending",
-  "amount_fiat": "50.00",
-  "fiat_currency": "EUR",
-  "amount_crypto": "0.001234",
-  "crypto_currency": "BTC",
-  "network": "bitcoin",
-  "address": "bc1qxyz...",
-  "tx_hash": "f2a5c7...",
-  "received_amount_crypto": "0.001234",
-  "min_confirmations": 1,
-  "confirmations": 0,
-  "expires_at": "2025-11-23T13:05:00Z",
-  "metadata": {
-    "order_id": "order_987"
-  }
-}
-```
-
-**After 1 confirmation**
-
-```json
-{
-  "id": "pay_123",
-  "status": "confirmed",
-  "confirmations": 1,
-  "tx_hash": "f2a5c7...",
-  "received_amount_crypto": "0.001234",
-  ...
-}
-```
-
----
-
-## 5. Webhooks (callbacks to the merchant)
-
-The most important part: notifying merchants.
-
-**Merchant sets `callback_url`** on `POST /v1/payments`.
-Your gateway sends webhooks on important events:
-
-* `payment.pending` – seen on-chain, awaiting confirmations
-* `payment.confirmed` – required confirmations reached
-* `payment.underpaid` – amount < expected
-* `payment.overpaid` – amount > expected
-* `payment.expired` – no (or insufficient) funds until expiration
-
-### Example webhook: payment.pending
-
-```json
-{
-  "id": "evt_789",
-  "type": "payment.pending",
-  "created_at": "2025-11-23T12:55:00Z",
-  "data": {
-    "payment": {
-      "id": "pay_123",
-      "status": "pending",
-      "crypto_currency": "BTC",
-      "network": "bitcoin",
-      "address": "bc1qxyz...",
-      "tx_hash": "f2a5c7...",
-      "received_amount_crypto": "0.001234",
-      "min_confirmations": 1,
-      "confirmations": 0,
-      "metadata": {
-        "order_id": "order_987"
-      }
-    }
-  }
-}
-```
-
-### Example webhook: payment.confirmed
-
-```json
-{
-  "id": "evt_790",
-  "type": "payment.confirmed",
-  "created_at": "2025-11-23T12:57:00Z",
-  "data": {
-    "payment": {
-      "id": "pay_123",
-      "status": "confirmed",
-      "crypto_currency": "BTC",
-      "network": "bitcoin",
-      "address": "bc1qxyz...",
-      "tx_hash": "f2a5c7...",
-      "received_amount_crypto": "0.001234",
-      "min_confirmations": 1,
-      "confirmations": 1,
-      "metadata": {
-        "order_id": "order_987"
-      }
-    }
-  }
-}
-```
-
-**Merchant response**
-
-Your docs should say: respond with `200 OK` as acknowledgment. You can recommend retries if merchant returns non-2xx.
-
----
-
-## 6. List payments
-
-```http
-GET /v1/payments?status=confirmed&limit=20
+POST /v1/checkout/sessions/{id}/payments
 ```
 
 Response:
 
 ```json
 {
-  "data": [
-    { "id": "pay_123", "status": "confirmed", ... },
-    { "id": "pay_124", "status": "confirmed", ... }
-  ],
-  "has_more": false
+  "payment": {
+    "id": "pay_123",
+    "status": "pending",
+    "amount_fiat_cents": 5000,
+    "fiat_currency": "EUR",
+    "amount_crypto": "0.015",
+    "crypto_currency": "ETH",
+    "network": "ethereum",
+    "to_contract": "0xPaymentContract...",
+    "data": "0xabc123...", // encoded function call
+    "min_confirmations": 12
+  }
 }
 ```
 
+Your UI uses that to build the `eth_sendTransaction` / WalletConnect request.
+
 ---
 
-## 7. Rates endpoint (optional but useful)
+## 5. Backend: watching the blockchain
 
-For merchants that want to show prices in crypto.
+Your blockchain watcher(s):
+
+* Watch your **payment contract** (e.g. events like `PaymentReceived(sessionId, paymentId, from, amount)`).
+* Or watch direct transfers to your address if using EOA/deposit addresses.
+
+Flow:
+
+1. Tx seen in mempool / block:
+
+    * You attach `tx_hash` to `Payment`
+    * Optionally send `payment.pending` webhook
+2. Once `min_confirmations` reached:
+
+    * Update `Payment.status = "confirmed"`
+    * Update `CheckoutSession.status = "completed"`
+    * Fire `payment.confirmed` webhook to merchant
+3. If nothing is paid before `expires_at`:
+
+    * Mark `CheckoutSession.status = "expired"`
+    * Optionally mark `Payment` as expired (if you pre-created one) or just leave none.
+
+---
+
+## 6. Webhook and redirects
+
+After payment is confirmed:
+
+* Send webhook (as you already planned):
+
+  ```json
+  {
+    "id": "evt_790",
+    "type": "payment.confirmed",
+    "data": {
+      "payment": { ... },
+      "checkout_session": { "id": "cs_123", "status": "completed" }
+    }
+  }
+  ```
+
+* On the frontend (your hosted page), once you detect `confirmed`, you **redirect**:
+
+  ```ts
+  window.location.href = checkoutSession.success_url;
+  ```
+
+If user cancels on your page (back button / cancel button):
+
+* Mark `CheckoutSession.status = "canceled"` (optional)
+* Redirect to `cancel_url`.
+
+---
+
+## 7. Minimal extra endpoints for checkout session
+
+You probably want:
 
 ```http
-GET /v1/rates?fiat=EUR&crypto=BTC
+POST /v1/checkout/sessions
+GET  /v1/checkout/sessions/{id}
+GET  /v1/checkout/sessions?status=open&limit=20
+POST /v1/checkout/sessions/{id}/expire     // optional, force expire from merchant backend
 ```
 
-```json
-{
-  "fiat": "EUR",
-  "crypto": "BTC",
-  "rate": "40500.34",       // 1 BTC = 40500.34 EUR
-  "timestamp": "2025-11-23T12:40:00Z"
-}
-```
+The merchant never needs to manually create `Payment` objects in this flow—only **Checkout Sessions**.
+Your hosted page + smart contracts + blockchain watchers handle the rest.
 
 ---
 
-## 8. Security details you’d want
+## 8. How this fits your original idea
 
-* **API keys** for merchants (secret key, maybe also a public key if you offer client-side calls).
+> “when user click pay with crypto it redirects to our check page where users connects wallet and all other stuff…”
 
-* **Webhook signatures** (HMAC):
+✅ That’s exactly what `CheckoutSession` + `checkout_url` gives you.
+Merchant’s job is super simple:
 
-  Header example:
+1. Call `POST /v1/checkout/sessions`
+2. Redirect user to `checkout_url`
+3. Listen for webhooks
 
-  ```http
-  X-Signature: t=1732362850,v1=hexhmac...
-  ```
+If you want, next step I can:
 
-* **Idempotency keys** for `POST /v1/payments` so merchants don’t create duplicates if they retry.
-
-  ```http
-  Idempotency-Key: order_987
-  ```
-
----
-
-## 9. Typical merchant flow with this API
-
-1. Merchant backend calls `POST /v1/payments` with order info.
-2. Merchant frontend redirects user to **payment page** you host *or* renders a page with your returned `address` + `amount_crypto` + QR.
-3. Customer sends crypto to the address.
-4. Your gateway:
-
-    * Detects incoming tx
-    * Sends `payment.pending` webhook
-    * Waits for `min_confirmations`
-    * Sends `payment.confirmed` webhook
-5. Merchant:
-
-    * On `payment.confirmed`, marks `order_987` as paid and grants access / ships product.
-6. Later, you batch on-chain balances and send to merchant’s **payout wallet** (another API concept if you want to expose it).
-
----
-
+* Sketch a **Postgres + Drizzle schema for `checkout_sessions`**
+* Draft the **smart contract interface** for a Payment contract that emits events linking `checkout_session_id` / `payment_id` to on-chain transfers.

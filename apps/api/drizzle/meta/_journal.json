@@ -36,6 +36,13 @@
       "when": 1763902118468,
       "tag": "0004_sparkling_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1763918479752,
+      "tag": "0005_normal_lockjaw",
+      "breakpoints": true
     }
   ]
 }

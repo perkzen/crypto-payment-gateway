@@ -1,0 +1,1 @@
+ALTER TABLE "payments" RENAME COLUMN "fiatCurrency" TO "fiat_currency";

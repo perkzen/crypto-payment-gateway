@@ -31,7 +31,7 @@ export const payment = pgTable('payments', {
 
   // Fiat stored in cents
   amountFiat: integer('amount_fiat').notNull(),
-  fiatCurrency: text('fiatCurrency').notNull(),
+  fiatCurrency: text('fiat_currency').notNull(),
 
   network: text('network').notNull(),
   address: text('address').notNull(),
