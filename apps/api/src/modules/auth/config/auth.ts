@@ -1,7 +1,10 @@
 import { getAuthPlugins } from '@app/modules/auth/config/auth.plugins';
+import * as schemas from '@app/modules/database/schemas';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import type { Database } from '@app/modules/database/utils/get-database-connection';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+
+export type Database = NodePgDatabase<typeof schemas>;
 
 export const getAuthConfig = (database: Database) =>
   betterAuth({

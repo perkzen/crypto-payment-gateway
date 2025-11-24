@@ -1,27 +1,27 @@
 import { CHECKOUT_URL } from '@app/common/contants';
-import { InjectDatabaseConnection } from '@app/modules/database/deocrators/inject-database-connection.decoractor';
+import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession, merchant } from '@app/modules/database/schemas';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
 import { CreateCheckoutSessionsDto } from './dtos';
-import type { Database } from '@app/modules/database/utils/get-database-connection';
 
 @Injectable()
 export class CheckoutSessionsService {
-  constructor(@InjectDatabaseConnection() private readonly db: Database) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async createCheckoutSession(
     data: CreateCheckoutSessionsDto,
     { session }: UserSession,
   ) {
-    const { expiresInMinutes, ...input } = data;
+    const { expiresInMinutes = 60, ...input } = data;
     const { userId } = session;
 
-    const merchantResult = await this.db.query.merchant.findFirst({
-      where: eq(merchant.userId, userId),
-      columns: { id: true },
-    });
+    const merchantResult =
+      await this.databaseService.db.query.merchant.findFirst({
+        where: eq(merchant.userId, userId),
+        columns: { id: true },
+      });
 
     if (!merchantResult) {
       throw new NotFoundException();
@@ -30,7 +30,7 @@ export class CheckoutSessionsService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
-    return this.db
+    return this.databaseService.db
       .insert(checkoutSession)
       .values({
         ...input,
@@ -42,9 +42,10 @@ export class CheckoutSessionsService {
   }
 
   async getCheckoutSessionById(id: string) {
-    const session = await this.db.query.checkoutSession.findFirst({
-      where: eq(checkoutSession.id, id),
-    });
+    const session =
+      await this.databaseService.db.query.checkoutSession.findFirst({
+        where: eq(checkoutSession.id, id),
+      });
 
     if (!session) {
       throw new NotFoundException();

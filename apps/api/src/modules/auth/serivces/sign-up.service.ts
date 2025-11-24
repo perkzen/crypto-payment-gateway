@@ -1,18 +1,17 @@
 import { type SiweVerifyBody } from '@app/modules/auth/hooks/sign-up.hook';
-import { InjectDatabaseConnection } from '@app/modules/database/deocrators/inject-database-connection.decoractor';
+import { DatabaseService } from '@app/modules/database/database.service';
 import { merchant, walletAddress } from '@app/modules/database/schemas';
 import { Injectable, Logger } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import type { Database } from '@app/modules/database/utils/get-database-connection';
 
 @Injectable()
 export class SignUpService {
   private readonly logger = new Logger(SignUpService.name);
 
-  constructor(@InjectDatabaseConnection() private readonly db: Database) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async signUp({ walletAddress: address }: SiweVerifyBody) {
-    const wallet = await this.db.query.walletAddress.findFirst({
+    const wallet = await this.databaseService.db.query.walletAddress.findFirst({
       where: eq(walletAddress.address, address),
       columns: {
         userId: true,
@@ -35,7 +34,7 @@ export class SignUpService {
     const { user } = wallet;
 
     try {
-      await this.db
+      await this.databaseService.db
         .insert(merchant)
         .values({
           userId: user.id,

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import {
   AllowAnonymous,
@@ -41,7 +41,7 @@ export class CheckoutSessionsController {
   })
   @AllowAnonymous()
   @Get(':id')
-  async getCheckoutSessionById(@Param('id') id: string) {
+  async getCheckoutSessionById(@Param('id', ParseUUIDPipe) id: string) {
     return this.checkoutSessionsService.getCheckoutSessionById(id);
   }
 }

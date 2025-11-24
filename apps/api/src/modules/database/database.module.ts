@@ -1,19 +1,25 @@
 import {
-  DATABASE_CONNECTION,
-  getDatabaseConnection,
-} from '@app/modules/database/utils/get-database-connection';
+  CONNECTION_POOL,
+  ConfigurableDatabaseModule,
+  DATABASE_OPTIONS,
+  DatabaseOptions,
+} from '@app/modules/database/database.module-definition';
+import { DatabaseService } from '@app/modules/database/database.service';
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Pool } from 'pg';
 
 @Global()
 @Module({
   providers: [
+    DatabaseService,
     {
-      provide: DATABASE_CONNECTION,
-      inject: [ConfigService],
-      useFactory: getDatabaseConnection,
+      provide: CONNECTION_POOL,
+      inject: [DATABASE_OPTIONS],
+      useFactory: (options: DatabaseOptions) => {
+        return new Pool(options);
+      },
     },
   ],
-  exports: [DATABASE_CONNECTION],
+  exports: [DatabaseService],
 })
-export class DatabaseModule {}
+export class DatabaseModule extends ConfigurableDatabaseModule {}

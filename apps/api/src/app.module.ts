@@ -2,7 +2,7 @@ import { HttpExceptionFilter } from '@app/common/filters/http-exception.filter';
 import { getEnvFilePath } from '@app/config/env/env-paths';
 import { validateEnv } from '@app/config/env/env-var.validation';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
@@ -19,7 +19,13 @@ import { PaymentsModule } from './modules/payments/payments.module';
       isGlobal: true,
       validate: validateEnv,
     }),
-    DatabaseModule,
+    DatabaseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connectionString: configService.get('DATABASE_URL'),
+      }),
+    }),
     AuthModule,
     PaymentsModule,
     CheckoutSessionsModule,
