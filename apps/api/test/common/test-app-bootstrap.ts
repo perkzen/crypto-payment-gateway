@@ -1,8 +1,5 @@
 import { AppModule } from '@app/app.module';
-import {
-  DATABASE_OPTIONS,
-  DatabaseOptions,
-} from '@app/modules/database/database.module-definition';
+import { DATABASE_OPTIONS } from '@app/modules/database/database.module-definition';
 import { type ModuleMetadata } from '@nestjs/common';
 import {
   Test,
