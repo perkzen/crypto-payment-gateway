@@ -78,7 +78,7 @@ export class TestDB {
       await adminPool.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
     } catch (error) {
       // Ignore errors when dropping database (it might already be dropped)
-      this.logger.error(
+      this.logger.warn(
         `Error dropping test database "${databaseName}": ${
           (error as Error).message
         }`,
@@ -89,7 +89,7 @@ export class TestDB {
   }
 
   private async runMigrations() {
-    const pool = new Pool(this.getAdminDatabaseOptions());
+    const pool = new Pool(this.getDatabaseOptions());
     const db = drizzle(pool);
 
     const migrationsFolder = join(__dirname, '../../drizzle');

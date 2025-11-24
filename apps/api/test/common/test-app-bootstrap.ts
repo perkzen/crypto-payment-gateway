@@ -55,10 +55,8 @@ export class TestAppBootstrap {
   }
 
   async close(): Promise<void> {
-    if (this.app) {
-      await this.app.close();
-    }
-
+    if (!this.app) return;
+    await this.app.close();
     if (this.db) await this.db.dropTestDatabase();
   }
 

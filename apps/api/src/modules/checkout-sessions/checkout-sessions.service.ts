@@ -30,7 +30,7 @@ export class CheckoutSessionsService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
-    return this.databaseService.db
+    const [createdSession] = await this.databaseService.db
       .insert(checkoutSession)
       .values({
         ...input,
@@ -39,6 +39,16 @@ export class CheckoutSessionsService {
         checkoutUrl: CHECKOUT_URL,
       })
       .returning();
+
+    // Transform to match CreateCheckoutSessionResultSchema
+    // Only return fields defined in the schema
+    return {
+      id: createdSession.id,
+      status: createdSession.status,
+      checkoutUrl: createdSession.checkoutUrl,
+      expiresAt: createdSession.expiresAt, // Date object
+      metadata: createdSession.metadata ?? null, // Can be null
+    };
   }
 
   async getCheckoutSessionById(id: string) {

@@ -76,11 +76,12 @@ export const CreateCheckoutSessionResultSchema = z.object({
     .describe('The URL where the customer can complete the payment'),
 
   expiresAt: z
-    .string()
-    .describe('The ISO 8601 timestamp when the checkout session expires'),
+    .date()
+    .describe('The timestamp when the checkout session expires'),
 
   metadata: z
     .record(z.string())
+    .nullable()
     .optional()
     .describe(
       'Optional key-value pairs attached to the checkout session for later reference',
