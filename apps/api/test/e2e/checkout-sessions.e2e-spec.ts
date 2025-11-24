@@ -57,7 +57,7 @@ describe('Checkout Sessions (e2e)', () => {
       await testApp.httpServer
         .request()
         .post('/checkout/sessions')
-        .set('x-api-key', testApiKey.key)
+        .setApiKey(testApiKey.key)
         .send(payload)
         .expect(404);
     });
@@ -77,7 +77,7 @@ describe('Checkout Sessions (e2e)', () => {
       await testApp.httpServer
         .request()
         .post('/checkout/sessions')
-        .set('x-api-key', apiKey.key)
+        .setApiKey(apiKey.key)
         .send(payload)
         .expect(400);
     });
@@ -97,7 +97,7 @@ describe('Checkout Sessions (e2e)', () => {
       await testApp.httpServer
         .request()
         .post('/checkout/sessions')
-        .set('x-api-key', apiKey.key)
+        .setApiKey(apiKey.key)
         .send(payload)
         .expect(400);
     });
@@ -117,7 +117,7 @@ describe('Checkout Sessions (e2e)', () => {
       const response = await testApp.httpServer
         .request()
         .post('/checkout/sessions')
-        .set('x-api-key', apiKey.key)
+        .setApiKey(apiKey.key)
         .send(payload)
         .expect(201);
 

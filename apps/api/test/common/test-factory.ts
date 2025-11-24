@@ -71,14 +71,12 @@ export class TestFactory {
   ) {
     const name = overrides?.name || faker.lorem.words(2);
 
-    const result = await this.authService.api.createApiKey({
+    return await this.authService.api.createApiKey({
       body: {
         name,
         userId,
       },
     });
-
-    return result;
   }
 
   /**

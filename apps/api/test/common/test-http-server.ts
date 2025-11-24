@@ -3,17 +3,21 @@ import { type NestExpressApplication } from '@nestjs/platform-express';
 import { type TestingModule } from '@nestjs/testing';
 import request, { type Test as SuperTestTest } from 'supertest';
 import type TestAgent from 'supertest/lib/agent';
+import '@test/common/supertest-extensions';
 
 export class TestHttpServer {
   httpServer: NestExpressApplication;
 
   constructor(private readonly testingModule: TestingModule) {
-    this.httpServer = this.testingModule.createNestApplication<NestExpressApplication>({
-      logger: false,
-    });
+    this.httpServer =
+      this.testingModule.createNestApplication<NestExpressApplication>({
+        logger: false,
+      });
   }
 
-  static async createHttpServer(testingModule: TestingModule): Promise<TestHttpServer> {
+  static async createHttpServer(
+    testingModule: TestingModule,
+  ): Promise<TestHttpServer> {
     const instance = new TestHttpServer(testingModule);
     new MiddlewareSetup(instance.httpServer).init();
     await instance.httpServer.init();
