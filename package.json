@@ -26,7 +26,8 @@
   "pnpm": {
     "overrides": {
       "esbuild": ">=0.25.0",
-      "tmp": ">=0.2.4"
+      "tmp": ">=0.2.4",
+      "body-parser": ">=2.2.1"
     }
   }
 }

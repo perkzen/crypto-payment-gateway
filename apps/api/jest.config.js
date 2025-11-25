@@ -32,7 +32,7 @@ module.exports = {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!.*jose.*|.*@better-auth.*|.*@thallesp.*|.*@noble.*)',
+    'node_modules/(?!.*jose.*|.*@better-auth.*|.*@thallesp.*|.*@noble.*|.*@faker-js.*|.*drizzle-orm.*)',
   ],
   collectCoverageFrom: [
     'src/**/*.(t|j)s',

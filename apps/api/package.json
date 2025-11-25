@@ -28,9 +28,9 @@
     "auth:generate": "pnpx @better-auth/cli generate --config=./src/modules/auth/config/auth.ts --output=./src/modules/database/schemas/auth.schema.ts --yes"
   },
   "dependencies": {
-    "@bull-board/api": "^6.13.0",
-    "@bull-board/express": "^6.13.0",
-    "@bull-board/nestjs": "^6.13.0",
+    "@bull-board/api": "^6.14.2",
+    "@bull-board/express": "^6.14.2",
+    "@bull-board/nestjs": "^6.14.2",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
