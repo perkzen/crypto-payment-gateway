@@ -34,12 +34,16 @@ export class TestAppBootstrap {
       disableAppModules = false,
     } = { ...options };
 
+    if (this.moduleBuilder) {
+      throw new Error(
+        'TestAppBootstrap already compiled. Call close() before recompiling.',
+      );
+    }
+
     this.db = new TestDB();
     await this.db.createTestDatabase();
 
-    if (!this.moduleBuilder) {
-      this.createBuilder(metadata, overrideFunc, !disableAppModules);
-    }
+    this.createBuilder(metadata, overrideFunc, !disableAppModules);
 
     this.moduleBuilder
       .overrideProvider(DATABASE_OPTIONS)

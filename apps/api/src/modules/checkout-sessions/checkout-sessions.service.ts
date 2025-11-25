@@ -1,17 +1,20 @@
-import { CHECKOUT_URL } from '@app/common/contants';
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession, merchant } from '@app/modules/database/schemas';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
-import { CreateCheckoutSessionsDto } from './dtos';
+import { CreateCheckoutSessionDto } from './dtos';
 
 @Injectable()
 export class CheckoutSessionsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async createCheckoutSession(
-    data: CreateCheckoutSessionsDto,
+    data: CreateCheckoutSessionDto,
     { session }: UserSession,
   ) {
     const { expiresInMinutes = 60, ...input } = data;
@@ -36,7 +39,7 @@ export class CheckoutSessionsService {
         ...input,
         expiresAt,
         merchantId: merchantResult.id,
-        checkoutUrl: CHECKOUT_URL,
+        checkoutUrl: this.configService.getOrThrow('CHECKOUT_URL'),
       })
       .returning();
 

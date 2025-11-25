@@ -7,7 +7,9 @@ export const environmentVariablesSchema = z.object({
 
   CORS_ORIGIN: z.string().default('*'),
 
-  CHECKOUT_URL: z.string().url(),
+  CHECKOUT_URL: z.string().url().default('http://localhost:3000/checkout'),
+
+  SIWE_DOMAIN: z.string().default('localhost:3000'),
 
   DATABASE_URL: z.string(),
 

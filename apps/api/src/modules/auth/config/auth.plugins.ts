@@ -1,8 +1,9 @@
+import { type ConfigService } from '@nestjs/config';
 import { generateRandomString } from 'better-auth/crypto';
 import { apiKey, openAPI, siwe } from 'better-auth/plugins';
 import { type VerifyMessageParameters, verifyMessage } from 'viem';
 
-export const getAuthPlugins = () => [
+export const getAuthPlugins = (configService: ConfigService) => [
   openAPI(),
   apiKey({
     enableSessionForAPIKeys: true,
@@ -15,8 +16,7 @@ export const getAuthPlugins = () => [
     },
   }),
   siwe({
-    domain: 'localhost:3000',
-    emailDomainName: 'example.com', // optional
+    domain: configService.getOrThrow('SIWE_DOMAIN'),
     anonymous: true, // optional, default is true, requires to send email in body
     getNonce: async () => generateRandomString(32, 'a-z', 'A-Z', '0-9'),
     verifyMessage: async ({ message, signature, address }) => {

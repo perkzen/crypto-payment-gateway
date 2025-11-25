@@ -19,7 +19,7 @@ export type SiweVerifyBody = z.infer<typeof siweVerifyBodySchema>;
 @Hook()
 @Injectable()
 export class SignUpHook {
-  private readonly logger = new Logger(SignUpService.name);
+  private readonly logger = new Logger(SignUpHook.name);
 
   constructor(private readonly signUpService: SignUpService) {}
 

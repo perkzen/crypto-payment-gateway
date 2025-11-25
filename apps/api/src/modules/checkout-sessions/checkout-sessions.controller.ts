@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import {
   AllowAnonymous,
@@ -8,8 +15,8 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 import { CheckoutSessionsService } from './checkout-sessions.service';
 import {
+  CreateCheckoutSessionDto,
   CreateCheckoutSessionResultDto,
-  CreateCheckoutSessionsDto,
   PublicCheckoutSessionDto,
 } from './dtos';
 
@@ -28,7 +35,7 @@ export class CheckoutSessionsController {
   @Post()
   async createCheckoutSession(
     @Session() session: UserSession,
-    @Body() body: CreateCheckoutSessionsDto,
+    @Body() body: CreateCheckoutSessionDto,
   ) {
     return this.checkoutSessionsService.createCheckoutSession(body, session);
   }
