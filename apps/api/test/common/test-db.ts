@@ -1,31 +1,32 @@
 import { randomUUID } from 'crypto';
 import { join } from 'path';
+import { validateEnv } from '@app/config/env/env-var.validation';
 import { type DatabaseOptions } from '@app/modules/database/database.module-definition';
 import { Logger } from '@nestjs/common';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
+import type { EnvironmentVariables } from '@app/config/env/env-vars';
 
 export class TestDB {
   private testDatabaseName: string | null = null;
   private readonly logger = new Logger(TestDB.name);
+  private readonly config: EnvironmentVariables;
 
-  constructor() {}
+  constructor() {
+    this.testDatabaseName = `test_${randomUUID().replace(/-/g, '_')}`;
+    this.config = validateEnv(process.env);
+  }
 
   getDatabaseOptions(): DatabaseOptions {
     return {
-      database: this.testDatabaseName,
-      host: 'localhost',
-      port: 5433,
-      user: 'admin',
-      password: 'admin',
+      connectionString: `${this.config.DATABASE_URL}/${this.testDatabaseName}`,
     };
   }
 
   private getAdminDatabaseOptions(): DatabaseOptions {
     return {
-      ...this.getDatabaseOptions(),
-      database: 'postgres',
+      connectionString: `${this.config.DATABASE_URL}/postgres`,
     };
   }
 
@@ -34,8 +35,6 @@ export class TestDB {
    * Returns the database name and URL for the new test database
    */
   async createTestDatabase() {
-    this.testDatabaseName = `test_${randomUUID().replace(/-/g, '_')}`;
-
     const adminPool = new Pool(this.getAdminDatabaseOptions());
 
     try {

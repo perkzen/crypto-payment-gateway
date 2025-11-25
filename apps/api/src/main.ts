@@ -2,10 +2,12 @@ import { loadEnv } from '@app/config/env/dotenv';
 import { BullBoardSetup } from '@app/config/setups/bull-board.setup';
 import { DocsSetup } from '@app/config/setups/docs.setup';
 import { MiddlewareSetup } from '@app/config/setups/middleware.setup';
+import { type auth } from '@app/modules/auth/config/auth';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { type NestExpressApplication } from '@nestjs/platform-express';
+import { AuthService } from '@thallesp/nestjs-better-auth';
 import { AppModule } from './app.module';
 
 loadEnv();
@@ -16,10 +18,11 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
+  const authService = app.get<AuthService<typeof auth>>(AuthService);
 
   new MiddlewareSetup(app).init();
   new BullBoardSetup(app).init();
-  await new DocsSetup(app).init();
+  await new DocsSetup(app, authService).init();
 
   const PORT = configService.get('PORT');
 

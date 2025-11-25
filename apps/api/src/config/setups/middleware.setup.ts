@@ -1,8 +1,11 @@
+import { HttpExceptionFilter } from '@app/common/filters/http-exception.filter';
 import { BaseSetup } from '@app/config/setups/base.setup';
+import { Reflector } from '@nestjs/core';
 import { type NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 export class MiddlewareSetup extends BaseSetup {
   constructor(protected readonly app: NestExpressApplication) {
@@ -15,6 +18,9 @@ export class MiddlewareSetup extends BaseSetup {
     this.setupCompression();
     this.setupShutdownHooks();
     this.setupCookieParser();
+    this.setupGlobalPipes();
+    this.setupGlobalInterceptors();
+    this.setupGlobalFilters();
     this.logger.log('Middleware setup completed!');
   }
 
@@ -68,5 +74,18 @@ export class MiddlewareSetup extends BaseSetup {
 
   private setupCookieParser() {
     this.app.use(cookieParser());
+  }
+
+  private setupGlobalPipes() {
+    this.app.useGlobalPipes(new ZodValidationPipe());
+  }
+
+  private setupGlobalInterceptors() {
+    const reflector = this.app.get(Reflector);
+    this.app.useGlobalInterceptors(new ZodSerializerInterceptor(reflector));
+  }
+
+  private setupGlobalFilters() {
+    this.app.useGlobalFilters(new HttpExceptionFilter());
   }
 }
