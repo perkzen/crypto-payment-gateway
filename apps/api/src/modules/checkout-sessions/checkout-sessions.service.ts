@@ -49,8 +49,8 @@ export class CheckoutSessionsService {
       id: createdSession.id,
       status: createdSession.status,
       checkoutUrl: createdSession.checkoutUrl,
-      expiresAt: createdSession.expiresAt, // Date object
-      metadata: createdSession.metadata ?? null, // Can be null
+      expiresAt: createdSession.expiresAt,
+      metadata: createdSession.metadata ?? null,
     };
   }
 
