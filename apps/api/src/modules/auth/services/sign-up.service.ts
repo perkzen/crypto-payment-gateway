@@ -1,4 +1,5 @@
-import { type SiweVerifyBody } from '@app/modules/auth/hooks/sign-up.hook';
+import { maskWalletAddress } from '@app/common/utils/mask-wallet-address';
+import { type SiweVerifyBody } from '@app/modules/auth/dtos/siwe-verify.dto';
 import { DatabaseService } from '@app/modules/database/database.service';
 import { merchant, walletAddress } from '@app/modules/database/schemas';
 import { Injectable, Logger } from '@nestjs/common';
@@ -27,7 +28,16 @@ export class SignUpService {
     });
 
     if (!wallet) {
-      this.logger.error(`No wallet found for address ${address}`);
+      this.logger.warn(
+        `No wallet found for address ${maskWalletAddress(address)}`,
+      );
+      return;
+    }
+
+    if (!wallet.user) {
+      this.logger.error(
+        `Wallet ${maskWalletAddress(address)} exists but has no associated user (referential integrity violation)`,
+      );
       return;
     }
 
@@ -43,11 +53,10 @@ export class SignUpService {
           target: merchant.userId,
         });
 
-      this.logger.log(`Merchant record exists for user ${user.id}`);
+      this.logger.log(`Merchant record created or already exists for user ${user.id}`);
     } catch (error) {
       this.logger.error(
-        `Failed to insert merchant for user ${user.id}:`,
-        error,
+        `Failed to insert merchant for user ${user.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
