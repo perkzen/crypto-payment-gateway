@@ -1,5 +1,6 @@
 import { DatabaseService } from '@app/modules/database/database.service';
-import { checkoutSession, merchant } from '@app/modules/database/schemas';
+import { checkoutSession } from '@app/modules/database/schemas';
+import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
@@ -11,6 +12,7 @@ export class CheckoutSessionsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
+    private readonly merchantsService: MerchantsService,
   ) {}
 
   async createCheckoutSession(
@@ -20,15 +22,7 @@ export class CheckoutSessionsService {
     const { expiresInMinutes = 60, ...input } = data;
     const { userId } = session;
 
-    const merchantResult =
-      await this.databaseService.db.query.merchant.findFirst({
-        where: eq(merchant.userId, userId),
-        columns: { id: true },
-      });
-
-    if (!merchantResult) {
-      throw new NotFoundException();
-    }
+    const merchant = await this.merchantsService.findMerchantByUserId(userId);
 
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
@@ -38,7 +32,7 @@ export class CheckoutSessionsService {
       .values({
         ...input,
         expiresAt,
-        merchantId: merchantResult.id,
+        merchantId: merchant.id,
         checkoutUrl: this.configService.getOrThrow('CHECKOUT_URL'),
       })
       .returning();
