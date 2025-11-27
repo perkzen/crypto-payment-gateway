@@ -19,14 +19,19 @@ export class TestDB {
   }
 
   getDatabaseOptions(): DatabaseOptions {
+    // we need to replace database name in the connection string with the test database name
+    // example DATABASE_URL: postgres://user:password@localhost:5432/mydb
+    const url = new URL(this.config.DATABASE_URL);
+    url.pathname = `/${this.testDatabaseName}`;
+
     return {
-      connectionString: `${this.config.DATABASE_URL}/${this.testDatabaseName}`,
+      connectionString: url.toString(),
     };
   }
 
   private getAdminDatabaseOptions(): DatabaseOptions {
     return {
-      connectionString: `${this.config.DATABASE_URL}/postgres`,
+      connectionString: `${this.config.DATABASE_URL}`,
     };
   }
 

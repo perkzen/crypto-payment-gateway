@@ -20,7 +20,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        connectionString: configService.get('DATABASE_URL'),
+        connectionString: configService.getOrThrow('DATABASE_URL'),
       }),
     }),
     AuthModule,

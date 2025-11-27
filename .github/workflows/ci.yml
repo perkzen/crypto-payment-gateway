@@ -121,7 +121,7 @@ jobs:
           --health-retries 5
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://admin:admin@localhost:5432
+      DATABASE_URL: postgresql://admin:admin@localhost:5432/postgres
       REDIS_URL: redis://localhost:6379
     steps:
       - name: Checkout code

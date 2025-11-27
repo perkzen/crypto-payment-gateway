@@ -1,4 +1,4 @@
-import { SignUpService } from '@app/modules/auth/serivces/sign-up.service';
+import { SignUpService } from '@app/modules/auth/services/sign-up.service';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   AfterHook,
