@@ -35,6 +35,14 @@ export const nestJsConfig = [
       '@typescript-eslint/no-explicit-any': 'off',
       'object-shorthand': 'error',
       'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
 
       // Use type imports instead of value imports for types
       '@typescript-eslint/consistent-type-imports': [

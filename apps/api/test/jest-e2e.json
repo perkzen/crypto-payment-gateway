@@ -1,9 +1,38 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleDirectories": ["node_modules", "src"],
+  "modulePaths": ["<rootDir>/.."],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|m?j)s$": [
+      "@swc/jest",
+      {
+        "sourceMaps": "inline",
+        "jsc": {
+          "parser": {
+            "syntax": "typescript",
+            "decorators": true,
+            "dynamicImport": true
+          },
+          "target": "es2020",
+          "loose": false,
+          "externalHelpers": false
+        },
+        "module": {
+          "type": "commonjs"
+        }
+      }
+    ]
+  },
+  "transformIgnorePatterns": [
+    "node_modules/(?!.*jose.*|.*@better-auth.*|.*@thallesp.*|.*@noble.*|.*@faker-js.*)"
+  ],
+  "testTimeout": 30000,
+  "moduleNameMapper": {
+    "^@app/(.*)$": "<rootDir>/../src/$1",
+    "^@test/(.*)$": "<rootDir>/$1",
+    "^@workspace/(.*)$": "<rootDir>/../../../packages/$1/src"
   }
 }

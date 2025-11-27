@@ -1,48 +1,27 @@
-import { authHooks } from '@app/modules/auth/config/auth.hooks';
+import { getAuthPlugins } from '@app/modules/auth/config/auth.plugins';
+import { type ConfigService } from '@nestjs/config';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { generateRandomString } from 'better-auth/crypto';
-import { apiKey, openAPI, siwe } from 'better-auth/plugins';
-import { type VerifyMessageParameters, verifyMessage } from 'viem';
-import type { Database } from '@app/modules/database/utils/get-database-connection';
+import type * as schemas from '@app/modules/database/schemas';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 
-export const getAuthConfig = (database: Database) =>
+export type Database = NodePgDatabase<typeof schemas>;
+
+export const getAuthConfig = (
+  database: Database,
+  configService: ConfigService,
+) =>
   betterAuth({
     trustedOrigins: ['http://localhost:3000'],
-    plugins: [
-      openAPI(),
-      apiKey({
-        requireName: true,
-        defaultPrefix: 'cpg-',
-        minimumNameLength: 3,
-        startingCharactersConfig: {
-          charactersLength: 10,
-          shouldStore: true,
-        },
-      }),
-      siwe({
-        domain: 'localhost:3000',
-        emailDomainName: 'example.com', // optional
-        anonymous: true, // optional, default is true, requires to send email in body
-        getNonce: async () => generateRandomString(32, 'a-z', 'A-Z', '0-9'),
-        verifyMessage: async ({ message, signature, address }) => {
-          try {
-            return await verifyMessage({
-              address,
-              message,
-              signature,
-            } as VerifyMessageParameters);
-          } catch {
-            return false;
-          }
-        },
-      }),
-    ],
-
+    plugins: getAuthPlugins(configService),
     database: drizzleAdapter(database, { provider: 'pg' }),
-    hooks: authHooks(database),
+    hooks: {},
   });
 
 // Default auth instance for CLI usage (with dummy database)
 // The CLI needs this to be exported as 'auth'
-export const auth = getAuthConfig({} as Database);
+const mockConfigService = {
+  getOrThrow: (_key: string) => {},
+} as ConfigService;
+
+export const auth = getAuthConfig({} as Database, mockConfigService);

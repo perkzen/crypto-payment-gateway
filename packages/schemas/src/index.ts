@@ -7,5 +7,5 @@
  * that can be used across different applications (API, web, blockchain).
  */
 
-// Export all schemas from the schemas directory
 export * from './schemas/health';
+export * from './schemas/checkout-session';

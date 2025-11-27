@@ -1,10 +1,9 @@
-import { InjectDatabaseConnection } from '@app/modules/database/deocrators/inject-database-connection.decoractor';
+import { DatabaseService } from '@app/modules/database/database.service';
 import { Injectable } from '@nestjs/common';
-import type { Database } from '@app/modules/database/utils/get-database-connection';
 
 @Injectable()
 export class PaymentsService {
-  constructor(@InjectDatabaseConnection() private readonly db: Database) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async createPayment() {}
 }
