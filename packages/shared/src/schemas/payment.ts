@@ -56,9 +56,8 @@ export const UpdatePaymentSchema = z.object({
     .describe('Optional key-value pairs to update on the payment'),
   expiresAt: z
     .date()
-    .optional()
-    .nullable()
-    .describe('Optional expiration time for the payment'),
+    .nullish()
+    .describe('Optional expiration time for the payment (null to clear, undefined to leave unchanged)'),
 });
 
 export type UpdatePayment = z.infer<typeof UpdatePaymentSchema>;

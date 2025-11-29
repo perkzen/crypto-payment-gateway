@@ -44,10 +44,7 @@ export class PaymentsService {
 
     const [updatedPayment] = await this.databaseService.db
       .update(payment)
-      .set({
-        ...data,
-        updatedAt: new Date(),
-      })
+      .set(data)
       .where(eq(payment.id, id))
       .returning();
 
