@@ -1,11 +1,10 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession } from '@app/modules/database/schemas';
-import { faker } from '@faker-js/faker';
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { TestAppBootstrap } from '@test/common/test-app-bootstrap';
 import { TestFactory } from '@test/common/test-factory';
+import { createCheckoutSessionFixture } from '@test/fixtures/checkout-session';
 import { eq } from 'drizzle-orm';
-import type { CreateCheckoutSession } from '@workspace/schemas';
 
 describe('Checkout Sessions (e2e)', () => {
   let testApp: TestAppBootstrap;
@@ -24,14 +23,7 @@ describe('Checkout Sessions (e2e)', () => {
   describe('POST /checkout/sessions', () => {
     // Authentication Errors (First)
     it('should return 401 when not authenticated', async () => {
-      const payload: CreateCheckoutSession = {
-        amountFiat: 10000,
-        fiatCurrency: 'USD',
-        allowedCryptoCurrencies: ['ETH'],
-        allowedNetworks: ['ethereum'],
-        successUrl: faker.internet.url(),
-        cancelUrl: faker.internet.url(),
-      };
+      const payload = createCheckoutSessionFixture();
 
       await testApp.httpServer
         .request()
@@ -45,14 +37,7 @@ describe('Checkout Sessions (e2e)', () => {
       const testUser = await factory.createUser();
       const testApiKey = await factory.createApiKey(testUser.id);
 
-      const payload: CreateCheckoutSession = {
-        amountFiat: 10000,
-        fiatCurrency: 'USD',
-        allowedCryptoCurrencies: ['ETH'],
-        allowedNetworks: ['ethereum'],
-        successUrl: faker.internet.url(),
-        cancelUrl: faker.internet.url(),
-      };
+      const payload = createCheckoutSessionFixture();
 
       await testApp.httpServer
         .request()
@@ -65,14 +50,9 @@ describe('Checkout Sessions (e2e)', () => {
     it('should return 400 for invalid amount (negative)', async () => {
       const { apiKey } = await factory.createMerchantUser();
 
-      const payload: Partial<CreateCheckoutSession> = {
+      const payload = createCheckoutSessionFixture({
         amountFiat: -100,
-        fiatCurrency: 'USD',
-        allowedCryptoCurrencies: ['ETH'],
-        allowedNetworks: ['ethereum'],
-        successUrl: faker.internet.url(),
-        cancelUrl: faker.internet.url(),
-      };
+      });
 
       await testApp.httpServer
         .request()
@@ -85,14 +65,9 @@ describe('Checkout Sessions (e2e)', () => {
     it('should return 400 for invalid currency (too short)', async () => {
       const { apiKey } = await factory.createMerchantUser();
 
-      const payload: Partial<CreateCheckoutSession> = {
-        amountFiat: 10000,
+      const payload = createCheckoutSessionFixture({
         fiatCurrency: 'US', // Should be 3 characters
-        allowedCryptoCurrencies: ['ETH'],
-        allowedNetworks: ['ethereum'],
-        successUrl: faker.internet.url(),
-        cancelUrl: faker.internet.url(),
-      };
+      });
 
       await testApp.httpServer
         .request()
@@ -105,14 +80,10 @@ describe('Checkout Sessions (e2e)', () => {
     it('should create a checkout session successfully', async () => {
       const { apiKey } = await factory.createMerchantUser();
 
-      const payload: CreateCheckoutSession = {
-        amountFiat: 10000,
-        fiatCurrency: 'USD',
+      const payload = createCheckoutSessionFixture({
         allowedCryptoCurrencies: ['ETH', 'BTC'],
         allowedNetworks: ['ethereum', 'bitcoin'],
-        successUrl: faker.internet.url(),
-        cancelUrl: faker.internet.url(),
-      };
+      });
 
       const response = await testApp.httpServer
         .request()
@@ -140,5 +111,79 @@ describe('Checkout Sessions (e2e)', () => {
     });
   });
 
-  describe('GET /checkout/sessions/:id', () => {});
+  describe('GET /checkout/sessions/:id', () => {
+    it('should return 400 for invalid UUID format', async () => {
+      await testApp.httpServer
+        .request()
+        .get('/checkout/sessions/invalid-uuid')
+        .expect(400);
+    });
+
+    it('should return 404 for non-existent checkout session', async () => {
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+
+      await testApp.httpServer
+        .request()
+        .get(`/checkout/sessions/${nonExistentId}`)
+        .expect(404);
+    });
+
+    it('should return checkout session successfully', async () => {
+      // Create a checkout session first
+      const { apiKey } = await factory.createMerchantUser();
+      const payload = createCheckoutSessionFixture();
+
+      const createResponse = await testApp.httpServer
+        .request()
+        .post('/checkout/sessions')
+        .setApiKey(apiKey.key)
+        .send(payload)
+        .expect(201);
+
+      const sessionId = createResponse.body.id;
+
+      // Get the checkout session
+      const getResponse = await testApp.httpServer
+        .request()
+        .get(`/checkout/sessions/${sessionId}`)
+        .expect(200);
+
+      expect(getResponse.body).toMatchObject({
+        id: sessionId,
+        status: 'open',
+        amountFiat: payload.amountFiat,
+        fiatCurrency: payload.fiatCurrency,
+        allowedCryptoCurrencies: payload.allowedCryptoCurrencies,
+        allowedNetworks: payload.allowedNetworks,
+        expiresAt: expect.any(String),
+      });
+
+      // Verify expiresAt is a valid ISO string
+      expect(() => new Date(getResponse.body.expiresAt)).not.toThrow();
+    });
+
+    it('should return checkout session without authentication (public endpoint)', async () => {
+      // Create a checkout session first
+      const { apiKey } = await factory.createMerchantUser();
+      const payload = createCheckoutSessionFixture();
+
+      const createResponse = await testApp.httpServer
+        .request()
+        .post('/checkout/sessions')
+        .setApiKey(apiKey.key)
+        .send(payload)
+        .expect(201);
+
+      const sessionId = createResponse.body.id;
+
+      // Get the checkout session without any authentication
+      const getResponse = await testApp.httpServer
+        .request()
+        .get(`/checkout/sessions/${sessionId}`)
+        .expect(200);
+
+      expect(getResponse.body.id).toBe(sessionId);
+      expect(getResponse.body.status).toBe('open');
+    });
+  });
 });

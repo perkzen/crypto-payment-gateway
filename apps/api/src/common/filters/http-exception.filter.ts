@@ -24,14 +24,15 @@ export class HttpExceptionFilter {
       }
     }
 
-    const status =
-      exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
     const exceptionResponse = exception.getResponse();
 
-    response.status(status).json(
-      typeof exceptionResponse === 'string'
-        ? { statusCode: status, message: exceptionResponse }
-        : exceptionResponse,
-    );
+    response
+      .status(status)
+      .json(
+        typeof exceptionResponse === 'string'
+          ? { statusCode: status, message: exceptionResponse }
+          : exceptionResponse,
+      );
   }
 }

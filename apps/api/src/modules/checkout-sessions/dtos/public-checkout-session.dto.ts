@@ -1,4 +1,4 @@
-import { PublicCheckoutSessionSchema } from '@workspace/schemas';
+import { PublicCheckoutSessionSchema } from '@workspace/shared';
 import { createZodDto } from 'nestjs-zod';
 
 export class PublicCheckoutSessionDto extends createZodDto(

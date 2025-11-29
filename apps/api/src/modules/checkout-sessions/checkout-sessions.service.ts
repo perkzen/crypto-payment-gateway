@@ -37,8 +37,6 @@ export class CheckoutSessionsService {
       })
       .returning();
 
-    // Transform to match CreateCheckoutSessionResultSchema
-    // Only return fields defined in the schema
     return {
       id: createdSession.id,
       status: createdSession.status,
@@ -58,6 +56,14 @@ export class CheckoutSessionsService {
       throw new NotFoundException();
     }
 
-    return session;
+    return {
+      id: session.id,
+      status: session.status,
+      amountFiat: session.amountFiat,
+      fiatCurrency: session.fiatCurrency,
+      allowedCryptoCurrencies: session.allowedCryptoCurrencies,
+      allowedNetworks: session.allowedNetworks,
+      expiresAt: session.expiresAt,
+    };
   }
 }

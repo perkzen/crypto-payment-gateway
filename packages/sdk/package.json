@@ -27,7 +27,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/schemas": "workspace:*",
+    "@workspace/shared": "workspace:*",
     "react": "^19.1.1"
   },
   "peerDependencies": {
