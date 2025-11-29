@@ -19,15 +19,12 @@ export class PaymentsService {
 
     const merchant = await this.merchantsService.findMerchantByUserId(userId);
 
-    const { minConfirmations = 12, ...input } = data;
-
     const [createdPayment] = await this.databaseService.db
       .insert(payment)
       .values({
-        ...input,
+        ...data,
         merchantId: merchant.id,
         status: 'pending',
-        minConfirmations,
         confirmations: 0,
       })
       .returning();
@@ -36,11 +33,10 @@ export class PaymentsService {
   }
 
   async updatePayment(id: string, data: UpdatePaymentDto) {
-    const existingPayment = await this.databaseService.db.query.payment.findFirst(
-      {
+    const existingPayment =
+      await this.databaseService.db.query.payment.findFirst({
         where: eq(payment.id, id),
-      },
-    );
+      });
 
     if (!existingPayment) {
       throw new PaymentNotFoundException(id);
