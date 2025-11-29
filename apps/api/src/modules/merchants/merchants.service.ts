@@ -1,7 +1,8 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { merchant } from '@app/modules/database/schemas';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
+import { MerchantNotFoundException } from './exceptions';
 
 @Injectable()
 export class MerchantsService {
@@ -13,7 +14,7 @@ export class MerchantsService {
     });
 
     if (!result) {
-      throw new NotFoundException();
+      throw new MerchantNotFoundException(userId);
     }
 
     return result;
