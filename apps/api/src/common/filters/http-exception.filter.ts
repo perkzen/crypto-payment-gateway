@@ -20,18 +20,20 @@ export class HttpExceptionFilter {
     if (exception instanceof ZodSerializationException) {
       const zodError = exception.getZodError();
       if (zodError instanceof ZodError) {
+        console.log('zodError.errors', zodError.errors);
         this.logger.error(`ZodSerializationException: ${zodError.message}`);
       }
     }
 
-    const status =
-      exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
     const exceptionResponse = exception.getResponse();
 
-    response.status(status).json(
-      typeof exceptionResponse === 'string'
-        ? { statusCode: status, message: exceptionResponse }
-        : exceptionResponse,
-    );
+    response
+      .status(status)
+      .json(
+        typeof exceptionResponse === 'string'
+          ? { statusCode: status, message: exceptionResponse }
+          : exceptionResponse,
+      );
   }
 }

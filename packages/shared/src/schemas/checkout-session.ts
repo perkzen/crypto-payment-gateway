@@ -124,7 +124,7 @@ export const PublicCheckoutSessionSchema = z.object({
     ),
 
   expiresAt: z
-    .string()
+    .date()
     .describe('The ISO 8601 timestamp when the checkout session expires'),
 });
 
