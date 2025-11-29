@@ -108,12 +108,4 @@ export class TestFactory {
       apiKey: testApiKey,
     };
   }
-
-  async createCheckoutSession(merchantId: string, overrides?: unknown) {
-    throw Error('Not implemented');
-  }
-
-  async createPayment(overrides?: unknown) {
-    throw Error('Not implemented');
-  }
 }

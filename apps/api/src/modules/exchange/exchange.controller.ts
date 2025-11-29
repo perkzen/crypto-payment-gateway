@@ -1,8 +1,8 @@
 import { ExchangeService } from '@app/modules/exchange/exchange.service';
-import { type Tickers } from '@workspace/shared';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { type Tickers } from '@workspace/shared';
 import { ZodResponse } from 'nestjs-zod';
 import { ExchangeRateDto, GetExchangeRateQueryDto } from './dtos';
 
