@@ -9,6 +9,7 @@ import { CheckoutSessionsModule } from './modules/checkout-sessions/checkout-ses
 import { DatabaseModule } from './modules/database/database.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { ExchangeModule } from './modules/exchange/exchange.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     PaymentsModule,
     CheckoutSessionsModule,
     MerchantsModule,
+    ExchangeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

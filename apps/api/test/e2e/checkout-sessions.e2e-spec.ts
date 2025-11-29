@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { TestAppBootstrap } from '@test/common/test-app-bootstrap';
 import { TestFactory } from '@test/common/test-factory';
 import { eq } from 'drizzle-orm';
-import type { CreateCheckoutSession } from '@workspace/schemas';
+import type { CreateCheckoutSession } from '@workspace/shared';
 
 describe('Checkout Sessions (e2e)', () => {
   let testApp: TestAppBootstrap;
