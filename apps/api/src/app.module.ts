@@ -7,9 +7,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { CheckoutSessionsModule } from './modules/checkout-sessions/checkout-sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
+import { ExchangeModule } from './modules/exchange/exchange.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
 import { PaymentsModule } from './modules/payments/payments.module';
-import { ExchangeModule } from './modules/exchange/exchange.module';
 
 @Module({
   imports: [

@@ -1,11 +1,12 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession } from '@app/modules/database/schemas';
 import { MerchantsService } from '@app/modules/merchants/merchants.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
 import { CreateCheckoutSessionDto } from './dtos';
+import { CheckoutSessionNotFoundException } from './exceptions';
 
 @Injectable()
 export class CheckoutSessionsService {
@@ -53,7 +54,7 @@ export class CheckoutSessionsService {
       });
 
     if (!session) {
-      throw new NotFoundException();
+      throw new CheckoutSessionNotFoundException(id);
     }
 
     return {
