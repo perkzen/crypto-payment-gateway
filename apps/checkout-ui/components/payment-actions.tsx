@@ -1,23 +1,28 @@
 'use client';
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import {
+  useAccount,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from 'wagmi';
 import { parseEther } from 'viem';
 import { Button } from '@workspace/ui/components/button';
-import { useState, useEffect } from 'react';
-import { Loader2, Wallet, Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Check, Loader2, Wallet } from 'lucide-react';
 import Image from 'next/image';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { cryptoPayAbi, CryptoPayFunctionNames } from '@workspace/shared';
+import { cryptoPayAbi } from '@workspace/shared';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
-import { calculateCryptoAmount } from '@/lib/utils';
+import { calculateCryptoAmount } from '@workspace/shared';
+
+import {
+  MERCHANT_ADDRESS,
+  PAYMENT_CONTRACT_ADDRESS,
+} from '@/lib/constants';
 
 const ETHEREUM_ICON_URL =
   'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040';
-
-// TODO: This should come from environment variables or API config
-const PAYMENT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_PAYMENT_CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
-const MERCHANT_ADDRESS = process.env.NEXT_PUBLIC_MERCHANT_ADDRESS || '0x0000000000000000000000000000000000000000';
 
 interface PaymentActionsProps {
   checkoutSession: PublicCheckoutSession;
@@ -37,32 +42,28 @@ function ConnectWalletButton({ onConnect }: ConnectWalletButtonProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <ConnectButton.Custom>
-        {({ openConnectModal, mounted }) => {
-          const ready = mounted;
-
-          return (
-            <Button
-              onClick={() => {
-                openConnectModal();
-                onConnect?.();
-              }}
-              disabled={!ready}
-              size="lg"
-              className="w-full"
-            >
-              <Image
-                src={ETHEREUM_ICON_URL}
-                alt="Ethereum"
-                width={16}
-                height={16}
-                className="mr-2"
-              />
-              <span>Connect Wallet</span>
-            </Button>
-          );
-        }}
+        {({ openConnectModal, mounted }) => (
+          <Button
+            onClick={() => {
+              openConnectModal();
+              onConnect?.();
+            }}
+            disabled={!mounted}
+            size="lg"
+            className="w-full"
+          >
+            <Image
+              src={ETHEREUM_ICON_URL}
+              alt="Ethereum"
+              width={16}
+              height={16}
+              className="mr-2"
+            />
+            <span>Connect Wallet</span>
+          </Button>
+        )}
       </ConnectButton.Custom>
-      <p className="text-sm text-muted-foreground text-center">
+      <p className="text-muted-foreground text-center text-sm">
         Connect your wallet to proceed with payment
       </p>
     </div>
@@ -79,7 +80,7 @@ function WalletInfo() {
         if (!connected) return null;
 
         return (
-          <div className="flex items-center justify-between gap-2 p-3 rounded-lg border bg-card w-full">
+          <div className="bg-card flex w-full items-center justify-between gap-2 rounded-lg border p-3">
             <div className="flex items-center gap-2">
               {chain.hasIcon && (
                 <div
@@ -106,16 +107,12 @@ function WalletInfo() {
                 <span className="text-xs font-medium">
                   {account.displayName}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {chain.name}
                 </span>
               </div>
             </div>
-            <Button
-              onClick={openAccountModal}
-              variant="ghost"
-              size="sm"
-            >
+            <Button onClick={openAccountModal} variant="ghost" size="sm">
               Manage
             </Button>
           </div>
@@ -144,12 +141,7 @@ function PayButton({
   cryptoAmount,
 }: PayButtonProps) {
   return (
-    <Button
-      onClick={onPay}
-      disabled={!canPay}
-      className="w-full"
-      size="lg"
-    >
+    <Button onClick={onPay} disabled={!canPay} className="w-full" size="lg">
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -198,7 +190,7 @@ function PaymentStatus({
   return (
     <>
       {transactionError && (
-        <div className="text-sm text-red-600 dark:text-red-400 text-center">
+        <div className="text-center text-sm text-red-600 dark:text-red-400">
           {transactionError.message || 'Transaction failed'}
         </div>
       )}
@@ -208,9 +200,10 @@ function PaymentStatus({
           href={`${chain?.blockExplorers?.default?.url}/tx/${hash}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-muted-foreground hover:text-foreground underline"
+          className="text-muted-foreground hover:text-foreground text-xs underline"
         >
-          View transaction on {chain?.blockExplorers?.default?.name || 'Explorer'}
+          View transaction on{' '}
+          {chain?.blockExplorers?.default?.name || 'Explorer'}
         </a>
       )}
     </>
@@ -273,24 +266,15 @@ export function PaymentActions({
       // POST /checkout/sessions/{id}/payments
       // This should return: paymentId, contractAddress, amount, invoiceId
       const client = getCryptoPayClient();
-      
+
       // For now, we'll use the session ID as invoiceId
       const sessionInvoiceId = getInvoiceId(checkoutSession.id);
       setInvoiceId(sessionInvoiceId);
-      
+
       // Calculate amount in ETH
       const ethAmount = getCryptoAmount();
       const amountInWei = parseEther(ethAmount.toFixed(18));
       setPaymentAmount(amountInWei.toString());
-
-      // Send transaction to smart contract
-      writeContract({
-        address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
-        abi: cryptoPayAbi,
-        functionName: CryptoPayFunctionNames.payNative,
-        args: [sessionInvoiceId, MERCHANT_ADDRESS as `0x${string}`],
-        value: amountInWei,
-      });
     } catch (error) {
       console.error('Error creating payment:', error);
     } finally {

@@ -19,13 +19,14 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@workspace/ui/lib/utils';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { PaymentActions } from './payment-actions';
 import {
-  getCryptoCurrencySymbol,
-  formatAmount,
-  getFiatCurrencySymbol,
   calculateCryptoAmount,
-} from '@/lib/utils';
+  getCryptoCurrencySymbol,
+  formatFiatAmount,
+  formatCryptoAmount,
+  getFiatCurrencySymbol,
+} from '@workspace/shared';
+import { PaymentActions } from './payment-actions';
 import { useExchangeRateOptions } from '@/hooks/use-exchange-rate';
 
 interface PaymentTransferProps {
@@ -549,7 +550,7 @@ function PaymentDetails({
           <CurrencyCard
             label="To"
             icon={<ArrowDownIcon className="w-3 h-3" />}
-            amount={formatAmount(cryptoAmount, cryptoCurrency, true)}
+            amount={formatCryptoAmount(cryptoAmount, cryptoCurrency)}
             description={`${checkoutSession.allowedNetworks[0] || 'ethereum'} Network`}
             currencySymbol={cryptoSymbol}
             isCompleted={isCompleted}
@@ -593,7 +594,7 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
     }
   }, [checkoutSession.status]);
 
-  const fiatAmount = formatAmount(
+  const fiatAmount = formatFiatAmount(
     checkoutSession.amountFiat,
     checkoutSession.fiatCurrency,
   );
