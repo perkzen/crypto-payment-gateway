@@ -1,218 +1,25 @@
 'use client';
 
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   useAccount,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
 import { parseEther } from 'viem';
-import { Button } from '@workspace/ui/components/button';
 import { useEffect, useState } from 'react';
-import { Check, Loader2, Wallet } from 'lucide-react';
-import Image from 'next/image';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { cryptoPayAbi } from '@workspace/shared';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
 import { calculateCryptoAmount } from '@workspace/shared';
-
-import {
-  MERCHANT_ADDRESS,
-  PAYMENT_CONTRACT_ADDRESS,
-} from '@/lib/constants';
-
-const ETHEREUM_ICON_URL =
-  'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040';
+import { ConnectWalletButton } from './payment/connect-wallet-button';
+import { WalletInfo } from './payment/wallet-info';
+import { PayButton } from './payment/pay-button';
+import { PaymentStatus } from './payment/payment-status';
 
 interface PaymentActionsProps {
   checkoutSession: PublicCheckoutSession;
   exchangeRate: number;
   onPaymentSuccess?: () => void;
 }
-
-// ==========================
-// Sub-components
-// ==========================
-
-interface ConnectWalletButtonProps {
-  onConnect?: () => void;
-}
-
-function ConnectWalletButton({ onConnect }: ConnectWalletButtonProps) {
-  return (
-    <div className="flex flex-col items-center gap-4">
-      <ConnectButton.Custom>
-        {({ openConnectModal, mounted }) => (
-          <Button
-            onClick={() => {
-              openConnectModal();
-              onConnect?.();
-            }}
-            disabled={!mounted}
-            size="lg"
-            className="w-full"
-          >
-            <Image
-              src={ETHEREUM_ICON_URL}
-              alt="Ethereum"
-              width={16}
-              height={16}
-              className="mr-2"
-            />
-            <span>Connect Wallet</span>
-          </Button>
-        )}
-      </ConnectButton.Custom>
-      <p className="text-muted-foreground text-center text-sm">
-        Connect your wallet to proceed with payment
-      </p>
-    </div>
-  );
-}
-
-function WalletInfo() {
-  return (
-    <ConnectButton.Custom>
-      {({ account, chain, openAccountModal, mounted }) => {
-        const ready = mounted;
-        const connected = ready && account && chain;
-
-        if (!connected) return null;
-
-        return (
-          <div className="bg-card flex w-full items-center justify-between gap-2 rounded-lg border p-3">
-            <div className="flex items-center gap-2">
-              {chain.hasIcon && (
-                <div
-                  style={{
-                    background: chain.iconBackground,
-                    width: 20,
-                    height: 20,
-                    borderRadius: 999,
-                    overflow: 'hidden',
-                    marginRight: 4,
-                  }}
-                >
-                  {chain.iconUrl && (
-                    <Image
-                      alt={chain.name ?? 'Chain icon'}
-                      src={chain.iconUrl}
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                </div>
-              )}
-              <div className="flex flex-col">
-                <span className="text-xs font-medium">
-                  {account.displayName}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                  {chain.name}
-                </span>
-              </div>
-            </div>
-            <Button onClick={openAccountModal} variant="ghost" size="sm">
-              Manage
-            </Button>
-          </div>
-        );
-      }}
-    </ConnectButton.Custom>
-  );
-}
-
-interface PayButtonProps {
-  checkoutSession: PublicCheckoutSession;
-  onPay: () => void;
-  isLoading: boolean;
-  isTransactionPending: boolean;
-  isConfirming: boolean;
-  canPay: boolean;
-  cryptoAmount: number;
-}
-
-function PayButton({
-  onPay,
-  isLoading,
-  isTransactionPending,
-  isConfirming,
-  canPay,
-  cryptoAmount,
-}: PayButtonProps) {
-  return (
-    <Button onClick={onPay} disabled={!canPay} className="w-full" size="lg">
-      {isLoading ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {isTransactionPending
-            ? 'Waiting for confirmation...'
-            : isConfirming
-              ? 'Confirming...'
-              : 'Processing...'}
-        </>
-      ) : (
-        <>
-          <Wallet className="mr-2 h-4 w-4" />
-          Pay {cryptoAmount.toFixed(6)} ETH
-        </>
-      )}
-    </Button>
-  );
-}
-
-interface PaymentStatusProps {
-  isConfirmed: boolean;
-  transactionError: Error | null;
-  hash: `0x${string}` | undefined;
-  chain: ReturnType<typeof useAccount>['chain'];
-}
-
-function PaymentStatus({
-  isConfirmed,
-  transactionError,
-  hash,
-  chain,
-}: PaymentStatusProps) {
-  if (isConfirmed) {
-    return (
-      <div className="flex flex-col items-center gap-4">
-        <div className="rounded-full bg-emerald-500/10 p-3">
-          <Check className="h-6 w-6 text-emerald-500" />
-        </div>
-        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-          Payment confirmed!
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      {transactionError && (
-        <div className="text-center text-sm text-red-600 dark:text-red-400">
-          {transactionError.message || 'Transaction failed'}
-        </div>
-      )}
-
-      {hash && (
-        <a
-          href={`${chain?.blockExplorers?.default?.url}/tx/${hash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-foreground text-xs underline"
-        >
-          View transaction on{' '}
-          {chain?.blockExplorers?.default?.name || 'Explorer'}
-        </a>
-      )}
-    </>
-  );
-}
-
-// ==========================
-// Main Component
-// ==========================
 
 export function PaymentActions({
   checkoutSession,
