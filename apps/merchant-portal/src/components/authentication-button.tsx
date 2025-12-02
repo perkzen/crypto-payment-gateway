@@ -2,13 +2,11 @@
 
 import { useEffect } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ETHEREUM_ICON_URL } from '@workspace/shared';
 import { Button } from '@workspace/ui/components/button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
-
-const ETHEREUM_ICON_URL =
-  'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040';
 
 export function AuthenticationButton() {
   const router = useRouter();

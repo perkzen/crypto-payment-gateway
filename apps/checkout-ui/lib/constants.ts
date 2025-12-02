@@ -28,9 +28,3 @@ export const MERCHANT_ADDRESS = getRequiredEnvVar(
   'NEXT_PUBLIC_MERCHANT_ADDRESS',
 ) as `0x${string}`;
 
-/**
- * Ethereum logo URL
- */
-export const ETHEREUM_ICON_URL =
-  'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040';
-

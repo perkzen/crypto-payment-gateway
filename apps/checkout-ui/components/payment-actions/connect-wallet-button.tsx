@@ -3,7 +3,7 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Button } from '@workspace/ui/components/button';
 import Image from 'next/image';
-import { ETHEREUM_ICON_URL } from '@/lib/constants';
+import { ETHEREUM_ICON_URL } from '@workspace/shared';
 
 interface ConnectWalletButtonProps {
   onConnect?: () => void;

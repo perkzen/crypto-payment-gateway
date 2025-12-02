@@ -1,6 +1,12 @@
 import type { CryptoTicker, FiatTicker } from '../types/exchange';
 
 /**
+ * Ethereum logo URL
+ */
+export const ETHEREUM_ICON_URL =
+  'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040';
+
+/**
  * Get the symbol for a cryptocurrency
  */
 export function getCryptoCurrencySymbol(crypto: CryptoTicker | string): string {
