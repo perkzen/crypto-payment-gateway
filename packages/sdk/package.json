@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@workspace/shared": "workspace:*",
+    "axios": "^1.7.9",
     "react": "^19.1.1"
   },
   "peerDependencies": {

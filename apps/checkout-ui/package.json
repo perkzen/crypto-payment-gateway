@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.5",
+    "@workspace/sdk": "workspace:*",
     "next": "16.0.6",
     "react": "19.2.0",
     "react-dom": "19.2.0"

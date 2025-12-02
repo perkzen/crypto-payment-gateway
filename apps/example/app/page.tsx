@@ -1,64 +1,374 @@
-import Image from "next/image";
+'use client';
+
+import { useForm } from '@tanstack/react-form';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useCreateCheckoutSessionOptions } from '@/hooks/use-create-checkout-session';
+import {
+  checkoutSessionFormOptions,
+  checkoutSessionDefaultValues,
+} from '@/forms/checkout-session';
+import type { CreateCheckoutSessionResult } from '@workspace/shared';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@workspace/ui/components/alert';
+import { Button } from '@workspace/ui/components/button';
+import { Field, FieldError, FieldLabel } from '@workspace/ui/components/field';
+import { Input } from '@workspace/ui/components/input';
+import { Label } from '@workspace/ui/components/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@workspace/ui/components/select';
+import { MultiSelect } from '@workspace/ui/components/multi-select';
+import { CheckCircle2, XCircle } from 'lucide-react';
+
+const FIAT_CURRENCIES = [
+  { label: 'USD', value: 'USD' },
+  { label: 'EUR', value: 'EUR' },
+];
+
+const CRYPTO_CURRENCIES = [
+  { label: 'ETH', value: 'ETH' },
+  { label: 'USDT', value: 'USDT' },
+  { label: 'USDC', value: 'USDC' },
+];
+
+const NETWORKS = [{ label: 'Ethereum', value: 'ethereum' }];
 
 export default function Home() {
+  const [apiKey, setApiKey] = useState('');
+
+  const createCheckoutSessionMutation = useMutation(
+    useCreateCheckoutSessionOptions(apiKey),
+  );
+
+  const form = useForm({
+    ...checkoutSessionFormOptions,
+    defaultValues: {
+      ...checkoutSessionDefaultValues,
+      successUrl:
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/success`
+          : '',
+      cancelUrl:
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/cancel`
+          : '',
+    },
+    onSubmit: async ({ value }) => {
+      createCheckoutSessionMutation.mutate(value);
+    },
+  });
+
+  const handleRedirect = () => {
+    if (createCheckoutSessionMutation.data?.checkoutUrl) {
+      window.location.href = createCheckoutSessionMutation.data.checkoutUrl;
+    }
+  };
+
+  const checkoutSession: CreateCheckoutSessionResult | null =
+    createCheckoutSessionMutation.data || null;
+  const error = createCheckoutSessionMutation.error
+    ? createCheckoutSessionMutation.error.message
+    : null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="bg-background flex min-h-screen items-center justify-center p-4">
+      <main className="w-full max-w-3xl space-y-8">
+        <div>
+          <h1 className="text-3xl font-semibold">Crypto Payment Gateway</h1>
+          <p className="text-muted-foreground mt-2">Example App</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="bg-card rounded-lg border p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-medium">API Configuration</h2>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="api-key">API Key (optional)</Label>
+              <Input
+                id="api-key"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Your API key"
+              />
+            </div>
+          </div>
         </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void form.handleSubmit();
+          }}
+          className="space-y-6"
+        >
+          <div className="bg-card rounded-lg border p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-medium">
+              Create Checkout Session
+            </h2>
+
+            <div className="space-y-4">
+              <form.Field name="amountFiat">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Amount (in cents)
+                    </FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="number"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value) || 0)
+                      }
+                      onBlur={field.handleBlur}
+                      aria-invalid={
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      }
+                      min="1"
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="fiatCurrency">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>Fiat Currency</FieldLabel>
+                    <Select
+                      value={field.state.value}
+                      onValueChange={(value: string) =>
+                        field.handleChange(value)
+                      }
+                      onOpenChange={(open: boolean) => {
+                        if (!open) {
+                          field.handleBlur();
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        id={field.name}
+                        aria-invalid={
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid
+                        }
+                      >
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FIAT_CURRENCIES.map((currency) => (
+                          <SelectItem
+                            key={currency.value}
+                            value={currency.value}
+                          >
+                            {currency.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="allowedCryptoCurrencies">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Allowed Crypto Currencies
+                    </FieldLabel>
+                    <MultiSelect
+                      options={CRYPTO_CURRENCIES}
+                      selected={field.state.value || []}
+                      onChange={(selected) => field.handleChange(selected)}
+                      placeholder="Select cryptocurrencies"
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="allowedNetworks">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Allowed Networks
+                    </FieldLabel>
+                    <MultiSelect
+                      options={NETWORKS}
+                      selected={field.state.value || []}
+                      onChange={(selected) => field.handleChange(selected)}
+                      placeholder="Select networks"
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="customerEmail">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Customer Email (optional)
+                    </FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="email"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      }
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="successUrl">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>Success URL</FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="url"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      }
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="cancelUrl">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>Cancel URL</FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="url"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      }
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="expiresInMinutes">
+                {(field) => (
+                  <Field
+                    data-invalid={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  >
+                    <FieldLabel htmlFor={field.name}>
+                      Expires In Minutes (optional, default: 60)
+                    </FieldLabel>
+                    <Input
+                      id={field.name}
+                      type="number"
+                      value={field.state.value}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value) || 60)
+                      }
+                      onBlur={field.handleBlur}
+                      aria-invalid={
+                        field.state.meta.isTouched && !field.state.meta.isValid
+                      }
+                      min="1"
+                      max="1440"
+                    />
+                    <FieldError errors={field.state.meta.errors} />
+                  </Field>
+                )}
+              </form.Field>
+            </div>
+          </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <XCircle />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {checkoutSession && (
+            <Alert>
+              <CheckCircle2 />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription className="space-y-2">
+                <p>Checkout session created successfully!</p>
+                <p className="text-sm">Session ID: {checkoutSession.id}</p>
+                <Button type="button" onClick={handleRedirect} className="mt-2">
+                  Go to Checkout
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={!canSubmit || isSubmitting}
+                className="w-full"
+                size="lg"
+              >
+                {isSubmitting ? 'Creating...' : 'Create Checkout Session'}
+              </Button>
+            )}
+          </form.Subscribe>
+        </form>
       </main>
     </div>
   );
