@@ -17,7 +17,7 @@ import { CryptoPayClient } from '@workspace/sdk/core';
 
 const client = new CryptoPayClient({
   baseUrl: 'https://api.example.com',
-  apiKey: 'your-api-key'
+  apiKey: 'your-api-key',
 });
 
 // TODO: Implement payment methods
@@ -31,12 +31,12 @@ import { useCryptoPay, usePaymentStatus } from '@workspace/sdk/react';
 function PaymentComponent() {
   const { createPayment, isLoading, error } = useCryptoPay({
     baseUrl: 'https://api.example.com',
-    apiKey: 'your-api-key'
+    apiKey: 'your-api-key',
   });
 
   const { payment, status } = usePaymentStatus({
     paymentId: 'payment-id',
-    pollInterval: 5000
+    pollInterval: 5000,
   });
 
   // TODO: Implement component logic

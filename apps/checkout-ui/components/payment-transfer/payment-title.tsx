@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface PaymentTitleProps {
   isCompleted: boolean;
@@ -18,7 +18,7 @@ export function PaymentTitle({
       {isCompleted ? (
         <motion.h2
           key="completed-title"
-          className="text-lg text-zinc-900 dark:text-zinc-100 tracking-tighter font-semibold uppercase"
+          className="text-lg font-semibold uppercase tracking-tighter text-zinc-900 dark:text-zinc-100"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -32,7 +32,7 @@ export function PaymentTitle({
       ) : isExpired ? (
         <motion.h2
           key="expired-title"
-          className="text-lg text-red-600 dark:text-red-400 tracking-tighter font-semibold uppercase"
+          className="text-lg font-semibold uppercase tracking-tighter text-red-600 dark:text-red-400"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -46,7 +46,7 @@ export function PaymentTitle({
       ) : isCanceled ? (
         <motion.h2
           key="canceled-title"
-          className="text-lg text-red-600 dark:text-red-400 tracking-tighter font-semibold uppercase"
+          className="text-lg font-semibold uppercase tracking-tighter text-red-600 dark:text-red-400"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -60,7 +60,7 @@ export function PaymentTitle({
       ) : (
         <motion.h2
           key="progress-title"
-          className="text-lg text-zinc-900 dark:text-zinc-100 tracking-tighter font-semibold uppercase"
+          className="text-lg font-semibold uppercase tracking-tighter text-zinc-900 dark:text-zinc-100"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -75,4 +75,3 @@ export function PaymentTitle({
     </AnimatePresence>
   );
 }
-

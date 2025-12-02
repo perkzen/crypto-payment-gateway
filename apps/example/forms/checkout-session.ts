@@ -1,8 +1,11 @@
 import { formOptions } from '@tanstack/react-form';
-import type { CreateCheckoutSession } from '@workspace/shared';
 import { CreateCheckoutSessionSchema } from '@workspace/shared';
+import type { CreateCheckoutSession } from '@workspace/shared';
 
-const defaultValues: Omit<CreateCheckoutSession, 'customerEmail' | 'expiresInMinutes'> & {
+const defaultValues: Omit<
+  CreateCheckoutSession,
+  'customerEmail' | 'expiresInMinutes'
+> & {
   customerEmail?: string;
   expiresInMinutes?: number;
 } = {
@@ -24,4 +27,3 @@ export const checkoutSessionFormOptions = formOptions({
 });
 
 export { defaultValues as checkoutSessionDefaultValues };
-

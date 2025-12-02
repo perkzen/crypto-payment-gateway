@@ -8,8 +8,7 @@ export function WalletInfo() {
   return (
     <ConnectButton.Custom>
       {({ account, chain, openAccountModal, mounted }) => {
-        const ready = mounted;
-        const connected = ready && account && chain;
+        const connected = mounted && account && chain;
 
         if (!connected) return null;
 
@@ -55,4 +54,3 @@ export function WalletInfo() {
     </ConnectButton.Custom>
   );
 }
-

@@ -25,10 +25,7 @@ export function getCryptoCurrencySymbol(crypto: CryptoTicker | string): string {
  * @param currency - Currency code (e.g., 'USD', 'EUR')
  * @returns Formatted amount string
  */
-export function formatFiatAmount(
-  amount: number,
-  currency: string,
-): string {
+export function formatFiatAmount(amount: number, currency: string): string {
   // Convert from cents to dollars/euros
   return `${(amount / 100).toFixed(2)} ${currency}`;
 }
@@ -39,10 +36,7 @@ export function formatFiatAmount(
  * @param currency - Currency code (e.g., 'ETH', 'BTC')
  * @returns Formatted amount string
  */
-export function formatCryptoAmount(
-  amount: number,
-  currency: string,
-): string {
+export function formatCryptoAmount(amount: number, currency: string): string {
   // For crypto, show more decimal places
   return `${amount.toFixed(6)} ${currency}`;
 }
@@ -59,4 +53,3 @@ export function getFiatCurrencySymbol(currency: FiatTicker | string): string {
   };
   return symbols[currency] || currency;
 }
-

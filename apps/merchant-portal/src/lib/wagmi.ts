@@ -9,15 +9,15 @@ const globalForWagmi = globalThis as unknown as {
 
 function getWalletConnectProjectId(): string {
   const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
-  
+
   if (!projectId || projectId.trim() === '') {
     throw new Error(
       'NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID is required but not set. ' +
-      'Please set this environment variable in your .env.local file. ' +
-      'You can get a project ID from https://cloud.walletconnect.com/'
+        'Please set this environment variable in your .env.local file. ' +
+        'You can get a project ID from https://cloud.walletconnect.com/',
     );
   }
-  
+
   return projectId.trim();
 }
 

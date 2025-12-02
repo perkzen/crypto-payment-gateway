@@ -15,4 +15,3 @@ export function calculateCryptoAmount(
   const fiatAmount = fiatAmountCents / 100;
   return fiatAmount / exchangeRate;
 }
-

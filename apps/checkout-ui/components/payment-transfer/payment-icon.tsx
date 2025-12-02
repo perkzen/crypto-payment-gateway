@@ -1,8 +1,8 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpDown, Check } from 'lucide-react';
 import { cn } from '@workspace/ui/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowUpDown, Check } from 'lucide-react';
 
 interface PaymentIconProps {
   isCompleted: boolean;
@@ -16,7 +16,7 @@ export function PaymentIcon({
   isCanceled,
 }: PaymentIconProps) {
   return (
-    <div className="h-[80px] flex items-center justify-center">
+    <div className="flex h-[80px] items-center justify-center">
       <motion.div
         className="flex justify-center"
         initial={{ opacity: 0, y: -10 }}
@@ -26,9 +26,9 @@ export function PaymentIcon({
           ease: [0.22, 1, 0.36, 1],
         }}
       >
-        <div className="relative w-[100px] h-[100px] flex items-center justify-center">
+        <div className="relative flex h-[100px] w-[100px] items-center justify-center">
           <motion.div
-            className="absolute inset-0 blur-2xl bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full"
+            className="absolute inset-0 rounded-full bg-emerald-500/10 blur-2xl dark:bg-emerald-500/5"
             initial={{ opacity: 0 }}
             animate={{
               opacity: [0, 1, 0.8],
@@ -53,7 +53,7 @@ export function PaymentIcon({
                   duration: 0.6,
                   ease: 'easeInOut',
                 }}
-                className="w-[100px] h-[100px] flex items-center justify-center"
+                className="flex h-[100px] w-[100px] items-center justify-center"
               >
                 <div className="relative z-10">
                   <motion.div
@@ -80,7 +80,7 @@ export function PaymentIcon({
                       },
                     }}
                   />
-                  <div className="relative z-10 bg-white dark:bg-zinc-900 rounded-full p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                  <div className="relative z-10 rounded-full bg-white p-5 shadow-[0_0_15px_rgba(16,185,129,0.1)] dark:bg-zinc-900">
                     <ArrowUpDown className="h-10 w-10 text-emerald-500" />
                   </div>
                 </div>
@@ -100,11 +100,11 @@ export function PaymentIcon({
                   duration: 0.6,
                   ease: 'easeInOut',
                 }}
-                className="w-[100px] h-[100px] flex items-center justify-center"
+                className="flex h-[100px] w-[100px] items-center justify-center"
               >
                 <div
                   className={cn(
-                    'relative z-10 bg-white dark:bg-zinc-900 rounded-full p-5 border',
+                    'relative z-10 rounded-full border bg-white p-5 dark:bg-zinc-900',
                     isCompleted
                       ? 'border-emerald-500'
                       : 'border-red-500 dark:border-red-500',
@@ -126,4 +126,3 @@ export function PaymentIcon({
     </div>
   );
 }
-

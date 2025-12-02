@@ -98,10 +98,7 @@ export class CryptoPayClient {
    * @returns Promise resolving to the exchange rate
    * @throws Error if the API request fails
    */
-  async getExchangeRate(
-    crypto: string,
-    fiat: string,
-  ): Promise<ExchangeRate> {
+  async getExchangeRate(crypto: string, fiat: string): Promise<ExchangeRate> {
     try {
       const response = await this.axiosInstance.get<ExchangeRate>(
         '/exchange/price',

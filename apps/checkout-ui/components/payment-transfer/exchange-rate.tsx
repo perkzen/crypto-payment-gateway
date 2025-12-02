@@ -1,12 +1,12 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { InfoIcon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@workspace/ui/components/tooltip';
+import { AnimatePresence, motion } from 'framer-motion';
+import { InfoIcon } from 'lucide-react';
 import type { PublicCheckoutSession } from '@workspace/shared';
 
 interface ExchangeRateProps {
@@ -20,7 +20,6 @@ interface ExchangeRateProps {
 
 export function ExchangeRate({
   checkoutSession,
-  cryptoAmount,
   cryptoCurrency,
   exchangeRate,
   isCompleted,
@@ -30,7 +29,7 @@ export function ExchangeRate({
 
   return (
     <motion.div
-      className="flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mt-2"
+      className="mt-2 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{
@@ -65,13 +64,15 @@ export function ExchangeRate({
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            {isLoading ? 'Loading exchange rate...' : 'Calculating exchange rate...'}
+            {isLoading
+              ? 'Loading exchange rate...'
+              : 'Calculating exchange rate...'}
           </motion.span>
         )}
       </AnimatePresence>
       <Tooltip>
         <TooltipTrigger>
-          <InfoIcon className="w-3 h-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors" />
+          <InfoIcon className="h-3 w-3 text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-300" />
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">
@@ -84,4 +85,3 @@ export function ExchangeRate({
     </motion.div>
   );
 }
-

@@ -1,4 +1,3 @@
-
 ---
 
 ## 1. Two core resources
@@ -30,15 +29,15 @@ Example JSON for a checkout session:
 ```json
 {
   "id": "cs_123",
-  "status": "open",               // open | completed | expired | canceled
-  "mode": "payment",              // maybe later subscription, donation, etc.
+  "status": "open", // open | completed | expired | canceled
+  "mode": "payment", // maybe later subscription, donation, etc.
   "amount_fiat_cents": 5000,
   "fiat_currency": "EUR",
 
   "allowed_crypto_currencies": ["ETH", "USDT"],
   "allowed_networks": ["ethereum", "polygon"],
 
-  "payment_id": "pay_123",        // or null until created
+  "payment_id": "pay_123", // or null until created
   "success_url": "https://merchant.com/checkout/success?order_id=order_987",
   "cancel_url": "https://merchant.com/checkout/cancel?order_id=order_987",
 
@@ -72,7 +71,7 @@ Idempotency-Key: order_987
 
 ```json
 {
-  "amount_fiat": "50.00",          // or "amount_fiat_cents": 5000 in your internal model
+  "amount_fiat": "50.00", // or "amount_fiat_cents": 5000 in your internal model
   "currency": "EUR",
 
   "allowed_crypto_currencies": ["ETH", "USDT"],
@@ -120,8 +119,8 @@ Idempotency-Key: order_987
 
 The merchant:
 
-* Gets `checkout_url`
-* On “Pay with crypto” button click → **redirects the user there**
+- Gets `checkout_url`
+- On “Pay with crypto” button click → **redirects the user there**
 
 ---
 
@@ -130,25 +129,24 @@ The merchant:
 At `https://pay.yourgateway.com/checkout/cs_123`:
 
 1. **Frontend loads Checkout Session**
+   - `GET /v1/checkout/sessions/cs_123` (from your frontend, via your backend)
 
-    * `GET /v1/checkout/sessions/cs_123` (from your frontend, via your backend)
 2. Shows:
+   - Amount in fiat + approximate crypto preview
+   - Networks / tokens to choose from (ETH, USDT, etc.)
+   - “Connect wallet” button (WalletConnect, MetaMask, etc.)
 
-    * Amount in fiat + approximate crypto preview
-    * Networks / tokens to choose from (ETH, USDT, etc.)
-    * “Connect wallet” button (WalletConnect, MetaMask, etc.)
 3. User selects:
+   - Network
+   - Token (e.g. ETH on Ethereum)
 
-    * Network
-    * Token (e.g. ETH on Ethereum)
 4. When user clicks **Pay**:
+   - Your frontend calls your backend to **create a Payment** for this session (if not already created)
+   - Backend:
+     - Creates `Payment` row (`status = pending`, `min_confirmations` based on network)
+     - Returns payment details needed for smart contract call (amount, contract address, method, etc.)
 
-    * Your frontend calls your backend to **create a Payment** for this session (if not already created)
-    * Backend:
-
-        * Creates `Payment` row (`status = pending`, `min_confirmations` based on network)
-        * Returns payment details needed for smart contract call (amount, contract address, method, etc.)
-    * Frontend triggers wallet transaction to your **payment smart contract**
+   - Frontend triggers wallet transaction to your **payment smart contract**
 
 Internally, you might implement:
 
@@ -183,24 +181,23 @@ Your UI uses that to build the `eth_sendTransaction` / WalletConnect request.
 
 Your blockchain watcher(s):
 
-* Watch your **payment contract** (e.g. events like `PaymentReceived(sessionId, paymentId, from, amount)`).
-* Or watch direct transfers to your address if using EOA/deposit addresses.
+- Watch your **payment contract** (e.g. events like `PaymentReceived(sessionId, paymentId, from, amount)`).
+- Or watch direct transfers to your address if using EOA/deposit addresses.
 
 Flow:
 
 1. Tx seen in mempool / block:
+   - You attach `tx_hash` to `Payment`
+   - Optionally send `payment.pending` webhook
 
-    * You attach `tx_hash` to `Payment`
-    * Optionally send `payment.pending` webhook
 2. Once `min_confirmations` reached:
+   - Update `Payment.status = "confirmed"`
+   - Update `CheckoutSession.status = "completed"`
+   - Fire `payment.confirmed` webhook to merchant
 
-    * Update `Payment.status = "confirmed"`
-    * Update `CheckoutSession.status = "completed"`
-    * Fire `payment.confirmed` webhook to merchant
 3. If nothing is paid before `expires_at`:
-
-    * Mark `CheckoutSession.status = "expired"`
-    * Optionally mark `Payment` as expired (if you pre-created one) or just leave none.
+   - Mark `CheckoutSession.status = "expired"`
+   - Optionally mark `Payment` as expired (if you pre-created one) or just leave none.
 
 ---
 
@@ -208,7 +205,7 @@ Flow:
 
 After payment is confirmed:
 
-* Send webhook (as you already planned):
+- Send webhook (as you already planned):
 
   ```json
   {
@@ -221,7 +218,7 @@ After payment is confirmed:
   }
   ```
 
-* On the frontend (your hosted page), once you detect `confirmed`, you **redirect**:
+- On the frontend (your hosted page), once you detect `confirmed`, you **redirect**:
 
   ```ts
   window.location.href = checkoutSession.success_url;
@@ -229,8 +226,8 @@ After payment is confirmed:
 
 If user cancels on your page (back button / cancel button):
 
-* Mark `CheckoutSession.status = "canceled"` (optional)
-* Redirect to `cancel_url`.
+- Mark `CheckoutSession.status = "canceled"` (optional)
+- Redirect to `cancel_url`.
 
 ---
 
@@ -263,5 +260,5 @@ Merchant’s job is super simple:
 
 If you want, next step I can:
 
-* Sketch a **Postgres + Drizzle schema for `checkout_sessions`**
-* Draft the **smart contract interface** for a Payment contract that emits events linking `checkout_session_id` / `payment_id` to on-chain transfers.
+- Sketch a **Postgres + Drizzle schema for `checkout_sessions`**
+- Draft the **smart contract interface** for a Payment contract that emits events linking `checkout_session_id` / `payment_id` to on-chain transfers.

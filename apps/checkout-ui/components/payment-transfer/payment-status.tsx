@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { PublicCheckoutSession } from '@workspace/shared';
 
 interface PaymentStatusProps {
@@ -21,7 +21,7 @@ export function PaymentStatus({
       {isCompleted ? (
         <motion.div
           key="completed-id"
-          className="text-xs text-emerald-600 dark:text-emerald-400 font-medium"
+          className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -35,7 +35,7 @@ export function PaymentStatus({
       ) : isExpired || isCanceled ? (
         <motion.div
           key="error-status"
-          className="text-xs text-red-600 dark:text-red-400 font-medium"
+          className="text-xs font-medium text-red-600 dark:text-red-400"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -44,14 +44,12 @@ export function PaymentStatus({
             ease: [0.22, 1, 0.36, 1],
           }}
         >
-          {isExpired
-            ? 'This session has expired'
-            : 'This payment was canceled'}
+          {isExpired ? 'This session has expired' : 'This payment was canceled'}
         </motion.div>
       ) : (
         <motion.div
           key="progress-status"
-          className="text-xs text-emerald-600 dark:text-emerald-400 font-medium"
+          className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -66,4 +64,3 @@ export function PaymentStatus({
     </AnimatePresence>
   );
 }
-

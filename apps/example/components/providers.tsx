@@ -2,8 +2,8 @@
 
 import { type ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { Toaster as ToastProvider } from '@workspace/ui/components/sonner';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { getQueryClient } from '@/lib/query-client';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -23,4 +23,3 @@ export function Providers({ children }: { children: ReactNode }) {
     </QueryClientProvider>
   );
 }
-

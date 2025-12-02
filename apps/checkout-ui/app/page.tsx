@@ -1,11 +1,12 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useCheckoutSessionOptions } from '@/hooks/use-checkout-session';
+import { useSearchParams } from 'next/navigation';
 import { PaymentTransfer } from '@/components/payment-transfer/payment-transfer';
+import { useCheckoutSessionOptions } from '@/hooks/use-checkout-session';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('sessionId');
 
@@ -64,5 +65,22 @@ export default function CheckoutPage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 font-sans dark:bg-black">
       <PaymentTransfer checkoutSession={checkoutSession} />
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+            <p className="mt-4 text-zinc-600 dark:text-zinc-400">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
   );
 }

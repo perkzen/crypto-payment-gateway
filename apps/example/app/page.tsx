@@ -1,14 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useCreateCheckoutSessionOptions } from '@/hooks/use-create-checkout-session';
-import {
-  checkoutSessionFormOptions,
-  checkoutSessionDefaultValues,
-} from '@/forms/checkout-session';
-import type { CreateCheckoutSessionResult } from '@workspace/shared';
 import {
   Alert,
   AlertDescription,
@@ -18,6 +12,7 @@ import { Button } from '@workspace/ui/components/button';
 import { Field, FieldError, FieldLabel } from '@workspace/ui/components/field';
 import { Input } from '@workspace/ui/components/input';
 import { Label } from '@workspace/ui/components/label';
+import { MultiSelect } from '@workspace/ui/components/multi-select';
 import {
   Select,
   SelectContent,
@@ -25,8 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@workspace/ui/components/select';
-import { MultiSelect } from '@workspace/ui/components/multi-select';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import type { CreateCheckoutSessionResult } from '@workspace/shared';
+import {
+  checkoutSessionDefaultValues,
+  checkoutSessionFormOptions,
+} from '@/forms/checkout-session';
+import { useCreateCheckoutSessionOptions } from '@/hooks/use-create-checkout-session';
 
 const FIAT_CURRENCIES = [
   { label: 'USD', value: 'USD' },
@@ -57,9 +57,7 @@ export default function Home() {
           ? `${window.location.origin}/success`
           : '',
       cancelUrl:
-        typeof window !== 'undefined'
-          ? `${window.location.origin}/cancel`
-          : '',
+        typeof window !== 'undefined' ? `${window.location.origin}/cancel` : '',
     },
     onSubmit: async ({ value }) => {
       createCheckoutSessionMutation.mutate(value);

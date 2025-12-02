@@ -27,4 +27,3 @@ export function getQueryClient() {
     return browserQueryClient;
   }
 }
-

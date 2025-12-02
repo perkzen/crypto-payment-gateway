@@ -14,4 +14,3 @@ export class PaymentNotFoundException extends NotFoundException {
     };
   }
 }
-

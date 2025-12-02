@@ -1,15 +1,15 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Card, CardContent } from '@workspace/ui/components/card';
 import { TooltipProvider } from '@workspace/ui/components/tooltip';
-import type { PublicCheckoutSession } from '@workspace/shared';
+import { motion } from 'framer-motion';
 import { PaymentActions } from '../payment-actions/payment-actions';
-import { PaymentIcon } from './payment-icon';
-import { PaymentTitle } from './payment-title';
-import { PaymentStatus } from './payment-status';
-import { PaymentDetails } from './payment-details';
 import { ExchangeRate } from './exchange-rate';
+import { PaymentDetails } from './payment-details';
+import { PaymentIcon } from './payment-icon';
+import { PaymentStatus } from './payment-status';
+import { PaymentTitle } from './payment-title';
+import type { PublicCheckoutSession } from '@workspace/shared';
 
 interface PaymentTransferProps {
   checkoutSession: PublicCheckoutSession;

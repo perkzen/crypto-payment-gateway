@@ -6,7 +6,10 @@ export const CreatePaymentSchema = z.object({
     .string()
     .length(3)
     .describe('The three-letter ISO currency code, e.g., "USD"'),
-  network: z.string().min(1).describe('The blockchain network, e.g., "ethereum"'),
+  network: z
+    .string()
+    .min(1)
+    .describe('The blockchain network, e.g., "ethereum"'),
   address: z.string().min(1).describe('The payment address'),
   minConfirmations: z
     .number()
@@ -57,8 +60,9 @@ export const UpdatePaymentSchema = z.object({
   expiresAt: z
     .date()
     .nullish()
-    .describe('Optional expiration time for the payment (null to clear, undefined to leave unchanged)'),
+    .describe(
+      'Optional expiration time for the payment (null to clear, undefined to leave unchanged)',
+    ),
 });
 
 export type UpdatePayment = z.infer<typeof UpdatePaymentSchema>;
-

@@ -1,10 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
-import type { PublicCheckoutSession } from '@workspace/shared';
 import { formatCryptoAmount, getFiatCurrencySymbol } from '@workspace/shared';
+import { motion } from 'framer-motion';
+import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import { CurrencyCard } from './currency-card';
+import type { PublicCheckoutSession } from '@workspace/shared';
 
 interface PaymentDetailsProps {
   checkoutSession: PublicCheckoutSession;
@@ -25,7 +25,7 @@ export function PaymentDetails({
 }: PaymentDetailsProps) {
   return (
     <motion.div
-      className="flex items-center gap-4 mt-4"
+      className="mt-4 flex items-center gap-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{
@@ -34,7 +34,7 @@ export function PaymentDetails({
       }}
     >
       <motion.div
-        className="flex-1 relative"
+        className="relative flex-1"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{
@@ -43,7 +43,7 @@ export function PaymentDetails({
         }}
       >
         <motion.div
-          className="flex flex-col items-start relative"
+          className="relative flex flex-col items-start"
           initial={{ gap: '12px' }}
           animate={{
             gap: isCompleted ? '0px' : '12px',
@@ -55,7 +55,7 @@ export function PaymentDetails({
         >
           <CurrencyCard
             label="From"
-            icon={<ArrowUpIcon className="w-3 h-3" />}
+            icon={<ArrowUpIcon className="h-3 w-3" />}
             amount={fiatAmount}
             description="Fiat Payment"
             currencySymbol={getFiatCurrencySymbol(checkoutSession.fiatCurrency)}
@@ -64,7 +64,7 @@ export function PaymentDetails({
           />
           <CurrencyCard
             label="To"
-            icon={<ArrowDownIcon className="w-3 h-3" />}
+            icon={<ArrowDownIcon className="h-3 w-3" />}
             amount={formatCryptoAmount(cryptoAmount, cryptoCurrency)}
             description={`${checkoutSession.allowedNetworks[0] || 'ethereum'} Network`}
             currencySymbol={cryptoSymbol}
@@ -76,4 +76,3 @@ export function PaymentDetails({
     </motion.div>
   );
 }
-

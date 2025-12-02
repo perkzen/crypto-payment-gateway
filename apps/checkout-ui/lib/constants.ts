@@ -8,7 +8,7 @@ function getRequiredEnvVar(name: string): string {
   if (!value || value.trim() === '') {
     throw new Error(
       `${name} is required but not set. ` +
-      `Please set this environment variable in your .env.local file.`
+        `Please set this environment variable in your .env.local file.`,
     );
   }
   return value;
@@ -27,4 +27,3 @@ export const PAYMENT_CONTRACT_ADDRESS = getRequiredEnvVar(
 export const MERCHANT_ADDRESS = getRequiredEnvVar(
   'NEXT_PUBLIC_MERCHANT_ADDRESS',
 ) as `0x${string}`;
-

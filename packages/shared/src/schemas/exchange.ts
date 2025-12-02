@@ -8,7 +8,10 @@ export const ExchangeRateSchema = z.object({
 export type ExchangeRate = z.infer<typeof ExchangeRateSchema>;
 
 const CryptoTickerEnum = z.enum(['ETH'] satisfies [CryptoTicker]);
-const FiatTickerEnum = z.enum(['USD', 'EUR'] satisfies [FiatTicker, ...FiatTicker[]]);
+const FiatTickerEnum = z.enum(['USD', 'EUR'] satisfies [
+  FiatTicker,
+  ...FiatTicker[],
+]);
 
 export const GetExchangeRateQuerySchema = z.object({
   pair: z
@@ -24,4 +27,3 @@ export const GetExchangeRateQuerySchema = z.object({
 });
 
 export type GetExchangeRateQuery = z.infer<typeof GetExchangeRateQuerySchema>;
-

@@ -26,6 +26,14 @@
         "NODE_ENV"
       ]
     },
+    "lint:fix": {
+      "dependsOn": [
+        "^lint:fix"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
+    },
     "type-check": {
       "dependsOn": [
         "^build"

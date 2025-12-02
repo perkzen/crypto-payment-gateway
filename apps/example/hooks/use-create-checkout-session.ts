@@ -10,4 +10,3 @@ export function useCreateCheckoutSessionOptions(apiKey?: string) {
     },
   });
 }
-

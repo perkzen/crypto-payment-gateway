@@ -13,4 +13,3 @@ export function useExchangeRateOptions(crypto: string, fiat: string) {
     staleTime: 0, // Always consider data stale to ensure fresh rates
   });
 }
-

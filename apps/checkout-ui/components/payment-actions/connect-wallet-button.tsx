@@ -1,9 +1,9 @@
 'use client';
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ETHEREUM_ICON_URL } from '@workspace/shared';
 import { Button } from '@workspace/ui/components/button';
 import Image from 'next/image';
-import { ETHEREUM_ICON_URL } from '@workspace/shared';
 
 interface ConnectWalletButtonProps {
   onConnect?: () => void;
@@ -40,4 +40,3 @@ export function ConnectWalletButton({ onConnect }: ConnectWalletButtonProps) {
     </div>
   );
 }
-

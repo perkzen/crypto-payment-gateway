@@ -3,9 +3,9 @@
 import { useAccount } from 'wagmi';
 import type { PublicCheckoutSession } from '@workspace/shared';
 import { ConnectWalletButton } from '@/components/payment-actions/connect-wallet-button';
-import { WalletInfo } from '@/components/payment-actions/wallet-info';
 import { PayButton } from '@/components/payment-actions/pay-button';
 import { PaymentStatus } from '@/components/payment-actions/payment-status';
+import { WalletInfo } from '@/components/payment-actions/wallet-info';
 
 interface PaymentActionsProps {
   checkoutSession: PublicCheckoutSession;

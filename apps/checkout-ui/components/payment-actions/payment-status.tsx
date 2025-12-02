@@ -1,7 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
-import { useAccount } from 'wagmi';
+import { type useAccount } from 'wagmi';
 
 interface PaymentStatusProps {
   isConfirmed: boolean;
@@ -51,4 +51,3 @@ export function PaymentStatus({
     </>
   );
 }
-
