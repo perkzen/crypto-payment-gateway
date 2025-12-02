@@ -18,13 +18,13 @@ function getWalletConnectProjectId(): string {
     );
   }
   
-  return projectId;
+  return projectId.trim();
 }
 
 export const config =
   globalForWagmi.wagmiConfig ??
   (globalForWagmi.wagmiConfig = getDefaultConfig({
-    appName: 'My RainbowKit App',
+    appName: 'Crypto Payment Gateway - Merchant Portal',
     projectId: getWalletConnectProjectId(),
     chains: [hardhat],
     ssr: true,

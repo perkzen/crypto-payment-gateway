@@ -17,7 +17,7 @@ function getWalletConnectProjectId(): string {
     );
   }
   
-  return projectId;
+  return projectId.trim();
 }
 
 export const config =

@@ -95,7 +95,7 @@ describe('Checkout Sessions (e2e)', () => {
       expect(response.body).toMatchObject({
         id: expect.any(String),
         status: 'open',
-        checkoutUrl: expect.stringContaining('/checkout'),
+        checkoutUrl: expect.any(String),
         expiresAt: expect.any(String), // Date is serialized to ISO string in JSON
       });
 

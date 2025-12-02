@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@workspace/ui/components/card';
 import { TooltipProvider } from '@workspace/ui/components/tooltip';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { PaymentActions } from './payment-actions/payment-actions';
-import { PaymentIcon } from './payment-transfer/payment-icon';
-import { PaymentTitle } from './payment-transfer/payment-title';
-import { PaymentStatus } from './payment-transfer/payment-status';
-import { PaymentDetails } from './payment-transfer/payment-details';
-import { ExchangeRate } from './payment-transfer/exchange-rate';
+import { PaymentActions } from '../payment-actions/payment-actions';
+import { PaymentIcon } from './payment-icon';
+import { PaymentTitle } from './payment-title';
+import { PaymentStatus } from './payment-status';
+import { PaymentDetails } from './payment-details';
+import { ExchangeRate } from './exchange-rate';
 
 interface PaymentTransferProps {
   checkoutSession: PublicCheckoutSession;
