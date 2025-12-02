@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ['@workspace/ui'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cryptologos.cc',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

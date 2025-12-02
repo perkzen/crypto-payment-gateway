@@ -39,8 +39,8 @@ export class CheckoutSessionsService {
       })
       .returning();
 
-    // Construct the full checkout URL with session ID
-    const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}/${createdSession.id}`;
+    // Construct the full checkout URL with session ID as query parameter
+    const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}?sessionId=${createdSession.id}`;
 
     return {
       id: createdSession.id,

@@ -7,6 +7,7 @@ import axios, { type AxiosError, type AxiosInstance } from 'axios';
 import type {
   CreateCheckoutSession,
   CreateCheckoutSessionResult,
+  ExchangeRate,
   PublicCheckoutSession,
 } from '@workspace/shared';
 
@@ -87,6 +88,33 @@ export class CryptoPayClient {
       };
     } catch (error) {
       this.handleError(error, 'Failed to get checkout session');
+    }
+  }
+
+  /**
+   * Get exchange rate for a crypto/fiat pair
+   * @param crypto - Cryptocurrency ticker (e.g., 'ETH')
+   * @param fiat - Fiat currency ticker (e.g., 'USD', 'EUR')
+   * @returns Promise resolving to the exchange rate
+   * @throws Error if the API request fails
+   */
+  async getExchangeRate(
+    crypto: string,
+    fiat: string,
+  ): Promise<ExchangeRate> {
+    try {
+      const response = await this.axiosInstance.get<ExchangeRate>(
+        '/exchange/price',
+        {
+          params: {
+            pair: `${crypto},${fiat}`,
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      this.handleError(error, 'Failed to get exchange rate');
     }
   }
 }

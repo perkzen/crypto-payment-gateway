@@ -68,7 +68,7 @@ export default function Home() {
 
   const handleRedirect = () => {
     if (createCheckoutSessionMutation.data?.checkoutUrl) {
-      window.location.href = createCheckoutSessionMutation.data.checkoutUrl;
+      window.open(createCheckoutSessionMutation.data.checkoutUrl, '_blank');
     }
   };
 
