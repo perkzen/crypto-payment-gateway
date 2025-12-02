@@ -14,4 +14,3 @@ Object.assign(supertest.Test.prototype, {
     return this.set('x-api-key', apiKey);
   },
 });
-

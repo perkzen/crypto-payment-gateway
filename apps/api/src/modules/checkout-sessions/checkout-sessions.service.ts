@@ -28,20 +28,24 @@ export class CheckoutSessionsService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
+    const baseCheckoutUrl = this.configService.getOrThrow('CHECKOUT_URL');
     const [createdSession] = await this.databaseService.db
       .insert(checkoutSession)
       .values({
         ...input,
         expiresAt,
         merchantId: merchant.id,
-        checkoutUrl: this.configService.getOrThrow('CHECKOUT_URL'),
+        checkoutUrl: baseCheckoutUrl,
       })
       .returning();
+
+    // Construct the full checkout URL with session ID as query parameter
+    const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}?sessionId=${createdSession.id}`;
 
     return {
       id: createdSession.id,
       status: createdSession.status,
-      checkoutUrl: createdSession.checkoutUrl,
+      checkoutUrl: fullCheckoutUrl,
       expiresAt: createdSession.expiresAt,
       metadata: createdSession.metadata ?? null,
     };

@@ -53,7 +53,9 @@ export class SignUpService {
           target: merchant.userId,
         });
 
-      this.logger.log(`Merchant record created or already exists for user ${user.id}`);
+      this.logger.log(
+        `Merchant record created or already exists for user ${user.id}`,
+      );
     } catch (error) {
       this.logger.error(
         `Failed to insert merchant for user ${user.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,

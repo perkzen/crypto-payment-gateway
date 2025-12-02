@@ -14,4 +14,3 @@ export class CheckoutSessionNotFoundException extends NotFoundException {
     };
   }
 }
-

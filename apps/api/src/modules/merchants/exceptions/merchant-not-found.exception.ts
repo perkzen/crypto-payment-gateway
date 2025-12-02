@@ -14,4 +14,3 @@ export class MerchantNotFoundException extends NotFoundException {
     };
   }
 }
-

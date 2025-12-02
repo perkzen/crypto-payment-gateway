@@ -8,4 +8,3 @@ export const siweVerifyBodySchema = z.object({
 });
 
 export type SiweVerifyBody = z.infer<typeof siweVerifyBodySchema>;
-

@@ -1,16 +1,14 @@
-"use client"
+'use client';
 
-import * as React from "react"
+import * as React from 'react';
+import { ETHEREUM_ICON_URL } from '@workspace/shared';
 import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@workspace/ui/components/sidebar"
-import Image from "next/image"
-
-const ETHEREUM_ICON_URL =
-  'https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=040'
+} from '@workspace/ui/components/sidebar';
+import Image from 'next/image';
 
 export function SidebarHeaderComponent() {
   return (
@@ -19,7 +17,7 @@ export function SidebarHeaderComponent() {
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" className="w-full">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-8 items-center justify-center rounded-lg">
                 <Image
                   src={ETHEREUM_ICON_URL}
                   alt="Ethereum"
@@ -36,6 +34,5 @@ export function SidebarHeaderComponent() {
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
-  )
+  );
 }
-

@@ -24,10 +24,12 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@workspace/shared": "workspace:*",
+    "axios": "^1.7.9",
     "react": "^19.1.1"
   },
   "peerDependencies": {

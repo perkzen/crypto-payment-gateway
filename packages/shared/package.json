@@ -1,6 +1,7 @@
 {
   "name": "@workspace/shared",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "description": "Shared Zod validation schemas and types for the crypto payment gateway monorepo",
   "main": "./dist/index.js",
@@ -8,6 +9,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
@@ -18,18 +20,25 @@
     "build": "tsc --build",
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
-    "type-check": "tsc --noEmit"
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "generate:contracts": "wagmi generate"
   },
   "dependencies": {
     "zod": "^3.25.76"
   },
+  "peerDependencies": {
+    "wagmi": "^2.19.4"
+  },
   "devDependencies": {
     "@turbo/gen": "^2.5.5",
     "@types/node": "^20.19.9",
+    "@wagmi/cli": "^2.8.0",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.32.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "wagmi": "^2.19.4"
   },
   "publishConfig": {
     "access": "public"

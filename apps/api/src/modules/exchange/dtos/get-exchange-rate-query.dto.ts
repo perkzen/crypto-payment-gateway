@@ -4,4 +4,3 @@ import { createZodDto } from 'nestjs-zod';
 export class GetExchangeRateQueryDto extends createZodDto(
   GetExchangeRateQuerySchema,
 ) {}
-

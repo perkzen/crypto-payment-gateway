@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@workspace/ui/components/button';
 import {
@@ -11,7 +12,6 @@ import {
   DialogTrigger,
 } from '@workspace/ui/components/dialog';
 import { toast } from '@workspace/ui/components/sonner';
-import { type ReactNode } from 'react';
 import { deleteApiKeyOptions } from '../_hooks/mutations';
 import { listApiKeysOptions } from '../_hooks/queries';
 import type { ApiKey } from '../_types/api-key';
