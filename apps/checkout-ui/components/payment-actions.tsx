@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Wallet, Check } from 'lucide-react';
 import Image from 'next/image';
 import type { PublicCheckoutSession } from '@workspace/shared';
+import { cryptoPayAbi, CryptoPayFunctionNames } from '@workspace/shared';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
 import { calculateCryptoAmount } from '@/lib/utils';
 
@@ -285,19 +286,8 @@ export function PaymentActions({
       // Send transaction to smart contract
       writeContract({
         address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
-        abi: [
-          {
-            name: 'payNative',
-            type: 'function',
-            stateMutability: 'payable',
-            inputs: [
-              { name: 'invoiceId', type: 'bytes32' },
-              { name: 'merchant', type: 'address' },
-            ],
-            outputs: [],
-          },
-        ],
-        functionName: 'payNative',
+        abi: cryptoPayAbi,
+        functionName: CryptoPayFunctionNames.payNative,
         args: [sessionInvoiceId, MERCHANT_ADDRESS as `0x${string}`],
         value: amountInWei,
       });
