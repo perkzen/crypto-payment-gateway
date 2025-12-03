@@ -1,7 +1,6 @@
 {
   "name": "@workspace/shared",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
   "description": "Shared Zod validation schemas and types for the crypto payment gateway monorepo",
   "main": "./dist/index.js",
@@ -9,7 +8,7 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "require": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
