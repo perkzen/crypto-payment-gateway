@@ -3,19 +3,11 @@ import { payment } from '@app/modules/database/schemas/payment.schema';
 import {
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   text,
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-
-export const checkoutSessionStatusEnum = pgEnum('checkout_session_status', [
-  'open',
-  'completed',
-  'expired',
-  'canceled',
-]);
 
 export const checkoutSession = pgTable('checkout_sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -23,8 +15,6 @@ export const checkoutSession = pgTable('checkout_sessions', {
   merchantId: uuid('merchant_id')
     .notNull()
     .references(() => merchant.id),
-
-  status: checkoutSessionStatusEnum('status').notNull().default('open'),
 
   // fiat price in cents
   amountFiat: integer('amount_fiat').notNull(),

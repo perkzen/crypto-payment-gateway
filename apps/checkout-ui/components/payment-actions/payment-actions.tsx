@@ -3,7 +3,10 @@
 import { useAccount } from 'wagmi';
 import type { PublicCheckoutSession } from '@workspace/shared';
 import { ConnectWalletButton } from '@/components/payment-actions/connect-wallet-button';
-import { PayButton } from '@/components/payment-actions/pay-button';
+import {
+  PayButton,
+  type PayButtonStatus,
+} from '@/components/payment-actions/pay-button';
 import { PaymentStatus } from '@/components/payment-actions/payment-status';
 import { WalletInfo } from '@/components/payment-actions/wallet-info';
 
@@ -11,6 +14,25 @@ interface PaymentActionsProps {
   checkoutSession: PublicCheckoutSession;
   exchangeRate: number;
   onPaymentSuccess?: () => void;
+}
+
+function getPayButtonStatus(
+  isLoading: boolean,
+  isTransactionPending: boolean,
+  isConfirming: boolean,
+): PayButtonStatus {
+  if (!isLoading) return 'idle';
+  if (isTransactionPending) return 'transaction-pending';
+  if (isConfirming) return 'confirming';
+  return 'processing';
+}
+
+function getSessionStatus(expiresAt: Date): 'open' | 'expired' {
+  const now = new Date();
+  if (now >= expiresAt) {
+    return 'expired';
+  }
+  return 'open';
 }
 
 export function PaymentActions({ checkoutSession }: PaymentActionsProps) {
@@ -24,7 +46,13 @@ export function PaymentActions({ checkoutSession }: PaymentActionsProps) {
   const transactionError: Error | null = null;
   const hash: `0x${string}` | undefined = undefined;
   const cryptoAmount = 0.001; // Placeholder
-  const canPay = isConnected && checkoutSession.status === 'open';
+  const sessionStatus = getSessionStatus(new Date(checkoutSession.expiresAt));
+  const canPay = isConnected && sessionStatus === 'open';
+  const payButtonStatus = getPayButtonStatus(
+    isLoading,
+    isTransactionPending,
+    isConfirming,
+  );
 
   const handlePay = () => {
     // TODO: Implement payment logic
@@ -61,9 +89,7 @@ export function PaymentActions({ checkoutSession }: PaymentActionsProps) {
       <PayButton
         checkoutSession={checkoutSession}
         onPay={handlePay}
-        isLoading={isLoading}
-        isTransactionPending={isTransactionPending}
-        isConfirming={isConfirming}
+        status={payButtonStatus}
         canPay={canPay}
         cryptoAmount={cryptoAmount}
       />

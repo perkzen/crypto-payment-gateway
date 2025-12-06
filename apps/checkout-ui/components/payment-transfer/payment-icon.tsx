@@ -2,7 +2,7 @@
 
 import { type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUpDown, Check } from 'lucide-react';
+import { ArrowUpDown, Check, X } from 'lucide-react';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
@@ -90,6 +90,31 @@ function CompletedIcon() {
   );
 }
 
+function ExpiredIcon() {
+  return (
+    <motion.div
+      key="expired"
+      initial={{
+        opacity: 0,
+        rotate: -180,
+      }}
+      animate={{
+        opacity: 1,
+        rotate: 0,
+      }}
+      transition={{
+        duration: 0.6,
+        ease: 'easeInOut',
+      }}
+      className="flex h-[100px] w-[100px] items-center justify-center"
+    >
+      <div className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900">
+        <X className="h-10 w-10 text-red-500" strokeWidth={3.5} />
+      </div>
+    </motion.div>
+  );
+}
+
 function ErrorIcon() {
   return (
     <motion.div
@@ -123,8 +148,8 @@ const paymentIconStates: PaymentIconState[] = [
   },
   {
     status: 'expired',
-    id: 'error-icon',
-    render: () => <ErrorIcon />,
+    id: 'expired-icon',
+    render: () => <ExpiredIcon />,
   },
   {
     status: 'canceled',
@@ -143,6 +168,11 @@ export function PaymentIcon({ status }: PaymentIconProps) {
     (state) => state.status === status,
   )!;
 
+  const isExpired = status === 'expired';
+  const glowClass = isExpired
+    ? 'bg-red-500/10 dark:bg-red-500/5'
+    : 'bg-emerald-500/10 dark:bg-emerald-500/5';
+
   return (
     <div className="flex h-[80px] items-center justify-center">
       <motion.div
@@ -156,7 +186,7 @@ export function PaymentIcon({ status }: PaymentIconProps) {
       >
         <div className="relative flex h-[100px] w-[100px] items-center justify-center">
           <motion.div
-            className="absolute inset-0 rounded-full bg-emerald-500/10 blur-2xl dark:bg-emerald-500/5"
+            className={`absolute inset-0 rounded-full ${glowClass} blur-2xl`}
             initial={{ opacity: 0 }}
             animate={{
               opacity: [0, 1, 0.8],

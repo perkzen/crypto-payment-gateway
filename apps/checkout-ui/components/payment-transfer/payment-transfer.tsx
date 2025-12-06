@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@workspace/ui/components/card';
 import { TooltipProvider } from '@workspace/ui/components/tooltip';
 import { motion } from 'framer-motion';
@@ -10,27 +11,48 @@ import { PaymentIcon } from './payment-icon';
 import { PaymentStatus } from './payment-status';
 import { PaymentTitle } from './payment-title';
 import type { PublicCheckoutSession } from '@workspace/shared';
+import { exchangeRateOptions } from '@/api/exchange-rate';
 
 interface PaymentTransferProps {
   checkoutSession: PublicCheckoutSession;
 }
 
+type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+
+function getPaymentStatus(expiresAt: Date): PaymentStatus {
+  const now = new Date();
+  if (now >= expiresAt) {
+    return 'expired';
+  }
+  return 'open';
+}
+
 export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
+  const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0] || 'ETH';
+  const fiatCurrency = checkoutSession.fiatCurrency;
+
+  const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useQuery(
+    exchangeRateOptions(cryptoCurrency, fiatCurrency),
+  );
+
   // Placeholder values - logic will be implemented later
   const isCompleted = false;
-  const isExpired = checkoutSession.status === 'expired';
-  const isCanceled = checkoutSession.status === 'canceled';
-  const paymentStatus = checkoutSession.status as 'completed' | 'expired' | 'canceled' | 'open';
-  const fiatAmount = '50.00 USD'; // Placeholder
-  const cryptoAmount = 0.001; // Placeholder
-  const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0] || 'ETH';
-  const cryptoSymbol = 'Ξ'; // Placeholder
-  const exchangeRate = 3000; // Placeholder
-  const isLoading = false; // Placeholder
+  const paymentStatus = getPaymentStatus(new Date(checkoutSession.expiresAt));
+
+  const exchangeRate = exchangeRateData?.rate ?? 0;
+  const fiatAmountInCents = checkoutSession.amountFiat;
+  const fiatAmount = `${(fiatAmountInCents / 100).toFixed(2)} ${fiatCurrency}`;
+  const cryptoAmount =
+    exchangeRate > 0 ? fiatAmountInCents / 100 / exchangeRate : 0;
+
+  const isExpired = paymentStatus === 'expired';
+  const hoverBorderClass = isExpired
+    ? 'hover:border-red-500/20 dark:hover:border-red-500/20'
+    : 'hover:border-emerald-500/20 dark:hover:border-emerald-500/20';
 
   return (
     <TooltipProvider>
-      <Card className="mx-auto flex h-[420px] w-full max-w-sm flex-col border border-zinc-200/60 bg-white p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-500 hover:border-emerald-500/20 dark:border-zinc-800/60 dark:bg-zinc-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)] dark:hover:border-emerald-500/20">
+      <Card className={`mx-auto flex h-[420px] w-full max-w-sm flex-col border border-zinc-200/60 bg-white p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-500 ${hoverBorderClass} dark:border-zinc-800/60 dark:bg-zinc-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)]`}>
         <CardContent className="flex flex-1 flex-col justify-center space-y-4">
           <PaymentIcon status={paymentStatus} />
 
@@ -56,7 +78,6 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
                 fiatAmount={fiatAmount}
                 cryptoAmount={cryptoAmount}
                 cryptoCurrency={cryptoCurrency}
-                cryptoSymbol={cryptoSymbol}
                 isCompleted={isCompleted}
               />
 
@@ -65,14 +86,13 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
                 cryptoAmount={cryptoAmount}
                 cryptoCurrency={cryptoCurrency}
                 exchangeRate={exchangeRate}
-                isCompleted={isCompleted}
-                isLoading={isLoading}
+                isLoading={isExchangeRateLoading}
               />
             </motion.div>
           </div>
 
           {/* Payment Actions */}
-          {checkoutSession.status === 'open' && (
+          {paymentStatus === 'open' && exchangeRate > 0 && (
             <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
               <PaymentActions
                 checkoutSession={checkoutSession}

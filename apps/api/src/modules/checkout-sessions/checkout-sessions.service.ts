@@ -44,7 +44,6 @@ export class CheckoutSessionsService {
 
     return {
       id: createdSession.id,
-      status: createdSession.status,
       checkoutUrl: fullCheckoutUrl,
       expiresAt: createdSession.expiresAt,
       metadata: createdSession.metadata ?? null,
@@ -63,7 +62,6 @@ export class CheckoutSessionsService {
 
     return {
       id: session.id,
-      status: session.status,
       amountFiat: session.amountFiat,
       fiatCurrency: session.fiatCurrency,
       allowedCryptoCurrencies: session.allowedCryptoCurrencies,

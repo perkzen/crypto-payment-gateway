@@ -63,13 +63,6 @@ export const CreateCheckoutSessionResultSchema = z.object({
     .uuid()
     .describe('The unique identifier of the checkout session'),
 
-  status: z
-    .string()
-    .optional()
-    .describe(
-      'The current status of the checkout session, e.g., "open", "completed", "expired", "canceled"',
-    ),
-
   checkoutUrl: z
     .string()
     .url()
@@ -97,12 +90,6 @@ export const PublicCheckoutSessionSchema = z.object({
     .string()
     .uuid()
     .describe('The unique identifier of the checkout session'),
-
-  status: z
-    .string()
-    .describe(
-      'The current status of the checkout session, e.g., "open", "completed", "expired", "canceled"',
-    ),
 
   amountFiat: z.number().describe('The amount to be charged in cents'),
 

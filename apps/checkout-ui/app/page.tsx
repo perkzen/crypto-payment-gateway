@@ -3,11 +3,11 @@
 import { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
+import { checkoutSessionByIdOptions } from '@/api/checkout-session';
 import { ErrorState } from '@/app/_components/error-state';
 import { LoadingState } from '@/app/_components/loading-state';
 import { MissingSessionId } from '@/app/_components/missing-session-id';
 import { PaymentTransfer } from '@/components/payment-transfer/payment-transfer';
-import { checkoutSessionByIdOptions } from '@/lib/api/checkout-session';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();

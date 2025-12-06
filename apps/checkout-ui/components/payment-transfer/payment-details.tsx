@@ -1,6 +1,10 @@
 'use client';
 
-import { formatCryptoAmount, getFiatCurrencySymbol } from '@workspace/shared';
+import {
+  ETHEREUM_ICON_URL,
+  formatCryptoAmount,
+  getFiatCurrencySymbol,
+} from '@workspace/shared';
 import { motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import { CurrencyCard } from './currency-card';
@@ -11,7 +15,6 @@ interface PaymentDetailsProps {
   fiatAmount: string;
   cryptoAmount: number;
   cryptoCurrency: string;
-  cryptoSymbol: string;
   isCompleted: boolean;
 }
 
@@ -20,7 +23,6 @@ export function PaymentDetails({
   fiatAmount,
   cryptoAmount,
   cryptoCurrency,
-  cryptoSymbol,
   isCompleted,
 }: PaymentDetailsProps) {
   return (
@@ -67,7 +69,7 @@ export function PaymentDetails({
             icon={<ArrowDownIcon className="h-3 w-3" />}
             amount={formatCryptoAmount(cryptoAmount, cryptoCurrency)}
             description={`${checkoutSession.allowedNetworks[0] || 'ethereum'} Network`}
-            currencySymbol={cryptoSymbol}
+            currencyIconUrl={ETHEREUM_ICON_URL}
             isCompleted={isCompleted}
             isTop={false}
           />

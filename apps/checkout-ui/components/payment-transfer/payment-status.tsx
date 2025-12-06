@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { formatCountdown, useCountdown } from '@/lib/hooks/use-countdown';
+import { formatCountdown, useCountdown } from '@/hooks/use-countdown';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
@@ -42,7 +42,7 @@ const paymentStatusStates: PaymentStatusState[] = [
     status: 'open',
     id: 'progress-status',
     className: 'text-xs font-medium text-emerald-600 dark:text-emerald-400',
-    getText: () => 'Processing Payment...',
+    getText: () => 'Payment pending...',
   },
 ];
 
@@ -55,10 +55,12 @@ export function PaymentStatus({ checkoutSession, status }: PaymentStatusProps) {
     new Date(checkoutSession.expiresAt),
   );
 
-  const displayText =
-    status === 'open' && !isExpired
-      ? `Expires in ${formatCountdown(minutes, seconds)}`
-      : getText(checkoutSession);
+  const getDisplayText = () => {
+    if (status === 'open' && !isExpired) {
+      return `Expires in ${formatCountdown(minutes, seconds)}`;
+    }
+    return getText(checkoutSession);
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -73,7 +75,7 @@ export function PaymentStatus({ checkoutSession, status }: PaymentStatusProps) {
           ease: [0.22, 1, 0.36, 1],
         }}
       >
-        {displayText}
+        {getDisplayText()}
       </motion.div>
     </AnimatePresence>
   );
