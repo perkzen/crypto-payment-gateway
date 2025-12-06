@@ -6,9 +6,11 @@
 import {
   type CreateCheckoutSession,
   type CreateCheckoutSessionResult,
+  CreateCheckoutSessionResultSchema,
   type ExchangeRate,
   ExchangeRateSchema,
   type PublicCheckoutSession,
+  PublicCheckoutSessionSchema,
 } from '@workspace/shared';
 import axios, { type AxiosError, type AxiosInstance } from 'axios';
 
@@ -57,12 +59,7 @@ export class CryptoPayClient {
           data,
         );
 
-      return {
-        ...response.data,
-        expiresAt: response.data.expiresAt
-          ? new Date(response.data.expiresAt)
-          : new Date(),
-      };
+      return CreateCheckoutSessionResultSchema.parse(response.data);
     } catch (error) {
       this.handleError(error, 'Failed to create checkout session');
     }
@@ -80,13 +77,7 @@ export class CryptoPayClient {
         `/checkout/sessions/${id}`,
       );
 
-      // Convert ISO date string to Date object
-      return {
-        ...response.data,
-        expiresAt: response.data.expiresAt
-          ? new Date(response.data.expiresAt)
-          : new Date(),
-      };
+      return PublicCheckoutSessionSchema.parse(response.data);
     } catch (error) {
       this.handleError(error, 'Failed to get checkout session');
     }

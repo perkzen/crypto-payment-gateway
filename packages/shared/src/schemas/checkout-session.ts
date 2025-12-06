@@ -69,7 +69,7 @@ export const CreateCheckoutSessionResultSchema = z.object({
     .describe('The URL where the customer can complete the payment'),
 
   expiresAt: z
-    .date()
+    .coerce.date()
     .describe('The timestamp when the checkout session expires'),
 
   metadata: z
@@ -111,7 +111,7 @@ export const PublicCheckoutSessionSchema = z.object({
     ),
 
   expiresAt: z
-    .date()
+    .coerce.date()
     .describe('The ISO 8601 timestamp when the checkout session expires'),
 });
 
