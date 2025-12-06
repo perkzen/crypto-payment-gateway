@@ -1,7 +1,7 @@
 'use client';
 
 import { useAccount } from 'wagmi';
-import type { PublicCheckoutSession } from '@workspace/shared';
+import type { ExchangeRate, PublicCheckoutSession } from '@workspace/shared';
 import { ConnectWalletButton } from '@/components/payment-actions/connect-wallet-button';
 import {
   PayButton,
@@ -12,7 +12,7 @@ import { WalletInfo } from '@/components/payment-actions/wallet-info';
 
 interface PaymentActionsProps {
   checkoutSession: PublicCheckoutSession;
-  exchangeRate: number;
+  exchangeRate: ExchangeRate | null;
   onPaymentSuccess?: () => void;
 }
 

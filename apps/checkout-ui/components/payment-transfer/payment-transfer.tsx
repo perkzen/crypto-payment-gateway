@@ -39,11 +39,11 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
   const isCompleted = false;
   const paymentStatus = getPaymentStatus(new Date(checkoutSession.expiresAt));
 
-  const exchangeRate = exchangeRateData?.rate ?? 0;
+  const exchangeRate = exchangeRateData ?? null;
+  const rate = exchangeRate?.rate ?? 0;
   const fiatAmountInCents = checkoutSession.amountFiat;
   const fiatAmount = `${(fiatAmountInCents / 100).toFixed(2)} ${fiatCurrency}`;
-  const cryptoAmount =
-    exchangeRate > 0 ? fiatAmountInCents / 100 / exchangeRate : 0;
+  const cryptoAmount = rate > 0 ? fiatAmountInCents / 100 / rate : 0;
 
   const isExpired = paymentStatus === 'expired';
   const hoverBorderClass = isExpired
@@ -52,7 +52,9 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
 
   return (
     <TooltipProvider>
-      <Card className={`mx-auto flex h-[420px] w-full max-w-sm flex-col border border-zinc-200/60 bg-white p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-500 ${hoverBorderClass} dark:border-zinc-800/60 dark:bg-zinc-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)]`}>
+      <Card
+        className={`mx-auto flex h-[420px] w-full max-w-sm flex-col border border-zinc-200/60 bg-white p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-500 ${hoverBorderClass} dark:border-zinc-800/60 dark:bg-zinc-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)]`}
+      >
         <CardContent className="flex flex-1 flex-col justify-center space-y-4">
           <PaymentIcon status={paymentStatus} />
 
@@ -80,19 +82,20 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
                 cryptoCurrency={cryptoCurrency}
                 isCompleted={isCompleted}
               />
-
-              <ExchangeRate
-                checkoutSession={checkoutSession}
-                cryptoAmount={cryptoAmount}
-                cryptoCurrency={cryptoCurrency}
-                exchangeRate={exchangeRate}
-                isLoading={isExchangeRateLoading}
-              />
+              {exchangeRate && (
+                <ExchangeRate
+                  checkoutSession={checkoutSession}
+                  cryptoAmount={cryptoAmount}
+                  cryptoCurrency={cryptoCurrency}
+                  exchangeRate={exchangeRate}
+                  isLoading={isExchangeRateLoading}
+                />
+              )}
             </motion.div>
           </div>
 
           {/* Payment Actions */}
-          {paymentStatus === 'open' && exchangeRate > 0 && (
+          {paymentStatus === 'open' && (
             <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
               <PaymentActions
                 checkoutSession={checkoutSession}

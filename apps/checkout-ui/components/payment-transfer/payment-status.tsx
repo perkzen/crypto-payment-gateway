@@ -28,13 +28,13 @@ const paymentStatusStates: PaymentStatusState[] = [
   },
   {
     status: 'expired',
-    id: 'error-status',
+    id: 'expired-id',
     className: 'text-xs font-medium text-red-600 dark:text-red-400',
     getText: () => 'This session has expired',
   },
   {
     status: 'canceled',
-    id: 'error-status',
+    id: 'canceled-id',
     className: 'text-xs font-medium text-red-600 dark:text-red-400',
     getText: () => 'This payment was canceled',
   },

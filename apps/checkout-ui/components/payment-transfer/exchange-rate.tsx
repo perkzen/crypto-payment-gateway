@@ -7,13 +7,13 @@ import {
 } from '@workspace/ui/components/tooltip';
 import { AnimatePresence, motion } from 'framer-motion';
 import { InfoIcon } from 'lucide-react';
-import type { PublicCheckoutSession } from '@workspace/shared';
+import type { ExchangeRate, PublicCheckoutSession } from '@workspace/shared';
 
 interface ExchangeRateProps {
   checkoutSession: PublicCheckoutSession;
   cryptoAmount: number;
   cryptoCurrency: string;
-  exchangeRate: number;
+  exchangeRate: ExchangeRate;
   isLoading: boolean;
 }
 
@@ -23,7 +23,7 @@ export function ExchangeRate({
   exchangeRate,
   isLoading,
 }: ExchangeRateProps) {
-  const ratePerUnit = 1 / exchangeRate;
+  const ratePerUnit = exchangeRate.rate > 0 ? 1 / exchangeRate.rate : 0;
 
   function getText(): string {
     if (isLoading) return 'Loading exchange rate...';
@@ -32,7 +32,10 @@ export function ExchangeRate({
 
   function getTooltipText(): string {
     if (isLoading) return 'Fetching latest exchange rate...';
-    return `Rate: ${exchangeRate.toFixed(2)} ${checkoutSession.fiatCurrency} per ${cryptoCurrency} (updated ${new Date().toLocaleTimeString()})`;
+    const rateText = `Rate: ${exchangeRate.rate.toFixed(2)} ${checkoutSession.fiatCurrency} per ${cryptoCurrency}`;
+
+    const timestamp = new Date(exchangeRate.timestamp).toLocaleTimeString();
+    return `${rateText} (updated ${timestamp})`;
   }
 
   return (

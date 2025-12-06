@@ -82,9 +82,17 @@ function CompletedIcon() {
         ease: 'easeInOut',
       }}
       className="flex h-[100px] w-[100px] items-center justify-center"
+      aria-label="Payment completed"
     >
-      <div className="relative z-10 rounded-full border border-emerald-500 bg-white p-5 dark:bg-zinc-900">
-        <Check className="h-10 w-10 text-emerald-500" strokeWidth={3.5} />
+      <div
+        className="relative z-10 rounded-full border border-emerald-500 bg-white p-5 dark:bg-zinc-900"
+        title="Payment completed"
+      >
+        <Check
+          className="h-10 w-10 text-emerald-500"
+          strokeWidth={3.5}
+          aria-hidden="true"
+        />
       </div>
     </motion.div>
   );
@@ -93,7 +101,7 @@ function CompletedIcon() {
 function ExpiredIcon() {
   return (
     <motion.div
-      key="expired"
+      key="expired-error-icon"
       initial={{
         opacity: 0,
         rotate: -180,
@@ -107,9 +115,17 @@ function ExpiredIcon() {
         ease: 'easeInOut',
       }}
       className="flex h-[100px] w-[100px] items-center justify-center"
+      aria-label="Session expired"
     >
-      <div className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900">
-        <X className="h-10 w-10 text-red-500" strokeWidth={3.5} />
+      <div
+        className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900"
+        title="Session expired"
+      >
+        <X
+          className="h-10 w-10 text-red-500"
+          strokeWidth={3.5}
+          aria-hidden="true"
+        />
       </div>
     </motion.div>
   );
@@ -118,7 +134,7 @@ function ExpiredIcon() {
 function ErrorIcon() {
   return (
     <motion.div
-      key="error"
+      key="canceled-error-icon"
       initial={{
         opacity: 0,
         rotate: -180,
@@ -132,9 +148,17 @@ function ErrorIcon() {
         ease: 'easeInOut',
       }}
       className="flex h-[100px] w-[100px] items-center justify-center"
+      aria-label="Payment canceled"
     >
-      <div className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900">
-        <Check className="h-10 w-10 text-red-500" strokeWidth={3.5} />
+      <div
+        className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900"
+        title="Payment canceled"
+      >
+        <X
+          className="h-10 w-10 text-red-500"
+          strokeWidth={3.5}
+          aria-hidden="true"
+        />
       </div>
     </motion.div>
   );
@@ -148,12 +172,12 @@ const paymentIconStates: PaymentIconState[] = [
   },
   {
     status: 'expired',
-    id: 'expired-icon',
+    id: 'expired-error-icon',
     render: () => <ExpiredIcon />,
   },
   {
     status: 'canceled',
-    id: 'error-icon',
+    id: 'canceled-error-icon',
     render: () => <ErrorIcon />,
   },
   {
