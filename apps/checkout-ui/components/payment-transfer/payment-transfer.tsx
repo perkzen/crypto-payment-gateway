@@ -5,7 +5,7 @@ import { Card, CardContent } from '@workspace/ui/components/card';
 import { TooltipProvider } from '@workspace/ui/components/tooltip';
 import { motion } from 'framer-motion';
 import { PaymentActions } from '../payment-actions/payment-actions';
-import { ExchangeRate } from './exchange-rate';
+import { ExchangeRateDisplay } from './exchange-rate';
 import { PaymentDetails } from './payment-details';
 import { PaymentIcon } from './payment-icon';
 import { PaymentStatus } from './payment-status';
@@ -83,7 +83,7 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
                 isCompleted={isCompleted}
               />
               {exchangeRate && (
-                <ExchangeRate
+                <ExchangeRateDisplay
                   checkoutSession={checkoutSession}
                   cryptoAmount={cryptoAmount}
                   cryptoCurrency={cryptoCurrency}

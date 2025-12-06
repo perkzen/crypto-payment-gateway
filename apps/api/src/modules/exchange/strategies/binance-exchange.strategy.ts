@@ -14,8 +14,6 @@ export class BinanceExchangeStrategy implements ExchangeStrategy {
     const symbol = this.mapTickerToSymbol(tickers);
     url.searchParams.set('symbol', symbol);
 
-    const timestamp = new Date();
-
     try {
       const response = await this.httpService.axiosRef.get<{ price: string }>(
         url.toString(),
@@ -23,7 +21,7 @@ export class BinanceExchangeStrategy implements ExchangeStrategy {
 
       return {
         rate: parseFloat(response.data.price),
-        timestamp,
+        timestamp: new Date(),
       };
     } catch (error) {
       this.logger.error(

@@ -17,7 +17,7 @@ interface ExchangeRateProps {
   isLoading: boolean;
 }
 
-export function ExchangeRate({
+export function ExchangeRateDisplay({
   checkoutSession,
   cryptoCurrency,
   exchangeRate,
