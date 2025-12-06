@@ -34,7 +34,7 @@ export function ExchangeRate({
     if (isLoading) return 'Fetching latest exchange rate...';
     const rateText = `Rate: ${exchangeRate.rate.toFixed(2)} ${checkoutSession.fiatCurrency} per ${cryptoCurrency}`;
 
-    const timestamp = new Date(exchangeRate.timestamp).toLocaleTimeString();
+    const timestamp = exchangeRate.timestamp.toLocaleTimeString();
     return `${rateText} (updated ${timestamp})`;
   }
 

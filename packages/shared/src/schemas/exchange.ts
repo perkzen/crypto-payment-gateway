@@ -4,7 +4,7 @@ import type { CryptoTicker, FiatTicker } from '../types/exchange';
 export const ExchangeRateSchema = z.object({
   rate: z.number().positive().describe('The exchange rate for the given pair'),
   timestamp: z
-    .date()
+    .coerce.date()
     .describe('The timestamp when the exchange rate was fetched'),
 });
 

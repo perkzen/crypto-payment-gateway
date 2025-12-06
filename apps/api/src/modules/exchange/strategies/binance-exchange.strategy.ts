@@ -14,12 +14,17 @@ export class BinanceExchangeStrategy implements ExchangeStrategy {
     const symbol = this.mapTickerToSymbol(tickers);
     url.searchParams.set('symbol', symbol);
 
+    const timestamp = new Date();
+
     try {
       const response = await this.httpService.axiosRef.get<{ price: string }>(
         url.toString(),
       );
 
-      return parseFloat(response.data.price);
+      return {
+        rate: parseFloat(response.data.price),
+        timestamp,
+      };
     } catch (error) {
       this.logger.error(
         `Error fetching exchange rate from Binance for symbol ${symbol}: ${error}`,

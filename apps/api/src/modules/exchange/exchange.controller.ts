@@ -20,7 +20,6 @@ export class ExchangeController {
   @Get('price')
   async getExchangeRate(@Query() query: GetExchangeRateQueryDto) {
     const tickers: Tickers = [query.pair.crypto, query.pair.fiat];
-    const rate = await this.exchangeService.getExchangeRate(tickers);
-    return { rate, timestamp: new Date() };
+    return this.exchangeService.getExchangeRate(tickers);
   }
 }

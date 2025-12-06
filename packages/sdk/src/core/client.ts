@@ -3,13 +3,14 @@
  * Core client for interacting with the payment gateway API
  */
 
-import axios, { type AxiosError, type AxiosInstance } from 'axios';
-import type {
-  CreateCheckoutSession,
-  CreateCheckoutSessionResult,
-  ExchangeRate,
-  PublicCheckoutSession,
+import {
+  type CreateCheckoutSession,
+  type CreateCheckoutSessionResult,
+  type ExchangeRate,
+  ExchangeRateSchema,
+  type PublicCheckoutSession,
 } from '@workspace/shared';
+import axios, { type AxiosError, type AxiosInstance } from 'axios';
 
 export class CryptoPayClient {
   private axiosInstance: AxiosInstance;
@@ -109,7 +110,7 @@ export class CryptoPayClient {
         },
       );
 
-      return response.data;
+      return ExchangeRateSchema.parse(response.data);
     } catch (error) {
       this.handleError(error, 'Failed to get exchange rate');
     }
