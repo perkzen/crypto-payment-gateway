@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { PublicCheckoutSession } from '@workspace/shared';
-import { useCountdown, formatCountdown } from '@/lib/hooks/use-countdown';
+import { formatCountdown, useCountdown } from '@/lib/hooks/use-countdown';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
@@ -46,10 +46,7 @@ const paymentStatusStates: PaymentStatusState[] = [
   },
 ];
 
-export function PaymentStatus({
-  checkoutSession,
-  status,
-}: PaymentStatusProps) {
+export function PaymentStatus({ checkoutSession, status }: PaymentStatusProps) {
   const { id, className, getText } = paymentStatusStates.find(
     (state) => state.status === status,
   )!;

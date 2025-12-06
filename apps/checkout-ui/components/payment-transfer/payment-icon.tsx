@@ -1,9 +1,8 @@
 'use client';
 
-import { cn } from '@workspace/ui/lib/utils';
+import { type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpDown, Check } from 'lucide-react';
-import { type ReactNode } from 'react';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
