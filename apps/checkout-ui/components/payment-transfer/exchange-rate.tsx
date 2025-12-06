@@ -9,6 +9,20 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { InfoIcon } from 'lucide-react';
 import type { PublicCheckoutSession } from '@workspace/shared';
 
+type ExchangeRateStatus = 'loading' | 'calculating' | 'completed';
+
+interface ExchangeRateTextParams {
+  checkoutSession: PublicCheckoutSession;
+  cryptoCurrency: string;
+  ratePerUnit: number;
+}
+
+interface ExchangeRateTooltipParams {
+  checkoutSession: PublicCheckoutSession;
+  cryptoCurrency: string;
+  exchangeRate: number;
+}
+
 interface ExchangeRateProps {
   checkoutSession: PublicCheckoutSession;
   cryptoAmount: number;
@@ -16,6 +30,45 @@ interface ExchangeRateProps {
   exchangeRate: number;
   isCompleted: boolean;
   isLoading: boolean;
+}
+
+interface ExchangeRateState {
+  status: ExchangeRateStatus;
+  id: string;
+  getText: (params: ExchangeRateTextParams) => string;
+  getTooltipText: (params: ExchangeRateTooltipParams) => string;
+}
+
+const exchangeRateStates: ExchangeRateState[] = [
+  {
+    status: 'loading',
+    id: 'loading-rate',
+    getText: () => 'Loading exchange rate...',
+    getTooltipText: () => 'Fetching latest exchange rate...',
+  },
+  {
+    status: 'calculating',
+    id: 'calculating-rate',
+    getText: () => 'Calculating exchange rate...',
+    getTooltipText: () => 'Fetching latest exchange rate...',
+  },
+  {
+    status: 'completed',
+    id: 'completed-rate',
+    getText: ({ checkoutSession, cryptoCurrency, ratePerUnit }) =>
+      `Exchange Rate: 1 ${checkoutSession.fiatCurrency} ≈ ${ratePerUnit.toFixed(6)} ${cryptoCurrency}`,
+    getTooltipText: ({ checkoutSession, cryptoCurrency, exchangeRate }) =>
+      `Rate: ${exchangeRate.toFixed(2)} ${checkoutSession.fiatCurrency} per ${cryptoCurrency} (updated ${new Date().toLocaleTimeString()})`,
+  },
+];
+
+function getExchangeRateStatus(
+  isCompleted: boolean,
+  isLoading: boolean,
+): ExchangeRateStatus {
+  if (isLoading) return 'loading';
+  if (isCompleted) return 'completed';
+  return 'calculating';
 }
 
 export function ExchangeRate({
@@ -26,6 +79,10 @@ export function ExchangeRate({
   isLoading,
 }: ExchangeRateProps) {
   const ratePerUnit = 1 / exchangeRate;
+  const status = getExchangeRateStatus(isCompleted, isLoading);
+  const { id, getText, getTooltipText } = exchangeRateStates.find(
+    (state) => state.status === status,
+  )!;
 
   return (
     <motion.div
@@ -39,36 +96,18 @@ export function ExchangeRate({
       }}
     >
       <AnimatePresence mode="wait">
-        {isCompleted && !isLoading ? (
-          <motion.span
-            key="completed-rate"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{
-              duration: 0.4,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            Exchange Rate: 1 {checkoutSession.fiatCurrency} ≈{' '}
-            {ratePerUnit.toFixed(6)} {cryptoCurrency}
-          </motion.span>
-        ) : (
-          <motion.span
-            key="calculating-rate"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{
-              duration: 0.4,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            {isLoading
-              ? 'Loading exchange rate...'
-              : 'Calculating exchange rate...'}
-          </motion.span>
-        )}
+        <motion.span
+          key={id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
+          {getText({ checkoutSession, cryptoCurrency, ratePerUnit })}
+        </motion.span>
       </AnimatePresence>
       <Tooltip>
         <TooltipTrigger>
@@ -76,9 +115,7 @@ export function ExchangeRate({
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">
-            {isCompleted && !isLoading
-              ? `Rate: ${exchangeRate.toFixed(2)} ${checkoutSession.fiatCurrency} per ${cryptoCurrency} (updated ${new Date().toLocaleTimeString()})`
-              : 'Fetching latest exchange rate...'}
+            {getTooltipText({ checkoutSession, cryptoCurrency, exchangeRate })}
           </p>
         </TooltipContent>
       </Tooltip>
