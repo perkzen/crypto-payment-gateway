@@ -3,64 +3,71 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import type { PublicCheckoutSession } from '@workspace/shared';
 
+type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+
 interface PaymentStatusProps {
   checkoutSession: PublicCheckoutSession;
-  isCompleted: boolean;
-  isExpired: boolean;
-  isCanceled: boolean;
+  status: PaymentStatus;
 }
+
+interface PaymentStatusState {
+  status: PaymentStatus;
+  id: string;
+  className: string;
+  getText: (checkoutSession: PublicCheckoutSession) => string;
+}
+
+const paymentStatusStates: PaymentStatusState[] = [
+  {
+    status: 'completed',
+    id: 'completed-id',
+    className: 'text-xs font-medium text-emerald-600 dark:text-emerald-400',
+    getText: (checkoutSession) =>
+      `Session ID: ${checkoutSession.id.slice(0, 8)}...`,
+  },
+  {
+    status: 'expired',
+    id: 'error-status',
+    className: 'text-xs font-medium text-red-600 dark:text-red-400',
+    getText: () => 'This session has expired',
+  },
+  {
+    status: 'canceled',
+    id: 'error-status',
+    className: 'text-xs font-medium text-red-600 dark:text-red-400',
+    getText: () => 'This payment was canceled',
+  },
+  {
+    status: 'open',
+    id: 'progress-status',
+    className: 'text-xs font-medium text-emerald-600 dark:text-emerald-400',
+    getText: () => 'Processing Payment...',
+  },
+];
 
 export function PaymentStatus({
   checkoutSession,
-  isCompleted,
-  isExpired,
-  isCanceled,
+  status,
 }: PaymentStatusProps) {
+  const { id, className, getText } = paymentStatusStates.find(
+    (state) => state.status === status,
+  )!;
+
   return (
     <AnimatePresence mode="wait">
-      {isCompleted ? (
-        <motion.div
-          key="completed-id"
-          className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{
-            duration: 0.4,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        >
-          Session ID: {checkoutSession.id.slice(0, 8)}...
-        </motion.div>
-      ) : isExpired || isCanceled ? (
-        <motion.div
-          key="error-status"
-          className="text-xs font-medium text-red-600 dark:text-red-400"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{
-            duration: 0.4,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        >
-          {isExpired ? 'This session has expired' : 'This payment was canceled'}
-        </motion.div>
-      ) : (
-        <motion.div
-          key="progress-status"
-          className="text-xs font-medium text-emerald-600 dark:text-emerald-400"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{
-            duration: 0.4,
-            ease: [0.22, 1, 0.36, 1],
-          }}
-        >
-          Processing Payment...
-        </motion.div>
-      )}
+      <motion.div
+        key={id}
+        className={className}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{
+          duration: 0.4,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+      >
+        {getText(checkoutSession)}
+      </motion.div>
     </AnimatePresence>
   );
 }

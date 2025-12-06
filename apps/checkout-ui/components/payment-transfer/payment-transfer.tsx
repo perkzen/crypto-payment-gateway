@@ -20,6 +20,7 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
   const isCompleted = false;
   const isExpired = checkoutSession.status === 'expired';
   const isCanceled = checkoutSession.status === 'canceled';
+  const paymentStatus = checkoutSession.status as 'completed' | 'expired' | 'canceled' | 'open';
   const fiatAmount = '50.00 USD'; // Placeholder
   const cryptoAmount = 0.001; // Placeholder
   const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0] || 'ETH';
@@ -48,16 +49,10 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <PaymentTitle
-                isCompleted={isCompleted}
-                isExpired={isExpired}
-                isCanceled={isCanceled}
-              />
+              <PaymentTitle status={paymentStatus} />
               <PaymentStatus
                 checkoutSession={checkoutSession}
-                isCompleted={isCompleted}
-                isExpired={isExpired}
-                isCanceled={isCanceled}
+                status={paymentStatus}
               />
 
               <PaymentDetails
