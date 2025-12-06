@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { PublicCheckoutSession } from '@workspace/shared';
+import { useCountdown, formatCountdown } from '@/lib/hooks/use-countdown';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
@@ -53,6 +54,15 @@ export function PaymentStatus({
     (state) => state.status === status,
   )!;
 
+  const { minutes, seconds, isExpired } = useCountdown(
+    new Date(checkoutSession.expiresAt),
+  );
+
+  const displayText =
+    status === 'open' && !isExpired
+      ? `Expires in ${formatCountdown(minutes, seconds)}`
+      : getText(checkoutSession);
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -66,7 +76,7 @@ export function PaymentStatus({
           ease: [0.22, 1, 0.36, 1],
         }}
       >
-        {getText(checkoutSession)}
+        {displayText}
       </motion.div>
     </AnimatePresence>
   );

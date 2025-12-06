@@ -32,11 +32,7 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
     <TooltipProvider>
       <Card className="mx-auto flex h-[420px] w-full max-w-sm flex-col border border-zinc-200/60 bg-white p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.03)] backdrop-blur-sm transition-all duration-500 hover:border-emerald-500/20 dark:border-zinc-800/60 dark:bg-zinc-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.03)] dark:hover:border-emerald-500/20">
         <CardContent className="flex flex-1 flex-col justify-center space-y-4">
-          <PaymentIcon
-            isCompleted={isCompleted}
-            isExpired={isExpired}
-            isCanceled={isCanceled}
-          />
+          <PaymentIcon status={paymentStatus} />
 
           <div className="flex h-[280px] flex-col">
             <motion.div
