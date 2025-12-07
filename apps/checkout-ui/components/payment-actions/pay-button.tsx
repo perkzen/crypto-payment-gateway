@@ -3,7 +3,6 @@
 import { type ReactNode } from 'react';
 import { Button } from '@workspace/ui/components/button';
 import { Loader2, Wallet } from 'lucide-react';
-import type { PublicCheckoutSession } from '@workspace/shared';
 
 type PayButtonStatus =
   | 'transaction-pending'
@@ -14,7 +13,6 @@ type PayButtonStatus =
 export type { PayButtonStatus };
 
 interface PayButtonProps {
-  checkoutSession: PublicCheckoutSession;
   onPay: () => void;
   status: PayButtonStatus;
   canPay: boolean;

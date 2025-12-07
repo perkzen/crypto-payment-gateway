@@ -7,10 +7,10 @@ import {
 } from '@workspace/ui/components/tooltip';
 import { AnimatePresence, motion } from 'framer-motion';
 import { InfoIcon } from 'lucide-react';
-import type { ExchangeRate, PublicCheckoutSession } from '@workspace/shared';
+import type { ExchangeRate } from '@workspace/shared';
+import { useCheckoutSession } from '@/contexts/checkout-session-context';
 
 interface ExchangeRateProps {
-  checkoutSession: PublicCheckoutSession;
   cryptoAmount: number;
   cryptoCurrency: string;
   exchangeRate: ExchangeRate;
@@ -18,11 +18,11 @@ interface ExchangeRateProps {
 }
 
 export function ExchangeRateDisplay({
-  checkoutSession,
   cryptoCurrency,
   exchangeRate,
   isLoading,
 }: ExchangeRateProps) {
+  const checkoutSession = useCheckoutSession();
   const ratePerUnit = exchangeRate.rate > 0 ? 1 / exchangeRate.rate : 0;
 
   function getText(): string {

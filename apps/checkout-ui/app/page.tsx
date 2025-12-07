@@ -8,6 +8,7 @@ import { ErrorState } from '@/app/_components/error-state';
 import { LoadingState } from '@/app/_components/loading-state';
 import { MissingSessionId } from '@/app/_components/missing-session-id';
 import { PaymentTransfer } from '@/components/payment-transfer/payment-transfer';
+import { CheckoutSessionProvider } from '@/contexts/checkout-session-context';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -35,9 +36,11 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 font-sans dark:bg-black">
-      <PaymentTransfer checkoutSession={checkoutSession} />
-    </div>
+    <CheckoutSessionProvider checkoutSession={checkoutSession}>
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4 font-sans dark:bg-black">
+        <PaymentTransfer />
+      </div>
+    </CheckoutSessionProvider>
   );
 }
 

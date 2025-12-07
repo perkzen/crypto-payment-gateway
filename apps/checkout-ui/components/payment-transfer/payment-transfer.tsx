@@ -5,17 +5,14 @@ import { Card, CardContent } from '@workspace/ui/components/card';
 import { TooltipProvider } from '@workspace/ui/components/tooltip';
 import { motion } from 'framer-motion';
 import { PaymentActions } from '../payment-actions/payment-actions';
-import { ExchangeRateDisplay } from './exchange-rate';
+import { ExchangeRateDisplay } from './exchange-rate-display';
 import { PaymentDetails } from './payment-details';
 import { PaymentIcon } from './payment-icon';
 import { PaymentStatus } from './payment-status';
 import { PaymentTitle } from './payment-title';
-import type { PublicCheckoutSession } from '@workspace/shared';
 import { exchangeRateOptions } from '@/api/exchange-rate';
-
-interface PaymentTransferProps {
-  checkoutSession: PublicCheckoutSession;
-}
+import { useCheckoutSession } from '@/contexts/checkout-session-context';
+import { calculatePaymentAmounts } from '@/lib/utils/payment-calculations';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
@@ -27,7 +24,8 @@ function getPaymentStatus(expiresAt: Date): PaymentStatus {
   return 'open';
 }
 
-export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
+export function PaymentTransfer() {
+  const checkoutSession = useCheckoutSession();
   const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0] || 'ETH';
   const fiatCurrency = checkoutSession.fiatCurrency;
 
@@ -39,11 +37,11 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
   const isCompleted = false;
   const paymentStatus = getPaymentStatus(new Date(checkoutSession.expiresAt));
 
-  const exchangeRate = exchangeRateData ?? null;
-  const rate = exchangeRate?.rate ?? 0;
-  const fiatAmountInCents = checkoutSession.amountFiat;
-  const fiatAmount = `${(fiatAmountInCents / 100).toFixed(2)} ${fiatCurrency}`;
-  const cryptoAmount = rate > 0 ? fiatAmountInCents / 100 / rate : 0;
+  const { exchangeRate, fiatAmount, cryptoAmount } = calculatePaymentAmounts({
+    exchangeRateData,
+    fiatAmountInCents: checkoutSession.amountFiat,
+    fiatCurrency,
+  });
 
   const isExpired = paymentStatus === 'expired';
   const hoverBorderClass = isExpired
@@ -70,13 +68,9 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
               }}
             >
               <PaymentTitle status={paymentStatus} />
-              <PaymentStatus
-                checkoutSession={checkoutSession}
-                status={paymentStatus}
-              />
+              <PaymentStatus status={paymentStatus} />
 
               <PaymentDetails
-                checkoutSession={checkoutSession}
                 fiatAmount={fiatAmount}
                 cryptoAmount={cryptoAmount}
                 cryptoCurrency={cryptoCurrency}
@@ -84,7 +78,6 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
               />
               {exchangeRate && (
                 <ExchangeRateDisplay
-                  checkoutSession={checkoutSession}
                   cryptoAmount={cryptoAmount}
                   cryptoCurrency={cryptoCurrency}
                   exchangeRate={exchangeRate}
@@ -97,10 +90,7 @@ export function PaymentTransfer({ checkoutSession }: PaymentTransferProps) {
           {/* Payment Actions */}
           {paymentStatus === 'open' && (
             <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
-              <PaymentActions
-                checkoutSession={checkoutSession}
-                exchangeRate={exchangeRate}
-              />
+              <PaymentActions />
             </div>
           )}
         </CardContent>

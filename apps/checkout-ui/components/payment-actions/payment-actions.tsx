@@ -1,7 +1,6 @@
 'use client';
 
 import { useAccount } from 'wagmi';
-import type { ExchangeRate, PublicCheckoutSession } from '@workspace/shared';
 import { ConnectWalletButton } from '@/components/payment-actions/connect-wallet-button';
 import {
   PayButton,
@@ -9,12 +8,7 @@ import {
 } from '@/components/payment-actions/pay-button';
 import { PaymentStatus } from '@/components/payment-actions/payment-status';
 import { WalletInfo } from '@/components/payment-actions/wallet-info';
-
-interface PaymentActionsProps {
-  checkoutSession: PublicCheckoutSession;
-  exchangeRate: ExchangeRate | null;
-  onPaymentSuccess?: () => void;
-}
+import { useCheckoutSession } from '@/contexts/checkout-session-context';
 
 function getPayButtonStatus(
   isLoading: boolean,
@@ -35,7 +29,8 @@ function getSessionStatus(expiresAt: Date): 'open' | 'expired' {
   return 'open';
 }
 
-export function PaymentActions({ checkoutSession }: PaymentActionsProps) {
+export function PaymentActions() {
+  const checkoutSession = useCheckoutSession();
   const { isConnected, chain } = useAccount();
 
   // Placeholder values - logic will be implemented later
@@ -87,7 +82,6 @@ export function PaymentActions({ checkoutSession }: PaymentActionsProps) {
         chain={chain}
       />
       <PayButton
-        checkoutSession={checkoutSession}
         onPay={handlePay}
         status={payButtonStatus}
         canPay={canPay}

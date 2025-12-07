@@ -1,13 +1,12 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import type { PublicCheckoutSession } from '@workspace/shared';
+import { useCheckoutSession } from '@/contexts/checkout-session-context';
 import { formatCountdown, useCountdown } from '@/hooks/use-countdown';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
 interface PaymentStatusProps {
-  checkoutSession: PublicCheckoutSession;
   status: PaymentStatus;
 }
 
@@ -15,7 +14,7 @@ interface PaymentStatusState {
   status: PaymentStatus;
   id: string;
   className: string;
-  getText: (checkoutSession: PublicCheckoutSession) => string;
+  getText: (checkoutSession: ReturnType<typeof useCheckoutSession>) => string;
 }
 
 const paymentStatusStates: PaymentStatusState[] = [
@@ -46,7 +45,8 @@ const paymentStatusStates: PaymentStatusState[] = [
   },
 ];
 
-export function PaymentStatus({ checkoutSession, status }: PaymentStatusProps) {
+export function PaymentStatus({ status }: PaymentStatusProps) {
+  const checkoutSession = useCheckoutSession();
   const { id, className, getText } = paymentStatusStates.find(
     (state) => state.status === status,
   )!;

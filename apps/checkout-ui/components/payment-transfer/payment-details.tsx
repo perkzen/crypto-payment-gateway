@@ -8,10 +8,9 @@ import {
 import { motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import { CurrencyCard } from './currency-card';
-import type { PublicCheckoutSession } from '@workspace/shared';
+import { useCheckoutSession } from '@/contexts/checkout-session-context';
 
 interface PaymentDetailsProps {
-  checkoutSession: PublicCheckoutSession;
   fiatAmount: string;
   cryptoAmount: number;
   cryptoCurrency: string;
@@ -19,12 +18,12 @@ interface PaymentDetailsProps {
 }
 
 export function PaymentDetails({
-  checkoutSession,
   fiatAmount,
   cryptoAmount,
   cryptoCurrency,
   isCompleted,
 }: PaymentDetailsProps) {
+  const checkoutSession = useCheckoutSession();
   return (
     <motion.div
       className="mt-4 flex items-center gap-4"
