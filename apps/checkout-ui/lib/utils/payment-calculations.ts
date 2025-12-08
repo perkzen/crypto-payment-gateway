@@ -1,4 +1,7 @@
-import { formatFiatAmount } from '@workspace/shared';
+import {
+  calculateCryptoAmount,
+  formatFiatAmount,
+} from '@workspace/shared';
 import type { ExchangeRate } from '@workspace/shared';
 
 interface PaymentAmountsParams {
@@ -29,7 +32,15 @@ export function calculatePaymentAmounts({
   const exchangeRate = exchangeRateData ?? null;
   const rate = exchangeRate?.rate ?? 0;
   const fiatAmount = formatFiatAmount(fiatAmountInCents, fiatCurrency);
-  const cryptoAmount = rate > 0 ? fiatAmountInCents / 100 / rate : 0;
+  // Checkout UI intentionally returns 0 for zero/invalid rates instead of throwing,
+  // to gracefully handle cases where exchange rate data is unavailable
+  let cryptoAmount = 0;
+  try {
+    cryptoAmount = calculateCryptoAmount(fiatAmountInCents, rate);
+  } catch {
+    // Return 0 when rate is zero or invalid (shared function throws error)
+    cryptoAmount = 0;
+  }
 
   return {
     exchangeRate,

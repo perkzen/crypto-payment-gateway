@@ -1,6 +1,10 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { merchant, walletAddress } from '@app/modules/database/schemas';
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 
 @Injectable()
@@ -11,7 +15,8 @@ export class WalletsService {
    * Get the primary wallet address for a merchant by merchant ID
    * @param merchantId - The merchant ID
    * @returns The primary wallet address
-   * @throws Error if merchant not found or no primary wallet address configured
+   * @throws NotFoundException if merchant not found
+   * @throws UnprocessableEntityException if no primary wallet address configured
    */
   async getWalletAddressByMerchantId(merchantId: string): Promise<string> {
     // Get merchant to access userId
@@ -25,7 +30,7 @@ export class WalletsService {
     );
 
     if (!merchantRecord) {
-      throw new Error(`Merchant with ID ${merchantId} not found`);
+      throw new NotFoundException(`Merchant with ID ${merchantId} not found`);
     }
 
     // Get merchant's primary wallet address
@@ -42,7 +47,7 @@ export class WalletsService {
     );
 
     if (!primaryWallet) {
-      throw new Error(
+      throw new UnprocessableEntityException(
         `Merchant with ID ${merchantId} must have a primary wallet address configured`,
       );
     }
