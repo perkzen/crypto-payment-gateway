@@ -71,29 +71,55 @@ function CompletedIcon() {
       key="completed"
       initial={{
         opacity: 0,
+        scale: 0.5,
         rotate: -180,
       }}
       animate={{
         opacity: 1,
+        scale: 1,
         rotate: 0,
       }}
       transition={{
-        duration: 0.6,
-        ease: 'easeInOut',
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
       }}
       className="flex h-[100px] w-[100px] items-center justify-center"
       aria-label="Payment completed"
     >
-      <div
-        className="relative z-10 rounded-full border border-emerald-500 bg-white p-5 dark:bg-zinc-900"
+      <motion.div
+        className="relative z-10 rounded-full border-2 border-emerald-500 bg-white p-5 shadow-[0_0_20px_rgba(16,185,129,0.3)] dark:bg-zinc-900"
         title="Payment completed"
+        initial={{ scale: 0.8 }}
+        animate={{
+          scale: [0.8, 1.1, 1],
+          boxShadow: [
+            '0_0_20px_rgba(16,185,129,0.3)',
+            '0_0_30px_rgba(16,185,129,0.5)',
+            '0_0_20px_rgba(16,185,129,0.3)',
+          ],
+        }}
+        transition={{
+          duration: 0.6,
+          delay: 0.2,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
-        <Check
-          className="h-10 w-10 text-emerald-500"
-          strokeWidth={3.5}
-          aria-hidden="true"
-        />
-      </div>
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
+          <Check
+            className="h-10 w-10 text-emerald-500"
+            strokeWidth={3.5}
+            aria-hidden="true"
+          />
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 }

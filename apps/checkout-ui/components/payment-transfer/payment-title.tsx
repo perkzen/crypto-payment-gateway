@@ -20,8 +20,8 @@ const paymentStates: PaymentTitleState[] = [
     id: 'completed-title',
     status: 'completed',
     className:
-      'text-lg font-semibold uppercase tracking-tighter text-zinc-900 dark:text-zinc-100',
-    text: 'Payment Completed',
+      'text-lg font-semibold uppercase tracking-tighter text-emerald-600 dark:text-emerald-400',
+    text: 'Payment Successful',
   },
   {
     id: 'expired-title',

@@ -117,6 +117,16 @@ export const PublicCheckoutSessionSchema = z.object({
   expiresAt: z
     .coerce.date()
     .describe('The ISO 8601 timestamp when the checkout session expires'),
+
+  successUrl: z
+    .string()
+    .url()
+    .describe('The URL to redirect to after a successful payment'),
+
+  cancelUrl: z
+    .string()
+    .url()
+    .describe('The URL to redirect to if the payment is canceled'),
 });
 
 export type PublicCheckoutSession = z.infer<typeof PublicCheckoutSessionSchema>;

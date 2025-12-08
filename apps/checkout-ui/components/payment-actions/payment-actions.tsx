@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useWriteCryptoPayPayNative } from '@workspace/shared';
 import { keccak256, parseEther, toHex } from 'viem';
@@ -20,6 +20,7 @@ import {
 import { PaymentStatus } from '@/components/payment-actions/payment-status';
 import { WalletInfo } from '@/components/payment-actions/wallet-info';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
+import { usePayment } from '@/contexts/payment-context';
 import { PAYMENT_CONTRACT_ADDRESS } from '@/lib/constants';
 import { calculatePaymentAmounts } from '@/lib/utils/payment-calculations';
 
@@ -39,6 +40,7 @@ export function PaymentActions() {
   const { isConnected, chain, address, chainId } = useAccount();
   const [transactionError, setTransactionError] = useState<Error | null>(null);
   const { switchChain } = useSwitchChain();
+  const { setTransactionHash, setIsPaymentConfirmed } = usePayment();
 
   // Check account balance
   const { data: balance } = useBalance({
@@ -90,6 +92,19 @@ export function PaymentActions() {
     useWaitForTransactionReceipt({
       hash,
     });
+
+  // Update payment context when transaction hash or confirmation status changes
+  useEffect(() => {
+    if (hash) {
+      setTransactionHash(hash);
+    }
+  }, [hash, setTransactionHash]);
+
+  useEffect(() => {
+    if (isConfirmed) {
+      setIsPaymentConfirmed(true);
+    }
+  }, [isConfirmed, setIsPaymentConfirmed]);
 
   // Handle payment
   const handlePay = () => {

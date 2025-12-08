@@ -74,6 +74,8 @@ export class CheckoutSessionsService {
       allowedNetworks: session.allowedNetworks,
       merchantWalletAddress,
       expiresAt: session.expiresAt,
+      successUrl: session.successUrl,
+      cancelUrl: session.cancelUrl,
     };
   }
 }

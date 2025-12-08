@@ -13,11 +13,22 @@ import { PaymentTitle } from './payment-title';
 import type { PublicCheckoutSession } from '@workspace/shared';
 import { exchangeRateOptions } from '@/api/exchange-rate';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
+import { usePayment } from '@/contexts/payment-context';
+import { useCountdown } from '@/hooks/use-countdown';
+import { useRedirectCountdown } from '@/hooks/use-redirect-countdown';
 import { calculatePaymentAmounts } from '@/lib/utils/payment-calculations';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
-function getPaymentStatus(session: PublicCheckoutSession): PaymentStatus {
+function getPaymentStatus(
+  session: PublicCheckoutSession,
+  isPaymentConfirmed: boolean,
+): PaymentStatus {
+  // If payment is confirmed, return completed status
+  if (isPaymentConfirmed) {
+    return 'completed';
+  }
+
   const now = new Date();
   const expiresAt = new Date(session.expiresAt);
 
@@ -41,16 +52,41 @@ function getPaymentStatus(session: PublicCheckoutSession): PaymentStatus {
 
 export function PaymentTransfer() {
   const checkoutSession = useCheckoutSession();
-  const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0] || 'ETH';
+  const cryptoCurrency = checkoutSession.allowedCryptoCurrencies[0]!;
   const fiatCurrency = checkoutSession.fiatCurrency;
 
   const { data: exchangeRateData, isLoading: isExchangeRateLoading } = useQuery(
     exchangeRateOptions(cryptoCurrency, fiatCurrency),
   );
 
-  // Placeholder values - logic will be implemented later
-  const isCompleted = false;
-  const paymentStatus = getPaymentStatus(checkoutSession);
+  const { isPaymentConfirmed } = usePayment();
+
+  const paymentStatus = getPaymentStatus(checkoutSession, isPaymentConfirmed);
+  const isCompleted = paymentStatus === 'completed';
+
+  const { redirectCountdown, shouldShowRedirect } = useRedirectCountdown({
+    status: paymentStatus,
+    checkoutSession,
+  });
+
+  // Get expiration countdown
+  const { minutes, seconds, isExpired } = useCountdown(
+    new Date(checkoutSession.expiresAt),
+  );
+
+  // Determine which countdown to use: redirect countdown or expiration countdown
+  const countdown =
+    shouldShowRedirect && redirectCountdown > 0
+      ? {
+          minutes: 0,
+          seconds: redirectCountdown,
+          isExpired: false,
+        }
+      : {
+          minutes,
+          seconds,
+          isExpired,
+        };
 
   const { exchangeRate, fiatAmount, cryptoAmount } = calculatePaymentAmounts({
     exchangeRateData,
@@ -58,8 +94,8 @@ export function PaymentTransfer() {
     fiatCurrency,
   });
 
-  const isExpired = paymentStatus === 'expired';
-  const hoverBorderClass = isExpired
+  const isPaymentExpired = paymentStatus === 'expired';
+  const hoverBorderClass = isPaymentExpired
     ? 'hover:border-red-500/20 dark:hover:border-red-500/20'
     : 'hover:border-emerald-500/20 dark:hover:border-emerald-500/20';
 
@@ -83,7 +119,7 @@ export function PaymentTransfer() {
               }}
             >
               <PaymentTitle status={paymentStatus} />
-              <PaymentStatus status={paymentStatus} />
+              <PaymentStatus status={paymentStatus} countdown={countdown} />
 
               <PaymentDetails
                 checkoutSession={checkoutSession}

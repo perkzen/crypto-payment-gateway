@@ -2,19 +2,53 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
-import { formatCountdown, useCountdown } from '@/hooks/use-countdown';
+import { formatCountdown } from '@/hooks/use-countdown';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
-interface PaymentStatusProps {
-  status: PaymentStatus;
+export interface Countdown {
+  minutes: number;
+  seconds: number;
+  isExpired: boolean;
+}
+
+interface PaymentStatusTextProps {
+  checkoutSession: ReturnType<typeof useCheckoutSession>;
+  countdown: Countdown;
 }
 
 interface PaymentStatusState {
   status: PaymentStatus;
   id: string;
   className: string;
-  getText: (checkoutSession: ReturnType<typeof useCheckoutSession>) => string;
+  getText: (props: PaymentStatusTextProps) => string;
+}
+
+interface PaymentStatusProps {
+  status: PaymentStatus;
+  countdown: Countdown;
+}
+
+function isRedirectCountdownActive(
+  countdown?: Countdown,
+): countdown is Countdown {
+  return (
+    countdown !== undefined && countdown.seconds > 0 && countdown.minutes === 0
+  );
+}
+
+function isExpirationCountdownActive(
+  countdown?: Countdown,
+): countdown is Countdown {
+  return countdown !== undefined && !countdown.isExpired;
+}
+
+function formatRedirectCountdown(seconds: number): string {
+  return `Redirecting in ${seconds}s...`;
+}
+
+function formatExpirationCountdown(countdown: Countdown): string {
+  return `Expires in ${formatCountdown(countdown.minutes, countdown.seconds)}`;
 }
 
 const paymentStatusStates: PaymentStatusState[] = [
@@ -22,44 +56,61 @@ const paymentStatusStates: PaymentStatusState[] = [
     status: 'completed',
     id: 'completed-id',
     className: 'text-xs font-medium text-emerald-600 dark:text-emerald-400',
-    getText: (checkoutSession) =>
-      `Session ID: ${checkoutSession.id.slice(0, 8)}...`,
+    getText: ({ countdown }) => {
+      if (isRedirectCountdownActive(countdown)) {
+        return formatRedirectCountdown(countdown.seconds);
+      }
+      return '';
+    },
   },
   {
     status: 'expired',
     id: 'expired-id',
     className: 'text-xs font-medium text-red-600 dark:text-red-400',
-    getText: () => 'This session has expired',
+    getText: ({ countdown }) => {
+      const baseText = 'This session has expired';
+      if (isRedirectCountdownActive(countdown)) {
+        return `${baseText} • ${formatRedirectCountdown(countdown.seconds)}`;
+      }
+      return baseText;
+    },
   },
   {
     status: 'canceled',
     id: 'canceled-id',
     className: 'text-xs font-medium text-red-600 dark:text-red-400',
-    getText: () => 'This payment was canceled',
+    getText: ({ countdown }) => {
+      const baseText = 'This payment was canceled';
+      if (isRedirectCountdownActive(countdown)) {
+        return `${baseText} • ${formatRedirectCountdown(countdown.seconds)}`;
+      }
+      return baseText;
+    },
   },
   {
     status: 'open',
     id: 'progress-status',
     className: 'text-xs font-medium text-emerald-600 dark:text-emerald-400',
-    getText: () => 'Payment pending...',
+    getText: ({ countdown }) => {
+      if (isExpirationCountdownActive(countdown)) {
+        return formatExpirationCountdown(countdown);
+      }
+      return 'Payment pending...';
+    },
   },
 ];
 
-export function PaymentStatus({ status }: PaymentStatusProps) {
+export function PaymentStatus({ status, countdown }: PaymentStatusProps) {
   const checkoutSession = useCheckoutSession();
   const { id, className, getText } = paymentStatusStates.find(
     (state) => state.status === status,
   )!;
 
-  const { minutes, seconds, isExpired } = useCountdown(
-    new Date(checkoutSession.expiresAt),
-  );
-
   const getDisplayText = () => {
-    if (status === 'open' && !isExpired) {
-      return `Expires in ${formatCountdown(minutes, seconds)}`;
-    }
-    return getText(checkoutSession);
+    return getText({
+      checkoutSession,
+      countdown,
+    });
   };
 
   return (
