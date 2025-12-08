@@ -47,9 +47,12 @@ const NETWORKS = [
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
 
-  const createCheckoutSessionMutation = useMutation(
-    checkoutSessionOptions(),
-  );
+  const createCheckoutSessionMutation = useMutation({
+    ...checkoutSessionOptions(),
+    onSuccess: (data) => {
+      window.open(data.checkoutUrl, '_blank');
+    },
+  });
 
   const form = useForm({
     ...checkoutSessionFormOptions,
