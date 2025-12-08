@@ -10,14 +10,29 @@ import { PaymentDetails } from './payment-details';
 import { PaymentIcon } from './payment-icon';
 import { PaymentStatus } from './payment-status';
 import { PaymentTitle } from './payment-title';
+import type { PublicCheckoutSession } from '@workspace/shared';
 import { exchangeRateOptions } from '@/api/exchange-rate';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
 import { calculatePaymentAmounts } from '@/lib/utils/payment-calculations';
 
 type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
 
-function getPaymentStatus(expiresAt: Date): PaymentStatus {
+function getPaymentStatus(session: PublicCheckoutSession): PaymentStatus {
   const now = new Date();
+  const expiresAt = new Date(session.expiresAt);
+
+  // Check explicit status first if available
+  const sessionWithStatus = session as PublicCheckoutSession & {
+    status?: PaymentStatus;
+  };
+  if (sessionWithStatus.status === 'completed') {
+    return 'completed';
+  }
+  if (sessionWithStatus.status === 'canceled') {
+    return 'canceled';
+  }
+
+  // Fall back to time-based expiry
   if (now >= expiresAt) {
     return 'expired';
   }
@@ -35,7 +50,7 @@ export function PaymentTransfer() {
 
   // Placeholder values - logic will be implemented later
   const isCompleted = false;
-  const paymentStatus = getPaymentStatus(new Date(checkoutSession.expiresAt));
+  const paymentStatus = getPaymentStatus(checkoutSession);
 
   const { exchangeRate, fiatAmount, cryptoAmount } = calculatePaymentAmounts({
     exchangeRateData,

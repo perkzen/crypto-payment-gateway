@@ -50,6 +50,7 @@ export function createPublicCheckoutSessionFixture(
     allowedCryptoCurrencies: ['ETH'],
     allowedNetworks: ['ethereum'],
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    merchantWalletAddress: faker.finance.ethereumAddress(),
     ...overrides,
   };
 }
