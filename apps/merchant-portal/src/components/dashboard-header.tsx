@@ -13,7 +13,7 @@ import { Separator } from '@workspace/ui/components/separator';
 import { SidebarTrigger } from '@workspace/ui/components/sidebar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type Route, formatRouteSegment } from '@/lib/routes';
+import { type Route, type RoutePath, formatRouteSegment } from '@/lib/routes';
 
 export function DashboardHeader() {
   const pathname = usePathname();
@@ -23,7 +23,7 @@ export function DashboardHeader() {
 
     return segments.map((segment, index) => ({
       label: formatRouteSegment(segment),
-      href: '/' + segments.slice(0, index + 1).join('/'),
+      href: ('/' + segments.slice(0, index + 1).join('/')) as RoutePath,
     }));
   };
 

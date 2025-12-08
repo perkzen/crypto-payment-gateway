@@ -11,34 +11,35 @@ import { CreditCard, LayoutDashboard, Settings2 } from 'lucide-react';
 import { NavMain } from '@/components/sidebar/nav-main';
 import { NavUser } from '@/components/sidebar/nav-user';
 import { SidebarHeaderComponent } from '@/components/sidebar/sidebar-header';
+import { ROUTE_PATHS } from '@/lib/routes';
 
 const navItems = [
   {
     title: 'Dashboard',
-    url: '/dashboard',
+    url: ROUTE_PATHS.DASHBOARD,
     icon: LayoutDashboard,
   },
   {
     title: 'Payments',
-    url: '/dashboard/payments',
+    url: ROUTE_PATHS.PAYMENTS,
     icon: CreditCard,
   },
   {
     title: 'Settings',
-    url: '/dashboard/settings',
+    url: ROUTE_PATHS.SETTINGS,
     icon: Settings2,
     items: [
       {
         title: 'General',
-        url: '/dashboard/settings',
+        url: ROUTE_PATHS.SETTINGS,
       },
       {
         title: 'API Keys',
-        url: '/dashboard/settings/api-keys',
+        url: ROUTE_PATHS.API_KEYS,
       },
       {
         title: 'Webhooks',
-        url: '/dashboard/settings/webhooks',
+        url: ROUTE_PATHS.WEBHOOKS,
       },
     ],
   },

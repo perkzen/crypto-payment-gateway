@@ -51,6 +51,8 @@ export function createPublicCheckoutSessionFixture(
     allowedNetworks: ['ethereum'],
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     merchantWalletAddress: faker.finance.ethereumAddress(),
+    successUrl: faker.internet.url(),
+    cancelUrl: faker.internet.url(),
     ...overrides,
   };
 }
