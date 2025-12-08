@@ -8,9 +8,10 @@ import {
 import { motion } from 'framer-motion';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import { CurrencyCard } from './currency-card';
-import { useCheckoutSession } from '@/contexts/checkout-session-context';
+import type { PublicCheckoutSession } from '@workspace/shared';
 
 interface PaymentDetailsProps {
+  checkoutSession: PublicCheckoutSession;
   fiatAmount: string;
   cryptoAmount: number;
   cryptoCurrency: string;
@@ -18,12 +19,12 @@ interface PaymentDetailsProps {
 }
 
 export function PaymentDetails({
+  checkoutSession,
   fiatAmount,
   cryptoAmount,
   cryptoCurrency,
   isCompleted,
 }: PaymentDetailsProps) {
-  const checkoutSession = useCheckoutSession();
   return (
     <motion.div
       className="mt-4 flex items-center gap-4"
@@ -58,7 +59,7 @@ export function PaymentDetails({
             label="From"
             icon={<ArrowUpIcon className="h-3 w-3" />}
             amount={fiatAmount}
-            description="Fiat Payment"
+            description="Fiat Amount"
             currencySymbol={getFiatCurrencySymbol(checkoutSession.fiatCurrency)}
             isCompleted={isCompleted}
             isTop={true}
@@ -67,7 +68,11 @@ export function PaymentDetails({
             label="To"
             icon={<ArrowDownIcon className="h-3 w-3" />}
             amount={formatCryptoAmount(cryptoAmount, cryptoCurrency)}
-            description={`${checkoutSession.allowedNetworks[0] || 'ethereum'} Network`}
+            description={
+              <span className="capitalize">
+                {checkoutSession.allowedNetworks[0]} network
+              </span>
+            }
             currencyIconUrl={ETHEREUM_ICON_URL}
             isCompleted={isCompleted}
             isTop={false}

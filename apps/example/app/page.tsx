@@ -39,7 +39,10 @@ const CRYPTO_CURRENCIES = [
   { label: 'USDC', value: 'USDC' },
 ];
 
-const NETWORKS = [{ label: 'Ethereum', value: 'ethereum' }];
+const NETWORKS = [
+  { label: 'Hardhat', value: 'hardhat' },
+  { label: 'Ethereum', value: 'ethereum' },
+];
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');

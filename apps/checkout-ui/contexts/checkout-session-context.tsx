@@ -13,13 +13,15 @@ const CheckoutSessionContext = createContext<
 
 interface CheckoutSessionProviderProps {
   children: ReactNode;
-  checkoutSession: PublicCheckoutSession;
+  checkoutSession: PublicCheckoutSession | undefined;
 }
 
 export function CheckoutSessionProvider({
   children,
   checkoutSession,
 }: CheckoutSessionProviderProps) {
+  if (!checkoutSession) return null;
+
   return (
     <CheckoutSessionContext.Provider value={{ checkoutSession }}>
       {children}

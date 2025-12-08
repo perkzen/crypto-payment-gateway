@@ -1,14 +1,15 @@
 'use client';
 
+import { type ReactNode } from 'react';
 import { cn } from '@workspace/ui/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
 
 interface CurrencyCardProps {
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   amount: string;
-  description: string;
+  description: ReactNode;
   currencySymbol?: string;
   currencyIconUrl?: string;
   isCompleted: boolean;

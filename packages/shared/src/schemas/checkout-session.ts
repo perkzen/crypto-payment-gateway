@@ -19,7 +19,7 @@ export const CreateCheckoutSessionSchema = z.object({
     .array(z.string())
     .min(1)
     .describe(
-      'A list of allowed blockchain networks for payment, e.g., ["bitcoin", "ethereum"]',
+      'A list of allowed blockchain networks for payment, e.g., ["hardhat", "ethereum", "bitcoin"]',
     ),
 
   customerEmail: z
@@ -107,8 +107,12 @@ export const PublicCheckoutSessionSchema = z.object({
   allowedNetworks: z
     .array(z.string())
     .describe(
-      'A list of allowed blockchain networks for payment, e.g., ["bitcoin", "ethereum"]',
+      'A list of allowed blockchain networks for payment, e.g., ["hardhat", "ethereum", "bitcoin"]',
     ),
+
+  merchantWalletAddress: z
+    .string()
+    .describe('The merchant wallet address where payments should be sent'),
 
   expiresAt: z
     .coerce.date()

@@ -12,7 +12,7 @@ const defaultValues: Omit<
   amountFiat: 5000,
   fiatCurrency: 'USD',
   allowedCryptoCurrencies: ['ETH'],
-  allowedNetworks: ['ethereum'],
+  allowedNetworks: ['hardhat'],
   customerEmail: undefined,
   successUrl: '',
   cancelUrl: '',

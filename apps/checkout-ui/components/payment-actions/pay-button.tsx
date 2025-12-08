@@ -17,10 +17,12 @@ interface PayButtonProps {
   status: PayButtonStatus;
   canPay: boolean;
   cryptoAmount: number;
+  cryptoCurrency: string;
 }
 
 interface PayButtonStateParams {
   cryptoAmount: number;
+  cryptoCurrency: string;
 }
 
 interface PayButtonState {
@@ -58,10 +60,10 @@ const payButtonStates: PayButtonState[] = [
   },
   {
     id: 'idle',
-    getContent: ({ cryptoAmount }) => (
+    getContent: ({ cryptoAmount, cryptoCurrency }) => (
       <>
         <Wallet className="mr-2 h-4 w-4" />
-        Pay {cryptoAmount.toFixed(6)} ETH
+        Pay {cryptoAmount.toFixed(6)} {cryptoCurrency}
       </>
     ),
   },
@@ -72,12 +74,13 @@ export function PayButton({
   status,
   canPay,
   cryptoAmount,
+  cryptoCurrency,
 }: PayButtonProps) {
   const { getContent } = payButtonStates.find((state) => state.id === status)!;
 
   return (
     <Button onClick={onPay} disabled={!canPay} className="w-full" size="lg">
-      {getContent({ cryptoAmount })}
+      {getContent({ cryptoAmount, cryptoCurrency })}
     </Button>
   );
 }

@@ -71,6 +71,7 @@ export function PaymentTransfer() {
               <PaymentStatus status={paymentStatus} />
 
               <PaymentDetails
+                checkoutSession={checkoutSession}
                 fiatAmount={fiatAmount}
                 cryptoAmount={cryptoAmount}
                 cryptoCurrency={cryptoCurrency}

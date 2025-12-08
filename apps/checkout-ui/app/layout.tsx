@@ -19,9 +19,6 @@ export const metadata: Metadata = {
   description: 'Checkout page for Crypto Payment Gateway',
 };
 
-// Force dynamic rendering to avoid indexedDB issues during build
-export const dynamic = 'force-dynamic';
-
 export default function RootLayout({
   children,
 }: Readonly<{
