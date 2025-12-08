@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 
-type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+type PaymentStatus = 'completed' | 'expired' | 'open';
 
 interface PaymentTitleProps {
   status: PaymentStatus;
@@ -29,13 +29,6 @@ const paymentStates: PaymentTitleState[] = [
     className:
       'text-lg font-semibold uppercase tracking-tighter text-red-600 dark:text-red-400',
     text: 'Session Expired',
-  },
-  {
-    id: 'canceled-title',
-    status: 'canceled',
-    className:
-      'text-lg font-semibold uppercase tracking-tighter text-red-600 dark:text-red-400',
-    text: 'Payment Canceled',
   },
   {
     id: 'progress-title',

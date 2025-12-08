@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
 import { formatCountdown } from '@/hooks/use-countdown';
 
-type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+type PaymentStatus = 'completed' | 'expired' | 'open';
 
 export interface Countdown {
   minutes: number;
@@ -69,18 +69,6 @@ const paymentStatusStates: PaymentStatusState[] = [
     className: 'text-xs font-medium text-red-600 dark:text-red-400',
     getText: ({ countdown }) => {
       const baseText = 'This session has expired';
-      if (isRedirectCountdownActive(countdown)) {
-        return `${baseText} • ${formatRedirectCountdown(countdown.seconds)}`;
-      }
-      return baseText;
-    },
-  },
-  {
-    status: 'canceled',
-    id: 'canceled-id',
-    className: 'text-xs font-medium text-red-600 dark:text-red-400',
-    getText: ({ countdown }) => {
-      const baseText = 'This payment was canceled';
       if (isRedirectCountdownActive(countdown)) {
         return `${baseText} • ${formatRedirectCountdown(countdown.seconds)}`;
       }

@@ -4,7 +4,7 @@ import { type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpDown, Check, X } from 'lucide-react';
 
-type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+type PaymentStatus = 'completed' | 'expired' | 'open';
 
 interface PaymentIconProps {
   status: PaymentStatus;
@@ -157,39 +157,6 @@ function ExpiredIcon() {
   );
 }
 
-function ErrorIcon() {
-  return (
-    <motion.div
-      key="canceled-error-icon"
-      initial={{
-        opacity: 0,
-        rotate: -180,
-      }}
-      animate={{
-        opacity: 1,
-        rotate: 0,
-      }}
-      transition={{
-        duration: 0.6,
-        ease: 'easeInOut',
-      }}
-      className="flex h-[100px] w-[100px] items-center justify-center"
-      aria-label="Payment canceled"
-    >
-      <div
-        className="relative z-10 rounded-full border border-red-500 bg-white p-5 dark:border-red-500 dark:bg-zinc-900"
-        title="Payment canceled"
-      >
-        <X
-          className="h-10 w-10 text-red-500"
-          strokeWidth={3.5}
-          aria-hidden="true"
-        />
-      </div>
-    </motion.div>
-  );
-}
-
 const paymentIconStates: PaymentIconState[] = [
   {
     status: 'completed',
@@ -200,11 +167,6 @@ const paymentIconStates: PaymentIconState[] = [
     status: 'expired',
     id: 'expired-error-icon',
     render: () => <ExpiredIcon />,
-  },
-  {
-    status: 'canceled',
-    id: 'canceled-error-icon',
-    render: () => <ErrorIcon />,
   },
   {
     status: 'open',

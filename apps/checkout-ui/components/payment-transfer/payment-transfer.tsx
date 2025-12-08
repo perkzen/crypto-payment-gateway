@@ -18,12 +18,12 @@ import { useCountdown } from '@/hooks/use-countdown';
 import { useRedirectCountdown } from '@/hooks/use-redirect-countdown';
 import { calculatePaymentAmounts } from '@/lib/utils/payment-calculations';
 
-type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+type PaymentStatusType = 'completed' | 'expired' | 'open';
 
 function getPaymentStatus(
   session: PublicCheckoutSession,
   isPaymentConfirmed: boolean,
-): PaymentStatus {
+): PaymentStatusType {
   // If payment is confirmed, return completed status
   if (isPaymentConfirmed) {
     return 'completed';
@@ -34,13 +34,10 @@ function getPaymentStatus(
 
   // Check explicit status first if available
   const sessionWithStatus = session as PublicCheckoutSession & {
-    status?: PaymentStatus;
+    status?: PaymentStatusType;
   };
   if (sessionWithStatus.status === 'completed') {
     return 'completed';
-  }
-  if (sessionWithStatus.status === 'canceled') {
-    return 'canceled';
   }
 
   // Fall back to time-based expiry

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { PublicCheckoutSession } from '@workspace/shared';
 
-type PaymentStatus = 'completed' | 'expired' | 'canceled' | 'open';
+type PaymentStatus = 'completed' | 'expired' | 'open';
 
 interface UseRedirectCountdownProps {
   status: PaymentStatus;
@@ -17,34 +17,39 @@ export function useRedirectCountdown({
   const [redirectCountdown, setRedirectCountdown] = useState(initialSeconds);
   const shouldShowRedirect =
     (status === 'completed' && checkoutSession.successUrl) ||
-    ((status === 'canceled' || status === 'expired') &&
-      checkoutSession.cancelUrl);
+    (status === 'expired' && checkoutSession.cancelUrl);
 
+  // Reset countdown when redirect should be shown
   useEffect(() => {
-    if (shouldShowRedirect && redirectCountdown > 0) {
-      const timer = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+    if (shouldShowRedirect) {
+      setRedirectCountdown(initialSeconds);
     }
-  }, [shouldShowRedirect, redirectCountdown]);
+  }, [shouldShowRedirect, initialSeconds]);
+
+  // Create interval only when shouldShowRedirect changes
+  useEffect(() => {
+    if (!shouldShowRedirect) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [shouldShowRedirect]);
 
   // Handle redirect when countdown reaches 0
   useEffect(() => {
     if (shouldShowRedirect && redirectCountdown === 0) {
       if (status === 'completed' && checkoutSession.successUrl) {
         window.location.href = checkoutSession.successUrl;
-      } else if (
-        (status === 'canceled' || status === 'expired') &&
-        checkoutSession.cancelUrl
-      ) {
+      } else if (status === 'expired' && checkoutSession.cancelUrl) {
         window.location.href = checkoutSession.cancelUrl;
       }
     }
@@ -55,4 +60,3 @@ export function useRedirectCountdown({
     shouldShowRedirect,
   };
 }
-

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useWriteCryptoPayPayNative } from '@workspace/shared';
 import { keccak256, parseEther, toHex } from 'viem';
@@ -17,7 +17,6 @@ import {
   PayButton,
   type PayButtonStatus,
 } from '@/components/payment-actions/pay-button';
-import { PaymentStatus } from '@/components/payment-actions/payment-status';
 import { WalletInfo } from '@/components/payment-actions/wallet-info';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
 import { usePayment } from '@/contexts/payment-context';
@@ -37,8 +36,7 @@ function getPayButtonStatus(
 
 export function PaymentActions() {
   const checkoutSession = useCheckoutSession();
-  const { isConnected, chain, address, chainId } = useAccount();
-  const [transactionError, setTransactionError] = useState<Error | null>(null);
+  const { isConnected, address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const { setTransactionHash, setIsPaymentConfirmed } = usePayment();
 
@@ -84,7 +82,6 @@ export function PaymentActions() {
     writeContract,
     data: hash,
     isPending: isTransactionPending,
-    error: writeError,
   } = useWriteCryptoPayPayNative();
 
   // Wait for transaction receipt
@@ -110,15 +107,8 @@ export function PaymentActions() {
   const handlePay = () => {
     if (!writeContract || !cryptoAmount) return;
 
-    setTransactionError(null);
-
     // Ensure we're on Hardhat network
     if (!isHardhatNetwork) {
-      setTransactionError(
-        new Error(
-          'Please switch to Hardhat network (Chain ID: 31337) to make payments. Click "Switch Network" below.',
-        ),
-      );
       // Automatically switch to Hardhat network
       if (switchChain) {
         switchChain({ chainId: hardhat.id });
@@ -131,20 +121,16 @@ export function PaymentActions() {
       !PAYMENT_CONTRACT_ADDRESS ||
       PAYMENT_CONTRACT_ADDRESS === '0x0000000000000000000000000000000000000000'
     ) {
-      setTransactionError(
-        new Error(
-          'Payment contract not deployed. Deploy with: cd apps/blockchain && npx hardhat ignition deploy ignition/modules/CryptoPay.ts --network localhost',
-        ),
+      console.error(
+        'Payment contract not deployed. Deploy with: cd apps/blockchain && npx hardhat ignition deploy ignition/modules/CryptoPay.ts --network localhost',
       );
       return;
     }
 
     // Check if user has enough balance (payment + estimated gas)
     if (balance && balance.value < paymentAmount) {
-      setTransactionError(
-        new Error(
-          `Insufficient balance. You have ${balance} ETH but need ${cryptoAmount} ETH for payment.`,
-        ),
+      console.error(
+        `Insufficient balance. You have ${balance} ETH but need ${cryptoAmount} ETH for payment.`,
       );
       return;
     }
@@ -158,16 +144,8 @@ export function PaymentActions() {
       });
     } catch (error) {
       console.error('Payment error:', error);
-      setTransactionError(
-        error instanceof Error
-          ? error
-          : new Error('Failed to initiate payment. Check console for details.'),
-      );
     }
   };
-
-  // Determine transaction error (from write or from transaction receipt)
-  const error = writeError || transactionError;
 
   // Determine button status
   const payButtonStatus = getPayButtonStatus(
@@ -193,12 +171,9 @@ export function PaymentActions() {
   // Show success status if payment confirmed
   if (isConfirmed) {
     return (
-      <PaymentStatus
-        isConfirmed={isConfirmed}
-        transactionError={error}
-        hash={hash}
-        chain={chain}
-      />
+      <div className="text-center text-sm text-emerald-600 dark:text-emerald-400">
+        Payment confirmed!
+      </div>
     );
   }
 
@@ -206,12 +181,6 @@ export function PaymentActions() {
   return (
     <div className="flex flex-col items-center gap-4">
       <WalletInfo />
-      <PaymentStatus
-        isConfirmed={false}
-        transactionError={error}
-        hash={hash}
-        chain={chain}
-      />
       <PayButton
         onPay={handlePay}
         status={payButtonStatus}
