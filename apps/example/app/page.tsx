@@ -26,7 +26,7 @@ import {
   checkoutSessionDefaultValues,
   checkoutSessionFormOptions,
 } from '@/forms/checkout-session';
-import { useCreateCheckoutSessionOptions } from '@/hooks/use-create-checkout-session';
+import { checkoutSessionOptions } from '@/hooks/checkout-session-options';
 
 const FIAT_CURRENCIES = [
   { label: 'USD', value: 'USD' },
@@ -48,7 +48,7 @@ export default function Home() {
   const [apiKey, setApiKey] = useState('');
 
   const createCheckoutSessionMutation = useMutation(
-    useCreateCheckoutSessionOptions(apiKey),
+    checkoutSessionOptions(),
   );
 
   const form = useForm({
@@ -63,7 +63,7 @@ export default function Home() {
         typeof window !== 'undefined' ? `${window.location.origin}/cancel` : '',
     },
     onSubmit: async ({ value }) => {
-      createCheckoutSessionMutation.mutate(value);
+      createCheckoutSessionMutation.mutate({ ...value, apiKey });
     },
   });
 
