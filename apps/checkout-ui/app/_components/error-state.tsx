@@ -1,21 +1,40 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { ErrorAlert } from '@/components/error-alert';
+
 interface ErrorStateProps {
   error?: Error | unknown;
+  onRetry?: () => void;
 }
 
-export function ErrorState({ error }: ErrorStateProps) {
+export function ErrorState({ error, onRetry }: ErrorStateProps) {
+  const router = useRouter();
+
+  const handleRetry = () => {
+    if (onRetry) {
+      onRetry();
+    } else {
+      router.refresh();
+    }
+  };
+
+  const getErrorMessage = () => {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return 'Failed to load checkout session. Please try again.';
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <div className="text-center">
-        <h1 className="mb-2 text-2xl font-semibold text-red-600 dark:text-red-400">
-          Error Loading Session
-        </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          {error instanceof Error
-            ? error.message
-            : 'Failed to load checkout session'}
-        </p>
-      </div>
-    </div>
+    <ErrorAlert
+      title="Error Loading Session"
+      message={getErrorMessage()}
+      onRetry={handleRetry}
+      variant="fullscreen"
+    />
   );
 }
-

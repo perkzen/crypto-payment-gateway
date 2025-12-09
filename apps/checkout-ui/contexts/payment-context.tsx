@@ -7,6 +7,8 @@ interface PaymentContextValue {
   setTransactionHash: (hash: `0x${string}` | undefined) => void;
   isPaymentConfirmed: boolean;
   setIsPaymentConfirmed: (confirmed: boolean) => void;
+  transactionError: Error | null;
+  setTransactionError: (error: Error | null) => void;
 }
 
 const PaymentContext = createContext<PaymentContextValue | undefined>(
@@ -22,6 +24,7 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
     `0x${string}` | undefined
   >(undefined);
   const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
+  const [transactionError, setTransactionError] = useState<Error | null>(null);
 
   return (
     <PaymentContext.Provider
@@ -30,6 +33,8 @@ export function PaymentProvider({ children }: PaymentProviderProps) {
         setTransactionHash,
         isPaymentConfirmed,
         setIsPaymentConfirmed,
+        transactionError,
+        setTransactionError,
       }}
     >
       {children}

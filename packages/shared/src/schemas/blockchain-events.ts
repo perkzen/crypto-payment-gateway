@@ -13,20 +13,21 @@ const bytes32Schema = hexStringSchema(66).describe('Bytes32 hash');
 
 const transactionHashSchema = hexStringSchema(66).describe('Transaction hash');
 
-const bigintSchema = z.union([
-  z.bigint(),
-  z.string().regex(/^\d+$/, 'Must be a valid numeric string').transform((val) => BigInt(val)),
+// Schema that transforms BigInt to string for serialization
+const bigintToStringSchema = z.union([
+  z.bigint().transform((val) => val.toString()),
+  z.string().regex(/^\d+$/, 'Must be a valid numeric string'),
 ]);
 
-// Base schema for PaidNative event
+// Base schema for PaidNative event (with BigInt as strings for serialization)
 export const PaidNativeEventSchema = z.object({
   invoiceId: bytes32Schema,
   payer: addressSchema,
   merchant: addressSchema,
-  grossAmount: bigintSchema,
-  feeAmount: bigintSchema,
+  grossAmount: bigintToStringSchema,
+  feeAmount: bigintToStringSchema,
   transactionHash: transactionHashSchema,
-  blockNumber: bigintSchema,
+  blockNumber: bigintToStringSchema,
 });
 
 export type PaidNativeEvent = z.infer<typeof PaidNativeEventSchema>;
@@ -37,4 +38,3 @@ export const PaidTokenEventSchema = PaidNativeEventSchema.extend({
 });
 
 export type PaidTokenEvent = z.infer<typeof PaidTokenEventSchema>;
-

@@ -12,11 +12,13 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { exchangeRateOptions } from '@/api/exchange-rate';
+import { ErrorAlert } from '@/components/error-alert';
 import { ConnectWalletButton } from '@/components/payment-actions/connect-wallet-button';
 import {
   PayButton,
   type PayButtonStatus,
 } from '@/components/payment-actions/pay-button';
+import { PaymentStatus } from '@/components/payment-actions/payment-status';
 import { WalletInfo } from '@/components/payment-actions/wallet-info';
 import { useCheckoutSession } from '@/contexts/checkout-session-context';
 import { usePayment } from '@/contexts/payment-context';
@@ -36,9 +38,14 @@ function getPayButtonStatus(
 
 export function PaymentActions() {
   const checkoutSession = useCheckoutSession();
-  const { isConnected, address, chainId } = useAccount();
+  const { isConnected, address, chainId, chain } = useAccount();
   const { switchChain } = useSwitchChain();
-  const { setTransactionHash, setIsPaymentConfirmed } = usePayment();
+  const {
+    setTransactionHash,
+    setIsPaymentConfirmed,
+    transactionError,
+    setTransactionError,
+  } = usePayment();
 
   // Check account balance
   const { data: balance } = useBalance({
@@ -85,10 +92,24 @@ export function PaymentActions() {
   } = useWriteCryptoPayPayNative();
 
   // Wait for transaction receipt
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  // Update error state when receipt error occurs
+  useEffect(() => {
+    if (receiptError) {
+      const err =
+        receiptError instanceof Error
+          ? receiptError
+          : new Error('Transaction failed');
+      setTransactionError(err);
+    }
+  }, [receiptError, setTransactionError]);
 
   // Update payment context when transaction hash or confirmation status changes
   useEffect(() => {
@@ -136,6 +157,7 @@ export function PaymentActions() {
     }
 
     try {
+      setTransactionError(null);
       writeContract({
         address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
         args: [invoiceId, merchantAddress],
@@ -143,6 +165,8 @@ export function PaymentActions() {
         chainId: hardhat.id, // Explicitly specify Hardhat chain ID
       });
     } catch (error) {
+      const err = error instanceof Error ? error : new Error('Payment failed');
+      setTransactionError(err);
       console.error('Payment error:', error);
     }
   };
@@ -181,12 +205,30 @@ export function PaymentActions() {
   return (
     <div className="flex flex-col items-center gap-4">
       <WalletInfo />
+      {transactionError && (
+        <ErrorAlert
+          title="Payment Failed"
+          message={transactionError.message}
+          onRetry={() => {
+            setTransactionError(null);
+            handlePay();
+          }}
+          variant="inline"
+          className="w-full"
+        />
+      )}
       <PayButton
         onPay={handlePay}
         status={payButtonStatus}
         canPay={canPay}
         cryptoAmount={cryptoAmount || 0}
         cryptoCurrency={cryptoCurrency}
+      />
+      <PaymentStatus
+        isConfirmed={isConfirmed}
+        transactionError={transactionError}
+        hash={hash}
+        chain={chain}
       />
     </div>
   );

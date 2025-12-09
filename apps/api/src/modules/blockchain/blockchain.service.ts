@@ -1,4 +1,3 @@
-import { BlockchainEventProcessorService } from '@app/modules/blockchain/blockchain-event-processor.service';
 import { Blockchain } from '@app/modules/blockchain/decorators/blockchain.decorator';
 import {
   Injectable,
@@ -13,23 +12,30 @@ import {
   cryptoPayAbi,
 } from '@workspace/shared';
 import { type Address, type PublicClient } from 'viem';
+import { type z } from 'zod';
 
 @Injectable()
 export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BlockchainService.name);
   private unwatchPaidNative: (() => void) | null = null;
   private unwatchPaidToken: (() => void) | null = null;
+  private readonly SMART_CONTRACT_ADDRESS: Address;
 
   constructor(
     @Blockchain()
     private readonly blockchain: PublicClient,
     private readonly configService: ConfigService,
-    private readonly eventProcessor: BlockchainEventProcessorService,
-  ) {}
+  ) {
+    this.SMART_CONTRACT_ADDRESS = this.configService.getOrThrow(
+      'CRYPTO_PAY_CONTRACT_ADDRESS',
+    ) as Address;
+  }
 
   async onModuleInit(): Promise<void> {
-    await this.startPaidNativeListener();
-    await this.startPaidTokenListener();
+    await this.assertContractExists();
+    const latestBlock = await this.blockchain.getBlockNumber();
+    await this.startPaidNativeListener(latestBlock);
+    await this.startPaidTokenListener(latestBlock);
     this.logger.log('Event listeners started successfully');
   }
 
@@ -47,82 +53,112 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async startPaidNativeListener(): Promise<void> {
-    const contractAddress = this.configService.getOrThrow(
-      'CRYPTO_PAY_CONTRACT_ADDRESS',
-    ) as Address;
+  private async assertContractExists() {
+    const code = await this.blockchain.getCode({
+      address: this.SMART_CONTRACT_ADDRESS,
+    });
+    if (code === null || code === '0x') {
+      throw Error(
+        `Blockchain contract with address ${this.SMART_CONTRACT_ADDRESS} does not exist.`,
+      );
+    }
+  }
 
-    this.logger.log(
-      `Starting PaidNative event listener for contract ${contractAddress}`,
-    );
-
-    this.unwatchPaidNative = this.blockchain.watchContractEvent({
-      address: contractAddress,
+  /**
+   * Generic function to watch contract events.
+   * Validates events using the provided Zod schema and exposes validated data in `onLogs`.
+   */
+  private watchContractEvent<
+    TSchema extends z.ZodTypeAny,
+    TEvent extends z.infer<TSchema> = z.infer<TSchema>,
+  >({
+    eventName,
+    fromBlock,
+    schema,
+    onLogs,
+  }: {
+    eventName: 'PaidNative' | 'PaidToken';
+    schema: TSchema;
+    fromBlock: bigint;
+    onLogs: (validatedEvents: TEvent[]) => void | Promise<void>;
+  }): () => void {
+    return this.blockchain.watchContractEvent({
+      address: this.SMART_CONTRACT_ADDRESS,
       abi: cryptoPayAbi,
-      eventName: 'PaidNative',
+      eventName,
+      fromBlock,
+      pollingInterval: 4000,
       onLogs: async (logs) => {
+        this.logger.log(`Received ${logs.length} ${eventName} event(s)`);
+        const validatedEvents: TEvent[] = [];
+
         for (const log of logs) {
           try {
-            // Validate event data with Zod schema
-            const eventData = PaidNativeEventSchema.parse({
-              invoiceId: log.args.invoiceId,
-              payer: log.args.payer,
-              merchant: log.args.merchant,
-              grossAmount: log.args.grossAmount,
-              feeAmount: log.args.feeAmount,
+            const eventData = schema.parse({
+              ...log.args,
               transactionHash: log.transactionHash,
               blockNumber: log.blockNumber ?? 0n,
-            });
+            }) as TEvent;
 
-            this.logger.log(`PaidNative event received: ${JSON.stringify(eventData)}`);
+            validatedEvents.push(eventData);
           } catch (error) {
             this.logger.error(
-              `Error processing PaidNative log: ${error instanceof Error ? error.message : String(error)}`,
+              `Error processing ${eventName} log: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
               error instanceof Error ? error.stack : undefined,
             );
           }
         }
+
+        if (validatedEvents.length > 0) {
+          await onLogs(validatedEvents);
+        }
+      },
+      onError: (error) => {
+        this.logger.error(
+          `Error in ${eventName} event watcher: ${error.message}`,
+          error.stack,
+        );
       },
     });
   }
 
-  private async startPaidTokenListener(): Promise<void> {
-    const contractAddress = this.configService.getOrThrow(
-      'CRYPTO_PAY_CONTRACT_ADDRESS',
-    ) as Address;
-
-    this.logger.log(
-      `Starting PaidToken event listener for contract ${contractAddress}`,
-    );
-
-    this.unwatchPaidToken = this.blockchain.watchContractEvent({
-      address: contractAddress,
-      abi: cryptoPayAbi,
-      eventName: 'PaidToken',
-      onLogs: async (logs) => {
-        for (const log of logs) {
-          try {
-            // Validate event data with Zod schema
-            const eventData = PaidTokenEventSchema.parse({
-              invoiceId: log.args.invoiceId,
-              payer: log.args.payer,
-              merchant: log.args.merchant,
-              token: log.args.token,
-              grossAmount: log.args.grossAmount,
-              feeAmount: log.args.feeAmount,
-              transactionHash: log.transactionHash,
-              blockNumber: log.blockNumber ?? 0n,
-            });
-
-            this.logger.log(`PaidToken event received: ${JSON.stringify(eventData)}`);
-          } catch (error) {
-            this.logger.error(
-              `Error processing PaidToken log: ${error instanceof Error ? error.message : String(error)}`,
-              error instanceof Error ? error.stack : undefined,
-            );
-          }
+  private async startPaidNativeListener(fromBlock: bigint): Promise<void> {
+    this.unwatchPaidNative = this.watchContractEvent({
+      fromBlock,
+      eventName: 'PaidNative',
+      schema: PaidNativeEventSchema,
+      onLogs: async (events) => {
+        // Validated events are ready to be passed to a worker or processed
+        for (const event of events) {
+          this.logger.log(`PaidNative event: ${JSON.stringify(event)}`);
+          // TODO: Pass to worker or process as needed
         }
       },
     });
+
+    this.logger.log(
+      `PaidNative event listener registered and watching for live events from block ${fromBlock}`,
+    );
+  }
+
+  private async startPaidTokenListener(fromBlock: bigint): Promise<void> {
+    this.unwatchPaidToken = this.watchContractEvent({
+      fromBlock,
+      eventName: 'PaidToken',
+      schema: PaidTokenEventSchema,
+      onLogs: async (events) => {
+        // Validated events are ready to be passed to a worker or processed
+        for (const event of events) {
+          this.logger.log(`PaidToken event: ${JSON.stringify(event)}`);
+          // TODO: Pass to worker or process as needed
+        }
+      },
+    });
+
+    this.logger.log(
+      `PaidToken event listener registered and watching for live events from block ${fromBlock}`,
+    );
   }
 }
