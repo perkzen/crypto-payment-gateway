@@ -21,10 +21,13 @@ export function DashboardHeader() {
   const getBreadcrumbs = () => {
     const segments = pathname.split('/').filter(Boolean) as Route[];
 
-    return segments.map((segment, index) => ({
-      label: formatRouteSegment(segment),
-      href: ('/' + segments.slice(0, index + 1).join('/')) as RoutePath,
-    }));
+    return segments.map((segment, index) => {
+      const constructedPath = '/' + segments.slice(0, index + 1).join('/');
+      return {
+        label: formatRouteSegment(segment),
+        href: constructedPath as RoutePath,
+      };
+    });
   };
 
   const breadcrumbs = getBreadcrumbs();
