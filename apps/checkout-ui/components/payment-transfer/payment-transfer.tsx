@@ -32,15 +32,6 @@ function getPaymentStatus(
   const now = new Date();
   const expiresAt = new Date(session.expiresAt);
 
-  // Check explicit status first if available
-  const sessionWithStatus = session as PublicCheckoutSession & {
-    status?: PaymentStatusType;
-  };
-  if (sessionWithStatus.status === 'completed') {
-    return 'completed';
-  }
-
-  // Fall back to time-based expiry
   if (now >= expiresAt) {
     return 'expired';
   }
