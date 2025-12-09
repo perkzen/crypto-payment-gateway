@@ -2,6 +2,11 @@ import { type Tickers } from '@workspace/shared';
 
 export const EXCHANGE = 'EXCHANGE';
 
+export interface ExchangeRateResult {
+  rate: number;
+  timestamp: Date;
+}
+
 export interface ExchangeStrategy {
   /**
    * Get exchange rate between two tickers
@@ -9,5 +14,5 @@ export interface ExchangeStrategy {
    *
    * @param tickers
    */
-  getExchangeRate(tickers: Tickers): Promise<number>;
+  getExchangeRate(tickers: Tickers): Promise<ExchangeRateResult>;
 }

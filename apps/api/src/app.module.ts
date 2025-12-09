@@ -1,5 +1,6 @@
 import { getEnvFilePath } from '@app/config/env/env-paths';
 import { validateEnv } from '@app/config/env/env-var.validation';
+import { WalletsModule } from '@app/modules/wallets/wallets.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -30,6 +31,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     CheckoutSessionsModule,
     MerchantsModule,
     ExchangeModule,
+    WalletsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

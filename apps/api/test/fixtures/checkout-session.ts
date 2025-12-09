@@ -30,7 +30,6 @@ export function createCheckoutSessionResultFixture(
 ): CreateCheckoutSessionResult {
   return {
     id: faker.string.uuid(),
-    status: 'open',
     checkoutUrl: faker.internet.url(),
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
     metadata: null,
@@ -46,12 +45,14 @@ export function createPublicCheckoutSessionFixture(
 ): PublicCheckoutSession {
   return {
     id: faker.string.uuid(),
-    status: 'open',
     amountFiat: 10000,
     fiatCurrency: 'USD',
     allowedCryptoCurrencies: ['ETH'],
     allowedNetworks: ['ethereum'],
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    merchantWalletAddress: faker.finance.ethereumAddress(),
+    successUrl: faker.internet.url(),
+    cancelUrl: faker.internet.url(),
     ...overrides,
   };
 }

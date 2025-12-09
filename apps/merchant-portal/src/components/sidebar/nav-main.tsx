@@ -18,18 +18,19 @@ import {
 import { ChevronRight, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { RoutePath } from '@/lib/routes';
 
 export function NavMain({
   items,
 }: {
   items: {
     title: string;
-    url: string;
+    url: RoutePath;
     icon?: LucideIcon;
     isActive?: boolean;
     items?: {
       title: string;
-      url: string;
+      url: RoutePath;
     }[];
   }[];
 }) {

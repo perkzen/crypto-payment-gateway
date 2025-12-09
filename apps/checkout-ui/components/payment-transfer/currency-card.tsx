@@ -1,14 +1,17 @@
 'use client';
 
+import { type ReactNode } from 'react';
 import { cn } from '@workspace/ui/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
 
 interface CurrencyCardProps {
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   amount: string;
-  description: string;
-  currencySymbol: string;
+  description: ReactNode;
+  currencySymbol?: string;
+  currencyIconUrl?: string;
   isCompleted: boolean;
   isTop?: boolean;
 }
@@ -19,6 +22,7 @@ export function CurrencyCard({
   amount,
   description,
   currencySymbol,
+  currencyIconUrl,
   isCompleted,
   isTop = false,
 }: CurrencyCardProps) {
@@ -75,7 +79,17 @@ export function CurrencyCard({
                 damping: 10,
               }}
             >
-              {currencySymbol}
+              {currencyIconUrl ? (
+                <Image
+                  src={currencyIconUrl}
+                  alt={'icon'}
+                  width={20}
+                  height={20}
+                  className="h-5 w-5"
+                />
+              ) : (
+                currencySymbol
+              )}
             </motion.span>
             <div className="flex flex-col items-start">
               <AnimatePresence mode="wait">

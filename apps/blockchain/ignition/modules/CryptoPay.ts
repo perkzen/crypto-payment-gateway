@@ -19,7 +19,7 @@ const CryptoPayModule = buildModule('CryptoPayModule', (m) => {
   // Configuration parameters - update these for your deployment
   const platformAddress = m.getParameter(
     'platform',
-    '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+    '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
   ); // Default to a test address
   const feeBps = m.getParameter('feeBps', 250); // 2.5% default fee
 
@@ -32,7 +32,7 @@ const CryptoPayModule = buildModule('CryptoPayModule', (m) => {
   // Optional: Mint some tokens to a test address for testing
   const testAddress = m.getParameter(
     'testAddress',
-    '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+    '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
   ); // Default test address
   const mintAmount = m.getParameter('mintAmount', '1000000000000000000000000'); // 1M tokens with 18 decimals
 

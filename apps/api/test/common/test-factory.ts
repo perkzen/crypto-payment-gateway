@@ -1,6 +1,6 @@
 import { type getAuthConfig } from '@app/modules/auth/config/auth';
 import { DatabaseService } from '@app/modules/database/database.service';
-import { merchant, user } from '@app/modules/database/schemas';
+import { merchant, user, walletAddress } from '@app/modules/database/schemas';
 import { faker } from '@faker-js/faker';
 import { type TestingModule } from '@nestjs/testing';
 import { AuthService } from '@thallesp/nestjs-better-auth';
@@ -80,14 +80,42 @@ export class TestFactory {
   }
 
   /**
+   * Create a test wallet address for a user
+   */
+  async createWalletAddress(
+    userId: string,
+    overrides?: {
+      address?: string;
+      chainId?: number;
+      isPrimary?: boolean;
+    },
+  ) {
+    const [testWalletAddress] = await this.db
+      .insert(walletAddress)
+      .values({
+        id: faker.string.uuid(),
+        userId,
+        address: overrides?.address || faker.finance.ethereumAddress(),
+        chainId: overrides?.chainId ?? 1,
+        isPrimary: overrides?.isPrimary ?? false,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return testWalletAddress;
+  }
+
+  /**
    * Create a merchant user with API key (convenience method)
-   * Creates a user, merchant, and API key in one call
+   * Creates a user, merchant, API key, and primary wallet address in one call
    */
   async createMerchantUser(overrides?: {
     userName?: string;
     userEmail?: string;
     merchantName?: string;
     apiKeyName?: string;
+    walletAddress?: string;
+    chainId?: number;
   }) {
     const testUser = await this.createUser({
       name: overrides?.userName,
@@ -102,10 +130,17 @@ export class TestFactory {
       name: overrides?.apiKeyName,
     });
 
+    const testWalletAddress = await this.createWalletAddress(testUser.id, {
+      address: overrides?.walletAddress,
+      chainId: overrides?.chainId,
+      isPrimary: true,
+    });
+
     return {
       user: testUser,
       merchant: testMerchant,
       apiKey: testApiKey,
+      walletAddress: testWalletAddress,
     };
   }
 }

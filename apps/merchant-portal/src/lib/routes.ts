@@ -14,6 +14,20 @@ export const ROUTES = {
 export type Route = (typeof ROUTES)[keyof typeof ROUTES];
 
 /**
+ * Full path constants for navigation and links
+ */
+export const ROUTE_PATHS = {
+  DASHBOARD: '/dashboard',
+  PAYMENTS: '/dashboard/payments',
+  SETTINGS: '/dashboard/settings',
+  API_KEYS: '/dashboard/settings/api-keys',
+  WEBHOOKS: '/dashboard/settings/webhooks',
+  SIGN_IN: '/sign-in',
+} as const;
+
+export type RoutePath = (typeof ROUTE_PATHS)[keyof typeof ROUTE_PATHS];
+
+/**
  * Route configuration for breadcrumbs and navigation
  * Add new routes here to automatically update breadcrumbs throughout the app
  */

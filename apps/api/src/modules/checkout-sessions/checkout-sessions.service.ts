@@ -1,6 +1,7 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession } from '@app/modules/database/schemas';
 import { MerchantsService } from '@app/modules/merchants/merchants.service';
+import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
@@ -14,6 +15,7 @@ export class CheckoutSessionsService {
     private readonly databaseService: DatabaseService,
     private readonly configService: ConfigService,
     private readonly merchantsService: MerchantsService,
+    private readonly walletsService: WalletsService,
   ) {}
 
   async createCheckoutSession(
@@ -44,7 +46,6 @@ export class CheckoutSessionsService {
 
     return {
       id: createdSession.id,
-      status: createdSession.status,
       checkoutUrl: fullCheckoutUrl,
       expiresAt: createdSession.expiresAt,
       metadata: createdSession.metadata ?? null,
@@ -61,14 +62,20 @@ export class CheckoutSessionsService {
       throw new CheckoutSessionNotFoundException(id);
     }
 
+    // Get merchant's primary wallet address dynamically
+    const merchantWalletAddress =
+      await this.walletsService.getWalletAddressByMerchantId(session.merchantId);
+
     return {
       id: session.id,
-      status: session.status,
       amountFiat: session.amountFiat,
       fiatCurrency: session.fiatCurrency,
       allowedCryptoCurrencies: session.allowedCryptoCurrencies,
       allowedNetworks: session.allowedNetworks,
+      merchantWalletAddress,
       expiresAt: session.expiresAt,
+      successUrl: session.successUrl,
+      cancelUrl: session.cancelUrl,
     };
   }
 }

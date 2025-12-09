@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
 
-export function useExchangeRateOptions(crypto: string, fiat: string) {
+export function exchangeRateOptions(crypto: string, fiat: string) {
   return queryOptions({
     queryKey: ['exchange-rate', crypto, fiat],
     queryFn: async () => {

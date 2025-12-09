@@ -19,7 +19,10 @@ export class BinanceExchangeStrategy implements ExchangeStrategy {
         url.toString(),
       );
 
-      return parseFloat(response.data.price);
+      return {
+        rate: parseFloat(response.data.price),
+        timestamp: new Date(),
+      };
     } catch (error) {
       this.logger.error(
         `Error fetching exchange rate from Binance for symbol ${symbol}: ${error}`,

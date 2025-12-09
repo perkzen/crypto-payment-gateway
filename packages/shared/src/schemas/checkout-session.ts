@@ -19,7 +19,7 @@ export const CreateCheckoutSessionSchema = z.object({
     .array(z.string())
     .min(1)
     .describe(
-      'A list of allowed blockchain networks for payment, e.g., ["bitcoin", "ethereum"]',
+      'A list of allowed blockchain networks for payment, e.g., ["hardhat", "ethereum", "bitcoin"]',
     ),
 
   customerEmail: z
@@ -63,20 +63,13 @@ export const CreateCheckoutSessionResultSchema = z.object({
     .uuid()
     .describe('The unique identifier of the checkout session'),
 
-  status: z
-    .string()
-    .optional()
-    .describe(
-      'The current status of the checkout session, e.g., "open", "completed", "expired", "canceled"',
-    ),
-
   checkoutUrl: z
     .string()
     .url()
     .describe('The URL where the customer can complete the payment'),
 
   expiresAt: z
-    .date()
+    .coerce.date()
     .describe('The timestamp when the checkout session expires'),
 
   metadata: z
@@ -98,12 +91,6 @@ export const PublicCheckoutSessionSchema = z.object({
     .uuid()
     .describe('The unique identifier of the checkout session'),
 
-  status: z
-    .string()
-    .describe(
-      'The current status of the checkout session, e.g., "open", "completed", "expired", "canceled"',
-    ),
-
   amountFiat: z.number().describe('The amount to be charged in cents'),
 
   fiatCurrency: z
@@ -120,12 +107,26 @@ export const PublicCheckoutSessionSchema = z.object({
   allowedNetworks: z
     .array(z.string())
     .describe(
-      'A list of allowed blockchain networks for payment, e.g., ["bitcoin", "ethereum"]',
+      'A list of allowed blockchain networks for payment, e.g., ["hardhat", "ethereum", "bitcoin"]',
     ),
 
+  merchantWalletAddress: z
+    .string()
+    .describe('The merchant wallet address where payments should be sent'),
+
   expiresAt: z
-    .date()
+    .coerce.date()
     .describe('The ISO 8601 timestamp when the checkout session expires'),
+
+  successUrl: z
+    .string()
+    .url()
+    .describe('The URL to redirect to after a successful payment'),
+
+  cancelUrl: z
+    .string()
+    .url()
+    .describe('The URL to redirect to if the payment is canceled'),
 });
 
 export type PublicCheckoutSession = z.infer<typeof PublicCheckoutSessionSchema>;

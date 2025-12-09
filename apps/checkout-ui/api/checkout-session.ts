@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
 
-export function useCheckoutSessionOptions(sessionId: string) {
+export function checkoutSessionByIdOptions(sessionId: string) {
   return queryOptions({
     queryKey: ['checkout-session', sessionId],
     queryFn: async () => {
