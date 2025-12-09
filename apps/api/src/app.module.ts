@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { BlockchainModule } from './modules/blockchain/blockchain.module';
 import { CheckoutSessionsModule } from './modules/checkout-sessions/checkout-sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { ExchangeModule } from './modules/exchange/exchange.module';
@@ -26,6 +27,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
         connectionString: configService.getOrThrow('DATABASE_URL'),
       }),
     }),
+    BlockchainModule,
     AuthModule,
     PaymentsModule,
     CheckoutSessionsModule,

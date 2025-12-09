@@ -17,6 +17,8 @@ export const environmentVariablesSchema = z.object({
 
   BULL_BOARD_USERNAME: z.string().optional(),
   BULL_BOARD_PASSWORD: z.string().optional(),
+
+  CRYPTO_PAY_CONTRACT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
 });
 
 export type EnvironmentVariables = z.infer<typeof environmentVariablesSchema>;
