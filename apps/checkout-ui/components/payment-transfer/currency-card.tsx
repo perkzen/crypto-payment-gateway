@@ -82,7 +82,7 @@ export function CurrencyCard({
               {currencyIconUrl ? (
                 <Image
                   src={currencyIconUrl}
-                  alt={description}
+                  alt={'icon'}
                   width={20}
                   height={20}
                   className="h-5 w-5"
