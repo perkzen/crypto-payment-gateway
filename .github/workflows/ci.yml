@@ -113,7 +113,7 @@ jobs:
       redis:
         image: redis:7
         ports:
-          - 6379:6379
+          - 6380:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -122,7 +122,7 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://admin:admin@localhost:5432/postgres
-      REDIS_URL: redis://localhost:6379
+      REDIS_URL: redis://localhost:6378
       BLOCKCHAIN_RPC_URL: http://localhost:8545
     steps:
       - name: Checkout code
