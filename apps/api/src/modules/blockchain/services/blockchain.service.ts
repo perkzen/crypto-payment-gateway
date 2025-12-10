@@ -1,4 +1,5 @@
 import { Blockchain } from '@app/modules/blockchain/decorators/blockchain.decorator';
+import { BlockchainEventQueueService } from '@app/modules/blockchain/services/blockchain-event-queue.service';
 import {
   Injectable,
   Logger,
@@ -8,7 +9,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   BlockchainEventName,
+  type PaidNativeEvent,
   PaidNativeEventSchema,
+  type PaidTokenEvent,
   PaidTokenEventSchema,
   cryptoPayAbi,
 } from '@workspace/shared';
@@ -26,6 +29,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     @Blockchain()
     private readonly blockchain: PublicClient,
     private readonly configService: ConfigService,
+    private readonly blockchainEventQueueService: BlockchainEventQueueService,
   ) {
     this.SMART_CONTRACT_ADDRESS = this.configService.getOrThrow(
       'CRYPTO_PAY_CONTRACT_ADDRESS',
@@ -76,12 +80,12 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     eventName,
     fromBlock,
     schema,
-    onLogs,
+    onEvents,
   }: {
     eventName: BlockchainEventName;
     schema: TSchema;
     fromBlock: bigint;
-    onLogs: (validatedEvents: TEvent[]) => void | Promise<void>;
+    onEvents: (events: TEvent[]) => void | Promise<void>;
   }): () => void {
     return this.blockchain.watchContractEvent({
       address: this.SMART_CONTRACT_ADDRESS,
@@ -89,32 +93,30 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
       eventName,
       fromBlock,
       pollingInterval: 4000,
-      onLogs: async (logs) => {
+      onLogs: (logs) => {
         this.logger.log(`Received ${logs.length} ${eventName} event(s)`);
-        const validatedEvents: TEvent[] = [];
 
-        for (const log of logs) {
-          try {
-            const eventData = schema.parse({
+        const events = logs
+          .map((log) => {
+            const result = schema.safeParse({
               ...log.args,
               transactionHash: log.transactionHash,
               blockNumber: log.blockNumber ?? 0n,
-            }) as TEvent;
+            });
 
-            validatedEvents.push(eventData);
-          } catch (error) {
-            this.logger.error(
-              `Error processing ${eventName} log: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-              error instanceof Error ? error.stack : undefined,
-            );
-          }
-        }
+            if (!result.success) {
+              this.logger.error(
+                `Error processing ${eventName} log: ${result.error.message}`,
+                result.error.stack,
+              );
+              return null;
+            }
 
-        if (validatedEvents.length > 0) {
-          await onLogs(validatedEvents);
-        }
+            return result.data as TEvent;
+          })
+          .filter((event): event is TEvent => event !== null);
+
+        void onEvents(events);
       },
       onError: (error) => {
         this.logger.error(
@@ -130,13 +132,8 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
       fromBlock,
       eventName: BlockchainEventName.PaidNative,
       schema: PaidNativeEventSchema,
-      onLogs: async (events) => {
-        // Validated events are ready to be passed to a worker or processed
-        for (const event of events) {
-          this.logger.log(`PaidNative event: ${JSON.stringify(event)}`);
-          // TODO: Pass to worker or process as needed
-        }
-      },
+      onEvents: (events: PaidNativeEvent[]) =>
+        this.blockchainEventQueueService.enqueuePaidNative(events),
     });
 
     this.logger.log(
@@ -149,13 +146,8 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
       fromBlock,
       eventName: BlockchainEventName.PaidToken,
       schema: PaidTokenEventSchema,
-      onLogs: async (events) => {
-        // Validated events are ready to be passed to a worker or processed
-        for (const event of events) {
-          this.logger.log(`PaidToken event: ${JSON.stringify(event)}`);
-          // TODO: Pass to worker or process as needed
-        }
-      },
+      onEvents: (events: PaidTokenEvent[]) =>
+        this.blockchainEventQueueService.enqueuePaidToken(events),
     });
 
     this.logger.log(

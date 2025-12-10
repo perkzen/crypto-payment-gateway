@@ -1,3 +1,3 @@
 export enum QueueName {
-  TEST = 'test',
+  BLOCKCHAIN_EVENTS = 'blockchain-events',
 }

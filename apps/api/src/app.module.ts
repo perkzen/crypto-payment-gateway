@@ -1,5 +1,6 @@
 import { getEnvFilePath } from '@app/config/env/env-paths';
 import { validateEnv } from '@app/config/env/env-var.validation';
+import { QueueModule } from '@app/modules/queue/queue.module';
 import { WalletsModule } from '@app/modules/wallets/wallets.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -27,6 +28,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
         connectionString: configService.getOrThrow('DATABASE_URL'),
       }),
     }),
+    QueueModule,
     BlockchainModule,
     AuthModule,
     PaymentsModule,
