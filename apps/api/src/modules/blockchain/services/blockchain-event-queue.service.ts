@@ -1,6 +1,6 @@
 import { QueueName } from '@app/modules/queue/enums/queue-name.enum';
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import {
   BlockchainEventName,
   PaidNativeEvent,
@@ -10,13 +10,18 @@ import { Queue } from 'bullmq';
 import { BlockchainEventJobData } from '../dtos/blockchain-event-job.dto';
 
 @Injectable()
-export class BlockchainEventQueueService {
+export class BlockchainEventQueueService implements OnModuleDestroy {
   private readonly logger = new Logger(BlockchainEventQueueService.name);
 
   constructor(
     @InjectQueue(QueueName.BLOCKCHAIN_EVENTS)
     private readonly queue: Queue<BlockchainEventJobData>,
   ) {}
+
+  async onModuleDestroy(): Promise<void> {
+    await this.queue.drain();
+    await this.queue.close();
+  }
 
   /**
    * Enqueue PaidNative events for processing

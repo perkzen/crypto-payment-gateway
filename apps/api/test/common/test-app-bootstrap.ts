@@ -65,12 +65,8 @@ export class TestAppBootstrap {
   async close(): Promise<void> {
     if (!this.app) return;
 
-    // Close the app and wait for all lifecycle hooks to complete
+    // Close the module - this will trigger OnModuleDestroy on all services
     await this.app.close();
-
-    // Give a small delay to ensure all async cleanup completes
-    // This helps with BullMQ/Redis connections and other async operations
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
     if (this.db) await this.db.dropTestDatabase();
 
