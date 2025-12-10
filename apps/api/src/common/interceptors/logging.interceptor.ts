@@ -16,7 +16,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const { method, url, body, query, params, headers } = request;
     const userAgent = headers['user-agent'] || '';
-    const ip = request.ip || request.connection?.remoteAddress || 'unknown';
+    const ip = request.ip || request.socket?.remoteAddress || 'unknown';
 
     const startTime = Date.now();
 
@@ -61,11 +61,6 @@ export class LoggingInterceptor implements NestInterceptor {
   }
 
   private sanitizeBody(body: unknown): unknown {
-    if (!body || typeof body !== 'object') {
-      return body;
-    }
-
-    const sanitized = { ...body };
     const sensitiveFields = [
       'password',
       'token',
@@ -74,12 +69,52 @@ export class LoggingInterceptor implements NestInterceptor {
       'authorization',
     ];
 
-    for (const field of sensitiveFields) {
-      if (field in sanitized) {
-        sanitized[field] = '[REDACTED]';
-      }
-    }
+    const isSensitiveKey = (key: string): boolean => {
+      const lowerKey = key.toLowerCase();
+      return (
+        sensitiveFields.some((field) => lowerKey === field.toLowerCase()) ||
+        lowerKey.endsWith('password') ||
+        lowerKey.endsWith('token') ||
+        lowerKey.endsWith('secret') ||
+        lowerKey.endsWith('key')
+      );
+    };
 
-    return sanitized;
+    const sanitizeRecursive = (
+      value: unknown,
+      visited: WeakSet<object> = new WeakSet(),
+    ): unknown => {
+      // Handle primitives and null
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+
+      // Guard against circular references
+      if (visited.has(value as object)) {
+        return '[CIRCULAR]';
+      }
+
+      // Handle arrays
+      if (Array.isArray(value)) {
+        visited.add(value);
+        return value.map((item) => sanitizeRecursive(item, visited));
+      }
+
+      // Handle objects
+      visited.add(value as object);
+      const sanitized: Record<string, unknown> = {};
+
+      for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+        if (isSensitiveKey(key)) {
+          sanitized[key] = '[REDACTED]';
+        } else {
+          sanitized[key] = sanitizeRecursive(val, visited);
+        }
+      }
+
+      return sanitized;
+    };
+
+    return sanitizeRecursive(body);
   }
 }

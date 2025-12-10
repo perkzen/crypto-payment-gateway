@@ -89,6 +89,7 @@ export function PaymentActions() {
     writeContract,
     data: hash,
     isPending: isTransactionPending,
+    error: writeError,
   } = useWriteCryptoPayPayNative();
 
   // Wait for transaction receipt
@@ -110,6 +111,14 @@ export function PaymentActions() {
       setTransactionError(err);
     }
   }, [receiptError, setTransactionError]);
+
+  // Update error state when write error occurs
+  useEffect(() => {
+    if (writeError) {
+      setTransactionError(writeError ?? null);
+      console.error('Contract write error:', writeError);
+    }
+  }, [writeError, setTransactionError]);
 
   // Update payment context when transaction hash or confirmation status changes
   useEffect(() => {
@@ -156,19 +165,13 @@ export function PaymentActions() {
       return;
     }
 
-    try {
-      setTransactionError(null);
-      writeContract({
-        address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
-        args: [invoiceId, merchantAddress],
-        value: paymentAmount,
-        chainId: hardhat.id, // Explicitly specify Hardhat chain ID
-      });
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error('Payment failed');
-      setTransactionError(err);
-      console.error('Payment error:', error);
-    }
+    setTransactionError(null);
+    writeContract({
+      address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
+      args: [invoiceId, merchantAddress],
+      value: paymentAmount,
+      chainId: hardhat.id, // Explicitly specify Hardhat chain ID
+    });
   };
 
   // Determine button status
