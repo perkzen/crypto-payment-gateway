@@ -27,7 +27,7 @@
     ]
   },
   "transformIgnorePatterns": [
-    "node_modules/(?!.*jose.*|.*@better-auth.*|.*@thallesp.*|.*@noble.*|.*@faker-js.*|.*wagmi.*|.*@wagmi.*)"
+    "node_modules/(?!.*jose.*|.*better-auth.*|.*better-call.*|.*@thallesp.*|.*@noble.*|.*@faker-js.*|.*wagmi.*|.*@wagmi.*)"
   ],
   "testTimeout": 30000,
   "moduleNameMapper": {
