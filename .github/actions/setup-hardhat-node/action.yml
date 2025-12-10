@@ -30,8 +30,6 @@ runs:
         echo "pid=$HARDHAT_PID" >> $GITHUB_OUTPUT
         echo "$HARDHAT_PID" > /tmp/hardhat.pid
         echo "Started Hardhat node with PID: $HARDHAT_PID"
-      env:
-        HARDHAT_NETWORK: hardhat
 
     - name: Wait for Hardhat node to be ready
       shell: bash
