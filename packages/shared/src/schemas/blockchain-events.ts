@@ -21,7 +21,7 @@ const bigintToStringSchema = z.union([
 
 // Base schema for PaidNative event (with BigInt as strings for serialization)
 export const PaidNativeEventSchema = z.object({
-  invoiceId: bytes32Schema,
+  checkoutSessionId: bytes32Schema,
   payer: addressSchema,
   merchant: addressSchema,
   grossAmount: bigintToStringSchema,

@@ -51,7 +51,7 @@ export function ErrorAlert({
       transition={{ duration: 0.2 }}
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
     >
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <div className="rounded-full bg-red-100 p-1.5 dark:bg-red-900/30">
           <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
         </div>
@@ -65,6 +65,7 @@ export function ErrorAlert({
 
         {onRetry && (
           <button
+            type="button"
             onClick={onRetry}
             className="mt-3 flex items-center gap-2 rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
           >
@@ -76,8 +77,9 @@ export function ErrorAlert({
 
       {dismissible && (
         <button
+          type="button"
           onClick={handleDismiss}
-          className="flex-shrink-0 rounded-md p-1 text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
+          className="shrink-0 rounded-md p-1 text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
           aria-label="Dismiss"
         >
           <X className="h-4 w-4" />
@@ -98,4 +100,3 @@ export function ErrorAlert({
 
   return <AnimatePresence>{isVisible && content}</AnimatePresence>;
 }
-

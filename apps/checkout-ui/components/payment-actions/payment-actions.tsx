@@ -68,8 +68,8 @@ export function PaymentActions() {
     fiatCurrency,
   });
 
-  // Generate invoiceId from checkout session ID
-  const invoiceId = useMemo(() => {
+  // Generate checkoutSessionId from checkout session ID
+  const checkoutSessionId = useMemo(() => {
     return keccak256(toHex(checkoutSession.id)) as `0x${string}`;
   }, [checkoutSession.id]);
 
@@ -168,7 +168,7 @@ export function PaymentActions() {
     setTransactionError(null);
     writeContract({
       address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
-      args: [invoiceId, merchantAddress],
+      args: [checkoutSessionId, merchantAddress],
       value: paymentAmount,
       chainId: hardhat.id, // Explicitly specify Hardhat chain ID
     });

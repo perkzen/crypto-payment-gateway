@@ -93,7 +93,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
       eventName,
       fromBlock,
       pollingInterval: 4000,
-      onLogs: (logs) => {
+      onLogs: async (logs) => {
         this.logger.log(`Received ${logs.length} ${eventName} event(s)`);
 
         const events = logs
@@ -101,7 +101,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
             const result = schema.safeParse({
               ...log.args,
               transactionHash: log.transactionHash,
-              blockNumber: log.blockNumber ?? 0n,
+              blockNumber: log.blockNumber,
             });
 
             if (!result.success) {
@@ -116,7 +116,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
           })
           .filter((event): event is TEvent => event !== null);
 
-        void onEvents(events);
+        await onEvents(events);
       },
       onError: (error) => {
         this.logger.error(

@@ -59,7 +59,7 @@ export class BlockchainEventQueueService {
         },
       });
       this.logger.debug(
-        `Enqueued ${jobData.eventName} event: ${jobData.event.invoiceId}`,
+        `Enqueued ${jobData.eventName} event: ${jobData.event.checkoutSessionId}`,
       );
     } catch (error) {
       this.logger.error(

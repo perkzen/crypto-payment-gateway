@@ -23,7 +23,6 @@ contract CryptoPayTest is Test {
     MockERC20Permit public token;
     
     address public owner = address(0x1);
-    address public platform = address(0x2);
     address public merchant = address(0x3);
     address public payer;
     address public nonOwner = address(0x5);
@@ -37,7 +36,7 @@ contract CryptoPayTest is Test {
         payer = vm.addr(payerPrivateKey);
         
         vm.startPrank(owner);
-        cryptoPay = new CryptoPay(platform, INITIAL_FEE_BPS);
+        cryptoPay = new CryptoPay(INITIAL_FEE_BPS);
         token = new MockERC20Permit("TestToken", "TEST");
         vm.stopPrank();
         
@@ -54,49 +53,19 @@ contract CryptoPayTest is Test {
 
     function test_Constructor_Success() public {
         assertEq(cryptoPay.owner(), owner);
-        assertEq(cryptoPay.platform(), platform);
         assertEq(cryptoPay.feeBps(), INITIAL_FEE_BPS);
         assertEq(cryptoPay.BPS_DENOMINATOR(), 10000);
         assertEq(cryptoPay.MAX_FEE_BPS(), 1000);
     }
 
-    function test_Constructor_ZeroPlatform() public {
-        vm.expectRevert(CryptoPay.ZeroAddress.selector);
-        new CryptoPay(address(0), INITIAL_FEE_BPS);
-    }
-
     function test_Constructor_InvalidFee() public {
         vm.expectRevert(CryptoPay.InvalidFee.selector);
-        new CryptoPay(platform, 1001); // > MAX_FEE_BPS
+        new CryptoPay(1001); // > MAX_FEE_BPS
     }
 
     // ==========================
     //    Admin Function Tests
     // ==========================
-
-    function test_SetPlatform_Success() public {
-        address newPlatform = address(0x6);
-        
-        vm.expectEmit(true, true, false, true);
-        emit CryptoPay.PlatformUpdated(platform, newPlatform);
-        
-        vm.prank(owner);
-        cryptoPay.setPlatform(newPlatform);
-        
-        assertEq(cryptoPay.platform(), newPlatform);
-    }
-
-    function test_SetPlatform_ZeroAddress() public {
-        vm.prank(owner);
-        vm.expectRevert(CryptoPay.ZeroAddress.selector);
-        cryptoPay.setPlatform(address(0));
-    }
-
-    function test_SetPlatform_NonOwner() public {
-        vm.prank(nonOwner);
-        vm.expectRevert();
-        cryptoPay.setPlatform(address(0x6));
-    }
 
     function test_SetFeeBps_Success() public {
         uint96 newFeeBps = 500;
@@ -145,23 +114,23 @@ contract CryptoPayTest is Test {
     // ==========================
 
     function test_PayNative_Success() public {
-        bytes32 invoiceId = keccak256("test-invoice-1");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-1");
         uint256 paymentAmount = 1 ether;
         uint256 expectedFee = (paymentAmount * INITIAL_FEE_BPS) / 10000;
         uint256 expectedToMerchant = paymentAmount - expectedFee;
         
-        uint256 platformBalanceBefore = platform.balance;
+        uint256 ownerBalanceBefore = owner.balance;
         uint256 merchantBalanceBefore = merchant.balance;
         
         // Test that events are emitted (simplified approach)
         vm.recordLogs();
         
         vm.prank(payer);
-        cryptoPay.payNative{value: paymentAmount}(invoiceId, merchant);
+        cryptoPay.payNative{value: paymentAmount}(checkoutSessionId, merchant);
         
-        assertEq(platform.balance, platformBalanceBefore + expectedFee);
+        assertEq(owner.balance, ownerBalanceBefore + expectedFee);
         assertEq(merchant.balance, merchantBalanceBefore + expectedToMerchant);
-        assertTrue(cryptoPay.invoicePaid(invoiceId));
+        assertTrue(cryptoPay.checkoutSessionPaid(checkoutSessionId));
     }
 
     function test_PayNative_ZeroFee() public {
@@ -169,56 +138,56 @@ contract CryptoPayTest is Test {
         vm.prank(owner);
         cryptoPay.setFeeBps(0);
         
-        bytes32 invoiceId = keccak256("test-invoice-zero-fee");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-zero-fee");
         uint256 paymentAmount = 1 ether;
         
         uint256 merchantBalanceBefore = merchant.balance;
         
         vm.prank(payer);
-        cryptoPay.payNative{value: paymentAmount}(invoiceId, merchant);
+        cryptoPay.payNative{value: paymentAmount}(checkoutSessionId, merchant);
         
         assertEq(merchant.balance, merchantBalanceBefore + paymentAmount);
-        assertEq(platform.balance, 0); // No fee sent to platform
+        assertEq(owner.balance, 0); // No fee sent to owner
     }
 
     function test_PayNative_ZeroMerchant() public {
-        bytes32 invoiceId = keccak256("test-invoice-zero-merchant");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-zero-merchant");
         
         vm.prank(payer);
         vm.expectRevert(CryptoPay.ZeroAddress.selector);
-        cryptoPay.payNative{value: 1 ether}(invoiceId, address(0));
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId, address(0));
     }
 
     function test_PayNative_ZeroAmount() public {
-        bytes32 invoiceId = keccak256("test-invoice-zero-amount");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-zero-amount");
         
         vm.prank(payer);
         vm.expectRevert(CryptoPay.ZeroAmount.selector);
-        cryptoPay.payNative{value: 0}(invoiceId, merchant);
+        cryptoPay.payNative{value: 0}(checkoutSessionId, merchant);
     }
 
     function test_PayNative_AlreadyPaid() public {
-        bytes32 invoiceId = keccak256("test-invoice-already-paid");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-already-paid");
         
         // First payment
         vm.prank(payer);
-        cryptoPay.payNative{value: 1 ether}(invoiceId, merchant);
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId, merchant);
         
-        // Second payment with same invoice ID
+        // Second payment with same checkout session ID
         vm.prank(payer);
         vm.expectRevert(CryptoPay.AlreadyPaid.selector);
-        cryptoPay.payNative{value: 1 ether}(invoiceId, merchant);
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId, merchant);
     }
 
     function test_PayNative_WhenPaused() public {
         vm.prank(owner);
         cryptoPay.pause();
         
-        bytes32 invoiceId = keccak256("test-invoice-paused");
+        bytes32 checkoutSessionId = keccak256("test-checkout-session-paused");
         
         vm.prank(payer);
         vm.expectRevert();
-        cryptoPay.payNative{value: 1 ether}(invoiceId, merchant);
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId, merchant);
     }
 
     // ==========================
@@ -226,7 +195,7 @@ contract CryptoPayTest is Test {
     // ==========================
 
     function test_PayToken_Success() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-1");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-1");
         uint256 paymentAmount = 1000 * 10**18;
         uint256 expectedFee = (paymentAmount * INITIAL_FEE_BPS) / 10000;
         
@@ -234,18 +203,18 @@ contract CryptoPayTest is Test {
         vm.prank(payer);
         token.approve(address(cryptoPay), paymentAmount);
         
-        uint256 platformBalanceBefore = token.balanceOf(platform);
+        uint256 ownerBalanceBefore = token.balanceOf(owner);
         uint256 merchantBalanceBefore = token.balanceOf(merchant);
         
         // Test that events are emitted (simplified approach)
         vm.recordLogs();
         
         vm.prank(payer);
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
         
-        assertEq(token.balanceOf(platform), platformBalanceBefore + expectedFee);
+        assertEq(token.balanceOf(owner), ownerBalanceBefore + expectedFee);
         assertEq(token.balanceOf(merchant), merchantBalanceBefore + paymentAmount - expectedFee);
-        assertTrue(cryptoPay.invoicePaid(invoiceId));
+        assertTrue(cryptoPay.checkoutSessionPaid(checkoutSessionId));
     }
 
     function test_PayToken_ZeroFee() public {
@@ -253,7 +222,7 @@ contract CryptoPayTest is Test {
         vm.prank(owner);
         cryptoPay.setFeeBps(0);
         
-        bytes32 invoiceId = keccak256("test-token-invoice-zero-fee");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-zero-fee");
         uint256 paymentAmount = 1000 * 10**18;
         
         vm.prank(payer);
@@ -262,14 +231,14 @@ contract CryptoPayTest is Test {
         uint256 merchantBalanceBefore = token.balanceOf(merchant);
         
         vm.prank(payer);
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
         
         assertEq(token.balanceOf(merchant), merchantBalanceBefore + paymentAmount);
-        assertEq(token.balanceOf(platform), 0); // No fee sent to platform
+        assertEq(token.balanceOf(owner), 0); // No fee sent to owner
     }
 
     function test_PayToken_ZeroMerchant() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-zero-merchant");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-zero-merchant");
         uint256 paymentAmount = 1000 * 10**18;
         
         vm.prank(payer);
@@ -277,28 +246,28 @@ contract CryptoPayTest is Test {
         
         vm.prank(payer);
         vm.expectRevert(CryptoPay.ZeroAddress.selector);
-        cryptoPay.payToken(invoiceId, address(0), address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, address(0), address(token), paymentAmount);
     }
 
     function test_PayToken_ZeroToken() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-zero-token");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-zero-token");
         uint256 paymentAmount = 1000 * 10**18;
         
         vm.prank(payer);
         vm.expectRevert(CryptoPay.ZeroAddress.selector);
-        cryptoPay.payToken(invoiceId, merchant, address(0), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(0), paymentAmount);
     }
 
     function test_PayToken_ZeroAmount() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-zero-amount");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-zero-amount");
         
         vm.prank(payer);
         vm.expectRevert(CryptoPay.ZeroAmount.selector);
-        cryptoPay.payToken(invoiceId, merchant, address(token), 0);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), 0);
     }
 
     function test_PayToken_AlreadyPaid() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-already-paid");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-already-paid");
         uint256 paymentAmount = 1000 * 10**18;
         
         vm.prank(payer);
@@ -306,16 +275,16 @@ contract CryptoPayTest is Test {
         
         // First payment
         vm.prank(payer);
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
         
-        // Second payment with same invoice ID
+        // Second payment with same checkout session ID
         vm.prank(payer);
         vm.expectRevert(CryptoPay.AlreadyPaid.selector);
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
     }
 
     function test_PayToken_InsufficientAllowance() public {
-        bytes32 invoiceId = keccak256("test-token-invoice-insufficient-allowance");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-insufficient-allowance");
         uint256 paymentAmount = 1000 * 10**18;
         uint256 insufficientAllowance = 500 * 10**18;
         
@@ -324,14 +293,14 @@ contract CryptoPayTest is Test {
         
         vm.prank(payer);
         vm.expectRevert();
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
     }
 
     function test_PayToken_WhenPaused() public {
         vm.prank(owner);
         cryptoPay.pause();
         
-        bytes32 invoiceId = keccak256("test-token-invoice-paused");
+        bytes32 checkoutSessionId = keccak256("test-token-checkout-session-paused");
         uint256 paymentAmount = 1000 * 10**18;
         
         vm.prank(payer);
@@ -339,7 +308,7 @@ contract CryptoPayTest is Test {
         
         vm.prank(payer);
         vm.expectRevert();
-        cryptoPay.payToken(invoiceId, merchant, address(token), paymentAmount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), paymentAmount);
     }
 
     // ==========================
@@ -390,25 +359,25 @@ contract CryptoPayTest is Test {
     function testFuzz_PayNative_FeeCalculation(uint256 amount) public {
         vm.assume(amount > 0 && amount <= 1000 ether);
         
-        bytes32 invoiceId = keccak256(abi.encodePacked("fuzz-invoice-", amount));
+        bytes32 checkoutSessionId = keccak256(abi.encodePacked("fuzz-checkout-session-", amount));
         uint256 expectedFee = (amount * INITIAL_FEE_BPS) / 10000;
         uint256 expectedToMerchant = amount - expectedFee;
         
-        uint256 platformBalanceBefore = platform.balance;
+        uint256 ownerBalanceBefore = owner.balance;
         uint256 merchantBalanceBefore = merchant.balance;
         
         vm.deal(payer, amount);
         vm.prank(payer);
-        cryptoPay.payNative{value: amount}(invoiceId, merchant);
+        cryptoPay.payNative{value: amount}(checkoutSessionId, merchant);
         
-        assertEq(platform.balance, platformBalanceBefore + expectedFee);
+        assertEq(owner.balance, ownerBalanceBefore + expectedFee);
         assertEq(merchant.balance, merchantBalanceBefore + expectedToMerchant);
     }
 
     function testFuzz_PayToken_FeeCalculation(uint256 amount) public {
         vm.assume(amount > 0 && amount <= 1000000 * 10**18);
         
-        bytes32 invoiceId = keccak256(abi.encodePacked("fuzz-token-invoice-", amount));
+        bytes32 checkoutSessionId = keccak256(abi.encodePacked("fuzz-token-checkout-session-", amount));
         uint256 expectedFee = (amount * INITIAL_FEE_BPS) / 10000;
         
         // Mint enough tokens
@@ -417,13 +386,13 @@ contract CryptoPayTest is Test {
         vm.prank(payer);
         token.approve(address(cryptoPay), amount);
         
-        uint256 platformBalanceBefore = token.balanceOf(platform);
+        uint256 ownerBalanceBefore = token.balanceOf(owner);
         uint256 merchantBalanceBefore = token.balanceOf(merchant);
         
         vm.prank(payer);
-        cryptoPay.payToken(invoiceId, merchant, address(token), amount);
+        cryptoPay.payToken(checkoutSessionId, merchant, address(token), amount);
         
-        assertEq(token.balanceOf(platform), platformBalanceBefore + expectedFee);
+        assertEq(token.balanceOf(owner), ownerBalanceBefore + expectedFee);
         assertEq(token.balanceOf(merchant), merchantBalanceBefore + amount - expectedFee);
     }
 
@@ -444,18 +413,18 @@ contract CryptoPayTest is Test {
         vm.prank(owner);
         cryptoPay.setFeeBps(1000); // MAX_FEE_BPS (10%)
         
-        bytes32 invoiceId = keccak256("test-max-fee");
+        bytes32 checkoutSessionId = keccak256("test-max-fee");
         uint256 paymentAmount = 1 ether;
         uint256 expectedFee = (paymentAmount * 1000) / 10000; // 10% fee
         uint256 expectedToMerchant = paymentAmount - expectedFee; // 90%
         
-        uint256 platformBalanceBefore = platform.balance;
+        uint256 ownerBalanceBefore = owner.balance;
         uint256 merchantBalanceBefore = merchant.balance;
         
         vm.prank(payer);
-        cryptoPay.payNative{value: paymentAmount}(invoiceId, merchant);
+        cryptoPay.payNative{value: paymentAmount}(checkoutSessionId, merchant);
         
-        assertEq(platform.balance, platformBalanceBefore + expectedFee);
+        assertEq(owner.balance, ownerBalanceBefore + expectedFee);
         assertEq(merchant.balance, merchantBalanceBefore + expectedToMerchant);
     }
 
@@ -463,31 +432,31 @@ contract CryptoPayTest is Test {
         vm.prank(owner);
         cryptoPay.setFeeBps(0);
         
-        bytes32 invoiceId = keccak256("test-zero-fee");
+        bytes32 checkoutSessionId = keccak256("test-zero-fee");
         uint256 paymentAmount = 1 ether;
         
-        uint256 platformBalanceBefore = platform.balance;
+        uint256 ownerBalanceBefore = owner.balance;
         uint256 merchantBalanceBefore = merchant.balance;
         
         vm.prank(payer);
-        cryptoPay.payNative{value: paymentAmount}(invoiceId, merchant);
+        cryptoPay.payNative{value: paymentAmount}(checkoutSessionId, merchant);
         
-        assertEq(platform.balance, platformBalanceBefore); // No fee
+        assertEq(owner.balance, ownerBalanceBefore); // No fee
         assertEq(merchant.balance, merchantBalanceBefore + paymentAmount);
     }
 
-    function test_InvoiceIdUniqueness() public {
-        bytes32 invoiceId1 = keccak256("unique-invoice-1");
-        bytes32 invoiceId2 = keccak256("unique-invoice-2");
+    function test_CheckoutSessionIdUniqueness() public {
+        bytes32 checkoutSessionId1 = keccak256("unique-checkout-session-1");
+        bytes32 checkoutSessionId2 = keccak256("unique-checkout-session-2");
         
         // Both should be able to be paid
         vm.prank(payer);
-        cryptoPay.payNative{value: 1 ether}(invoiceId1, merchant);
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId1, merchant);
         
         vm.prank(payer);
-        cryptoPay.payNative{value: 1 ether}(invoiceId2, merchant);
+        cryptoPay.payNative{value: 1 ether}(checkoutSessionId2, merchant);
         
-        assertTrue(cryptoPay.invoicePaid(invoiceId1));
-        assertTrue(cryptoPay.invoicePaid(invoiceId2));
+        assertTrue(cryptoPay.checkoutSessionPaid(checkoutSessionId1));
+        assertTrue(cryptoPay.checkoutSessionPaid(checkoutSessionId2));
     }
 }

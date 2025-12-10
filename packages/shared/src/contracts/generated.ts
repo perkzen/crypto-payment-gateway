@@ -12,10 +12,7 @@ import {
 export const cryptoPayAbi = [
   {
     type: 'constructor',
-    inputs: [
-      { name: '_platform', internalType: 'address', type: 'address' },
-      { name: '_feeBps', internalType: 'uint96', type: 'uint96' },
-    ],
+    inputs: [{ name: '_feeBps', internalType: 'uint96', type: 'uint96' }],
     stateMutability: 'nonpayable',
   },
   { type: 'error', inputs: [], name: 'AlreadyPaid' },
@@ -46,6 +43,19 @@ export const cryptoPayAbi = [
     anonymous: false,
     inputs: [
       {
+        name: 'checkoutSessionId',
+        internalType: 'bytes32',
+        type: 'bytes32',
+        indexed: true,
+      },
+    ],
+    name: 'CheckoutSessionConsumed',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
         name: 'oldFeeBps',
         internalType: 'uint96',
         type: 'uint96',
@@ -59,19 +69,6 @@ export const cryptoPayAbi = [
       },
     ],
     name: 'FeeUpdated',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
-        name: 'invoiceId',
-        internalType: 'bytes32',
-        type: 'bytes32',
-        indexed: true,
-      },
-    ],
-    name: 'InvoiceConsumed',
   },
   {
     type: 'event',
@@ -97,7 +94,7 @@ export const cryptoPayAbi = [
     anonymous: false,
     inputs: [
       {
-        name: 'invoiceId',
+        name: 'checkoutSessionId',
         internalType: 'bytes32',
         type: 'bytes32',
         indexed: true,
@@ -134,7 +131,7 @@ export const cryptoPayAbi = [
     anonymous: false,
     inputs: [
       {
-        name: 'invoiceId',
+        name: 'checkoutSessionId',
         internalType: 'bytes32',
         type: 'bytes32',
         indexed: true,
@@ -190,25 +187,6 @@ export const cryptoPayAbi = [
     anonymous: false,
     inputs: [
       {
-        name: 'oldPlatform',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
-        name: 'newPlatform',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-    ],
-    name: 'PlatformUpdated',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
         name: 'account',
         internalType: 'address',
         type: 'address',
@@ -234,16 +212,16 @@ export const cryptoPayAbi = [
   },
   {
     type: 'function',
-    inputs: [],
-    name: 'feeBps',
-    outputs: [{ name: '', internalType: 'uint96', type: 'uint96' }],
+    inputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'checkoutSessionPaid',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
     stateMutability: 'view',
   },
   {
     type: 'function',
-    inputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
-    name: 'invoicePaid',
-    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    inputs: [],
+    name: 'feeBps',
+    outputs: [{ name: '', internalType: 'uint96', type: 'uint96' }],
     stateMutability: 'view',
   },
   {
@@ -270,7 +248,7 @@ export const cryptoPayAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'invoiceId', internalType: 'bytes32', type: 'bytes32' },
+      { name: 'checkoutSessionId', internalType: 'bytes32', type: 'bytes32' },
       { name: 'merchant', internalType: 'address', type: 'address' },
     ],
     name: 'payNative',
@@ -280,7 +258,7 @@ export const cryptoPayAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'invoiceId', internalType: 'bytes32', type: 'bytes32' },
+      { name: 'checkoutSessionId', internalType: 'bytes32', type: 'bytes32' },
       { name: 'merchant', internalType: 'address', type: 'address' },
       { name: 'token', internalType: 'address', type: 'address' },
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
@@ -292,7 +270,7 @@ export const cryptoPayAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'invoiceId', internalType: 'bytes32', type: 'bytes32' },
+      { name: 'checkoutSessionId', internalType: 'bytes32', type: 'bytes32' },
       { name: 'merchant', internalType: 'address', type: 'address' },
       { name: 'token', internalType: 'address', type: 'address' },
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
@@ -308,13 +286,6 @@ export const cryptoPayAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'platform',
-    outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
     name: 'renounceOwnership',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -323,13 +294,6 @@ export const cryptoPayAbi = [
     type: 'function',
     inputs: [{ name: '_feeBps', internalType: 'uint96', type: 'uint96' }],
     name: 'setFeeBps',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: '_platform', internalType: 'address', type: 'address' }],
-    name: 'setPlatform',
     outputs: [],
     stateMutability: 'nonpayable',
   },
@@ -379,19 +343,20 @@ export const useReadCryptoPayMaxFeeBps = /*#__PURE__*/ createUseReadContract({
 });
 
 /**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"checkoutSessionPaid"`
+ */
+export const useReadCryptoPayCheckoutSessionPaid =
+  /*#__PURE__*/ createUseReadContract({
+    abi: cryptoPayAbi,
+    functionName: 'checkoutSessionPaid',
+  });
+
+/**
  * Wraps __{@link useReadContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"feeBps"`
  */
 export const useReadCryptoPayFeeBps = /*#__PURE__*/ createUseReadContract({
   abi: cryptoPayAbi,
   functionName: 'feeBps',
-});
-
-/**
- * Wraps __{@link useReadContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"invoicePaid"`
- */
-export const useReadCryptoPayInvoicePaid = /*#__PURE__*/ createUseReadContract({
-  abi: cryptoPayAbi,
-  functionName: 'invoicePaid',
 });
 
 /**
@@ -408,14 +373,6 @@ export const useReadCryptoPayOwner = /*#__PURE__*/ createUseReadContract({
 export const useReadCryptoPayPaused = /*#__PURE__*/ createUseReadContract({
   abi: cryptoPayAbi,
   functionName: 'paused',
-});
-
-/**
- * Wraps __{@link useReadContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"platform"`
- */
-export const useReadCryptoPayPlatform = /*#__PURE__*/ createUseReadContract({
-  abi: cryptoPayAbi,
-  functionName: 'platform',
 });
 
 /**
@@ -474,15 +431,6 @@ export const useWriteCryptoPaySetFeeBps = /*#__PURE__*/ createUseWriteContract({
   abi: cryptoPayAbi,
   functionName: 'setFeeBps',
 });
-
-/**
- * Wraps __{@link useWriteContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"setPlatform"`
- */
-export const useWriteCryptoPaySetPlatform =
-  /*#__PURE__*/ createUseWriteContract({
-    abi: cryptoPayAbi,
-    functionName: 'setPlatform',
-  });
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"transferOwnership"`
@@ -563,15 +511,6 @@ export const useSimulateCryptoPaySetFeeBps =
   });
 
 /**
- * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"setPlatform"`
- */
-export const useSimulateCryptoPaySetPlatform =
-  /*#__PURE__*/ createUseSimulateContract({
-    abi: cryptoPayAbi,
-    functionName: 'setPlatform',
-  });
-
-/**
  * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link cryptoPayAbi}__ and `functionName` set to `"transferOwnership"`
  */
 export const useSimulateCryptoPayTransferOwnership =
@@ -597,21 +536,21 @@ export const useWatchCryptoPayEvent = /*#__PURE__*/ createUseWatchContractEvent(
 );
 
 /**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"CheckoutSessionConsumed"`
+ */
+export const useWatchCryptoPayCheckoutSessionConsumedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: cryptoPayAbi,
+    eventName: 'CheckoutSessionConsumed',
+  });
+
+/**
  * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"FeeUpdated"`
  */
 export const useWatchCryptoPayFeeUpdatedEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: cryptoPayAbi,
     eventName: 'FeeUpdated',
-  });
-
-/**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"InvoiceConsumed"`
- */
-export const useWatchCryptoPayInvoiceConsumedEvent =
-  /*#__PURE__*/ createUseWatchContractEvent({
-    abi: cryptoPayAbi,
-    eventName: 'InvoiceConsumed',
   });
 
 /**
@@ -648,15 +587,6 @@ export const useWatchCryptoPayPausedEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: cryptoPayAbi,
     eventName: 'Paused',
-  });
-
-/**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"PlatformUpdated"`
- */
-export const useWatchCryptoPayPlatformUpdatedEvent =
-  /*#__PURE__*/ createUseWatchContractEvent({
-    abi: cryptoPayAbi,
-    eventName: 'PlatformUpdated',
   });
 
 /**
