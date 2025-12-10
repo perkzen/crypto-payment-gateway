@@ -1,4 +1,5 @@
 import { AppModule } from '@app/app.module';
+import { BLOCKCHAIN_CLIENT } from '@app/modules/blockchain/decorators/blockchain.decorator';
 import { DATABASE_OPTIONS } from '@app/modules/database/database.module-definition';
 import { type ModuleMetadata } from '@nestjs/common';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@nestjs/testing';
 import { TestDB } from '@test/common/test-db';
 import { TestHttpServer } from '@test/common/test-http-server';
+import { BlockchainClientMock } from '@test/mocks/blockchain-client.mock';
 
 export type OverrideFunc = (
   module: TestingModuleBuilder,
@@ -24,6 +26,7 @@ export class TestAppBootstrap {
   app: TestingModule;
   httpServer: TestHttpServer;
   db: TestDB;
+  private blockchainMock: BlockchainClientMock | null = null;
 
   constructor() {}
 
@@ -45,9 +48,13 @@ export class TestAppBootstrap {
 
     this.createBuilder(metadata, overrideFunc, !disableAppModules);
 
+    this.blockchainMock = new BlockchainClientMock();
+
     this.moduleBuilder
       .overrideProvider(DATABASE_OPTIONS)
-      .useValue(this.db.getDatabaseOptions());
+      .useValue(this.db.getDatabaseOptions())
+      .overrideProvider(BLOCKCHAIN_CLIENT)
+      .useValue(this.blockchainMock);
 
     this.app = await this.moduleBuilder.compile();
     this.httpServer = await TestHttpServer.createHttpServer(this.app);
@@ -57,8 +64,18 @@ export class TestAppBootstrap {
 
   async close(): Promise<void> {
     if (!this.app) return;
+
+    // Close the app and wait for all lifecycle hooks to complete
     await this.app.close();
+
+    // Give a small delay to ensure all async cleanup completes
+    // This helps with BullMQ/Redis connections and other async operations
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     if (this.db) await this.db.dropTestDatabase();
+
+    // Clear references
+    this.blockchainMock = null;
   }
 
   private createBuilder(
