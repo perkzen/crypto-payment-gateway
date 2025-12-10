@@ -18,6 +18,8 @@ export const environmentVariablesSchema = z.object({
   BULL_BOARD_USERNAME: z.string().optional(),
   BULL_BOARD_PASSWORD: z.string().optional(),
 
+  BLOCKCHAIN_RPC_URL: z.string().url().default('http://localhost:8545'),
+
   CRYPTO_PAY_CONTRACT_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
 });
 
