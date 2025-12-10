@@ -1,0 +1,59 @@
+name: 'Setup Hardhat Node'
+description: 'Starts a Hardhat node and waits for it to be ready'
+inputs:
+  working-directory:
+    description: 'Working directory for the hardhat node (relative to repository root)'
+    required: false
+    default: 'apps/blockchain'
+  timeout:
+    description: 'Timeout in seconds to wait for the node to be ready'
+    required: false
+    default: '30'
+  port:
+    description: 'Port the hardhat node runs on'
+    required: false
+    default: '8545'
+outputs:
+  pid:
+    description: 'Process ID of the hardhat node'
+    value: ${{ steps.start-node.outputs.pid }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Start Hardhat node
+      id: start-node
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        pnpm dev &
+        HARDHAT_PID=$!
+        echo "pid=$HARDHAT_PID" >> $GITHUB_OUTPUT
+        echo "$HARDHAT_PID" > /tmp/hardhat.pid
+        echo "Started Hardhat node with PID: $HARDHAT_PID"
+      env:
+        HARDHAT_NETWORK: hardhat
+
+    - name: Wait for Hardhat node to be ready
+      shell: bash
+      run: |
+        timeout=${{ inputs.timeout }}
+        counter=0
+        port=${{ inputs.port }}
+        
+        echo "Waiting for Hardhat node to be ready on port $port..."
+        while ! curl -s -X POST http://localhost:$port \
+          -H "Content-Type: application/json" \
+          -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' > /dev/null 2>&1; do
+          if [ $counter -ge $timeout ]; then
+            echo "::error::Hardhat node failed to start within $timeout seconds"
+            if [ -n "$HARDHAT_PID" ]; then
+              kill $HARDHAT_PID 2>/dev/null || true
+            fi
+            exit 1
+          fi
+          echo "Waiting for Hardhat node to start... ($counter/$timeout)"
+          sleep 1
+          counter=$((counter + 1))
+        done
+        echo "Hardhat node is ready on port $port"
+

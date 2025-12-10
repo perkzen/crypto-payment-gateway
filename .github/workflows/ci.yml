@@ -153,8 +153,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup Hardhat node
+        id: hardhat-node
+        uses: ./.github/actions/setup-hardhat-node
+
       - name: Run tests
         run: pnpm test
+
+      - name: Stop Hardhat node
+        if: always()
+        uses: ./.github/actions/stop-hardhat-node
+        with:
+          pid: ${{ steps.hardhat-node.outputs.pid }}
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
