@@ -11,13 +11,8 @@ import { merchant } from './merchant.schema';
 
 export const paymentStatusEnum = pgEnum('payment_status', [
   'pending',
-  'waiting_for_confirmations',
   'confirmed',
-  'underpaid',
-  'overpaid',
-  'expired',
   'failed',
-  'canceled',
 ]);
 
 export const payment = pgTable('payments', {
