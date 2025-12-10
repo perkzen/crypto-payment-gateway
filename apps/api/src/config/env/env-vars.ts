@@ -11,7 +11,7 @@ export const environmentVariablesSchema = z.object({
 
   SIWE_DOMAIN: z.string().default('localhost:3000'),
 
-  DATABASE_URL: z.string(),
+  DATABASE_URL: z.string().url(),
 
   REDIS_URL: z.string().url(),
 

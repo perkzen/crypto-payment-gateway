@@ -1,7 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
   integer,
-  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -29,19 +28,17 @@ export const payment = pgTable('payments', {
 
   status: paymentStatusEnum('status').notNull(),
 
-  // Fiat stored in cents
-  amountFiat: integer('amount_fiat').notNull(),
-  fiatCurrency: text('fiat_currency').notNull(),
-
   network: text('network').notNull(),
   address: text('address').notNull(),
   txHash: text('tx_hash'),
-  minConfirmations: integer('min_confirmations').notNull().default(12),
+  // Token address for ERC-20 payments (null for native payments)
+  tokenAddress: text('token_address'),
+  // Amount paid in crypto (stored as string to handle large BigInt values)
+  // For native payments: amount in wei
+  // For token payments: amount in token units (not converted to ETH)
+  paidAmount: text('paid_amount'),
   confirmations: integer('confirmations').notNull().default(0),
 
-  metadata: jsonb('metadata'),
-
-  expiresAt: timestamp('expires_at', { withTimezone: true }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

@@ -28,13 +28,6 @@ export const CreateCheckoutSessionSchema = z.object({
     .optional()
     .describe('Optional email address of the customer'),
 
-  metadata: z
-    .record(z.string())
-    .optional()
-    .describe(
-      'Optional key-value pairs to attach to the checkout session for later reference',
-    ),
-
   successUrl: z
     .string()
     .url()
@@ -71,14 +64,6 @@ export const CreateCheckoutSessionResultSchema = z.object({
   expiresAt: z
     .coerce.date()
     .describe('The timestamp when the checkout session expires'),
-
-  metadata: z
-    .record(z.string())
-    .nullable()
-    .optional()
-    .describe(
-      'Optional key-value pairs attached to the checkout session for later reference',
-    ),
 });
 
 export type CreateCheckoutSessionResult = z.infer<
