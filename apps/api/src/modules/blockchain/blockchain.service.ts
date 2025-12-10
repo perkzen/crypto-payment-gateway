@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  BlockchainEventName,
   PaidNativeEventSchema,
   PaidTokenEventSchema,
   cryptoPayAbi,
@@ -77,7 +78,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     schema,
     onLogs,
   }: {
-    eventName: 'PaidNative' | 'PaidToken';
+    eventName: BlockchainEventName;
     schema: TSchema;
     fromBlock: bigint;
     onLogs: (validatedEvents: TEvent[]) => void | Promise<void>;
@@ -127,7 +128,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private async startPaidNativeListener(fromBlock: bigint): Promise<void> {
     this.unwatchPaidNative = this.watchContractEvent({
       fromBlock,
-      eventName: 'PaidNative',
+      eventName: BlockchainEventName.PaidNative,
       schema: PaidNativeEventSchema,
       onLogs: async (events) => {
         // Validated events are ready to be passed to a worker or processed
@@ -146,7 +147,7 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private async startPaidTokenListener(fromBlock: bigint): Promise<void> {
     this.unwatchPaidToken = this.watchContractEvent({
       fromBlock,
-      eventName: 'PaidToken',
+      eventName: BlockchainEventName.PaidToken,
       schema: PaidTokenEventSchema,
       onLogs: async (events) => {
         // Validated events are ready to be passed to a worker or processed

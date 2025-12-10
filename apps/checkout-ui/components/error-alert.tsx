@@ -98,3 +98,4 @@ export function ErrorAlert({
 
   return <AnimatePresence>{isVisible && content}</AnimatePresence>;
 }
+

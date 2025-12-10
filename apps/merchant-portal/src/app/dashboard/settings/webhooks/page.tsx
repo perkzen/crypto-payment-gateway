@@ -11,6 +11,7 @@ import {
   Webhook,
   XCircle,
 } from 'lucide-react';
+import { WebhookEventName } from '@workspace/shared';
 import { PageHeader } from '@/components/page-header';
 
 type WebhookEndpoint = {
@@ -30,11 +31,11 @@ export default function WebhooksPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const availableEvents = [
-    'payment.created',
-    'payment.pending',
-    'payment.completed',
-    'payment.failed',
-    'payment.expired',
+    WebhookEventName.PaymentCreated,
+    WebhookEventName.PaymentPending,
+    WebhookEventName.PaymentCompleted,
+    WebhookEventName.PaymentFailed,
+    WebhookEventName.PaymentExpired,
   ];
 
   const toggleEvent = (event: string) => {
