@@ -71,6 +71,13 @@
       "when": 1765404669717,
       "tag": "0009_mature_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1765404928370,
+      "tag": "0010_old_arachne",
+      "breakpoints": true
     }
   ]
 }
