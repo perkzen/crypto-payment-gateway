@@ -13,8 +13,8 @@ import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
  * @notice Non-custodial payment processor:
  *         - Immediately forwards native/token payments (no balances retained).
  *         - Emits events for off-chain reconciliation.
- *         - Enforces platform fee (bps) within a capped range.
- *         - Prevents double-spend per invoice via unique invoiceId.
+ *         - Enforces owner fee (bps) within a capped range.
+ *         - Prevents double-spend per checkout session via unique checkoutSessionId.
  *
  * Security:
  *  - Uses checks-effects-interactions + ReentrancyGuard.
@@ -29,15 +29,14 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
   uint96 public constant MAX_FEE_BPS = 1_000; // 10%
 
   // --- Config ---
-  address public platform; // fee recipient
-  uint96 public feeBps; // platform fee in basis points
+  uint96 public feeBps; // owner fee in basis points
 
-  // --- Invoice replay protection ---
-  mapping(bytes32 => bool) public invoicePaid; // invoiceId => consumed
+  // --- Checkout session replay protection ---
+  mapping(bytes32 => bool) public checkoutSessionPaid; // checkoutSessionId => consumed
 
   // --- Events ---
   event PaidNative(
-    bytes32 indexed invoiceId,
+    bytes32 indexed checkoutSessionId,
     address indexed payer,
     address indexed merchant,
     uint256 grossAmount,
@@ -45,7 +44,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
   );
 
   event PaidToken(
-    bytes32 indexed invoiceId,
+    bytes32 indexed checkoutSessionId,
     address indexed payer,
     address indexed merchant,
     address token,
@@ -53,12 +52,8 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     uint256 feeAmount
   );
 
-  event PlatformUpdated(
-    address indexed oldPlatform,
-    address indexed newPlatform
-  );
   event FeeUpdated(uint96 oldFeeBps, uint96 newFeeBps);
-  event InvoiceConsumed(bytes32 indexed invoiceId);
+  event CheckoutSessionConsumed(bytes32 indexed checkoutSessionId);
 
   // --- Errors ---
   error InvalidFee();
@@ -67,22 +62,14 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
   error AlreadyPaid();
   error TransferFailed();
 
-  constructor(address _platform, uint96 _feeBps) Ownable(msg.sender) {
-    if (_platform == address(0)) revert ZeroAddress();
+  constructor(uint96 _feeBps) Ownable(msg.sender) {
     if (_feeBps > MAX_FEE_BPS) revert InvalidFee();
-    platform = _platform;
     feeBps = _feeBps;
   }
 
   // ==========================
   //         Admin
   // ==========================
-
-  function setPlatform(address _platform) external onlyOwner {
-    if (_platform == address(0)) revert ZeroAddress();
-    emit PlatformUpdated(platform, _platform);
-    platform = _platform;
-  }
 
   function setFeeBps(uint96 _feeBps) external onlyOwner {
     if (_feeBps > MAX_FEE_BPS) revert InvalidFee();
@@ -104,47 +91,47 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
 
   /**
    * @notice Pay with native coin (ETH/MATIC/etc.). Forwards immediately (no custody).
-   * @param invoiceId Unique id for idempotency (cannot be reused).
+   * @param checkoutSessionId Unique id for idempotency (cannot be reused).
    * @param merchant Recipient of the net proceeds.
    */
   function payNative(
-    bytes32 invoiceId,
+    bytes32 checkoutSessionId,
     address merchant
   ) external payable nonReentrant whenNotPaused {
     if (merchant == address(0)) revert ZeroAddress();
     if (msg.value == 0) revert ZeroAmount();
-    if (invoicePaid[invoiceId]) revert AlreadyPaid();
-    invoicePaid[invoiceId] = true;
-    emit InvoiceConsumed(invoiceId);
+    if (checkoutSessionPaid[checkoutSessionId]) revert AlreadyPaid();
+    checkoutSessionPaid[checkoutSessionId] = true;
+    emit CheckoutSessionConsumed(checkoutSessionId);
 
     uint256 fee = (msg.value * feeBps) / BPS_DENOMINATOR;
     uint256 toMerchant = msg.value - fee;
 
     // Effects before interactions; then interactions.
-    if (fee > 0) _sendNative(platform, fee);
+    if (fee > 0) _sendNative(owner(), fee);
     _sendNative(merchant, toMerchant);
 
-    emit PaidNative(invoiceId, msg.sender, merchant, msg.value, fee);
+    emit PaidNative(checkoutSessionId, msg.sender, merchant, msg.value, fee);
   }
 
   /**
    * @notice Pay with ERC-20 using prior approve().
-   * @param invoiceId Unique id for idempotency (cannot be reused).
+   * @param checkoutSessionId Unique id for idempotency (cannot be reused).
    * @param merchant Recipient of net proceeds.
    * @param token ERC-20 token address.
    * @param amount Gross amount to be paid (token decimals respected).
    */
   function payToken(
-    bytes32 invoiceId,
+    bytes32 checkoutSessionId,
     address merchant,
     address token,
     uint256 amount
   ) external nonReentrant whenNotPaused {
     if (merchant == address(0) || token == address(0)) revert ZeroAddress();
     if (amount == 0) revert ZeroAmount();
-    if (invoicePaid[invoiceId]) revert AlreadyPaid();
-    invoicePaid[invoiceId] = true;
-    emit InvoiceConsumed(invoiceId);
+    if (checkoutSessionPaid[checkoutSessionId]) revert AlreadyPaid();
+    checkoutSessionPaid[checkoutSessionId] = true;
+    emit CheckoutSessionConsumed(checkoutSessionId);
 
     uint256 fee = (amount * feeBps) / BPS_DENOMINATOR;
     uint256 toMerchant = amount - fee;
@@ -153,10 +140,10 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     IERC20 erc20 = IERC20(token);
     erc20.safeTransferFrom(msg.sender, merchant, toMerchant);
     if (fee > 0) {
-      erc20.safeTransferFrom(msg.sender, platform, fee);
+      erc20.safeTransferFrom(msg.sender, owner(), fee);
     }
 
-    emit PaidToken(invoiceId, msg.sender, merchant, token, amount, fee);
+    emit PaidToken(checkoutSessionId, msg.sender, merchant, token, amount, fee);
   }
 
   /**
@@ -164,7 +151,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
    * @dev Token must implement IERC20Permit.
    */
   function payTokenWithPermit(
-    bytes32 invoiceId,
+    bytes32 checkoutSessionId,
     address merchant,
     address token,
     uint256 amount,
@@ -175,9 +162,9 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
   ) external nonReentrant whenNotPaused {
     if (merchant == address(0) || token == address(0)) revert ZeroAddress();
     if (amount == 0) revert ZeroAmount();
-    if (invoicePaid[invoiceId]) revert AlreadyPaid();
-    invoicePaid[invoiceId] = true;
-    emit InvoiceConsumed(invoiceId);
+    if (checkoutSessionPaid[checkoutSessionId]) revert AlreadyPaid();
+    checkoutSessionPaid[checkoutSessionId] = true;
+    emit CheckoutSessionConsumed(checkoutSessionId);
 
     // Give this contract allowance via permit, then pull.
     IERC20Permit(token).permit(
@@ -196,10 +183,10 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     IERC20 erc20 = IERC20(token);
     erc20.safeTransferFrom(msg.sender, merchant, toMerchant);
     if (fee > 0) {
-      erc20.safeTransferFrom(msg.sender, platform, fee);
+      erc20.safeTransferFrom(msg.sender, owner(), fee);
     }
 
-    emit PaidToken(invoiceId, msg.sender, merchant, token, amount, fee);
+    emit PaidToken(checkoutSessionId, msg.sender, merchant, token, amount, fee);
   }
 
   // ==========================

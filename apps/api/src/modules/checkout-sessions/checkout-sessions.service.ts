@@ -48,7 +48,6 @@ export class CheckoutSessionsService {
       id: createdSession.id,
       checkoutUrl: fullCheckoutUrl,
       expiresAt: createdSession.expiresAt,
-      metadata: createdSession.metadata ?? null,
     };
   }
 

@@ -6,7 +6,8 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "test": "hardhat test",
-    "dev": "hardhat node"
+    "dev": "hardhat node",
+    "deploy": "hardhat ignition deploy ./ignition/modules/CryptoPay.ts --network localhost"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "^3.0.0",

@@ -35,8 +35,6 @@ export const checkoutSession = pgTable('checkout_sessions', {
 
   customerEmail: text('customer_email'),
 
-  metadata: jsonb('metadata'),
-
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

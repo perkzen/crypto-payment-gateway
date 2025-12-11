@@ -1,4 +1,5 @@
 import { AppModule } from '@app/app.module';
+import { BLOCKCHAIN_CLIENT } from '@app/modules/blockchain/decorators/blockchain.decorator';
 import { DATABASE_OPTIONS } from '@app/modules/database/database.module-definition';
 import { type ModuleMetadata } from '@nestjs/common';
 import {
@@ -8,6 +9,8 @@ import {
 } from '@nestjs/testing';
 import { TestDB } from '@test/common/test-db';
 import { TestHttpServer } from '@test/common/test-http-server';
+import { TestQueueManager } from '@test/common/test-queue-manager';
+import { BlockchainClientMock } from '@test/mocks/blockchain-client.mock';
 
 export type OverrideFunc = (
   module: TestingModuleBuilder,
@@ -24,6 +27,7 @@ export class TestAppBootstrap {
   app: TestingModule;
   httpServer: TestHttpServer;
   db: TestDB;
+  queueManager: TestQueueManager;
 
   constructor() {}
 
@@ -47,9 +51,12 @@ export class TestAppBootstrap {
 
     this.moduleBuilder
       .overrideProvider(DATABASE_OPTIONS)
-      .useValue(this.db.getDatabaseOptions());
+      .useValue(this.db.getDatabaseOptions())
+      .overrideProvider(BLOCKCHAIN_CLIENT)
+      .useValue(new BlockchainClientMock());
 
     this.app = await this.moduleBuilder.compile();
+    this.queueManager = new TestQueueManager(this.app);
     this.httpServer = await TestHttpServer.createHttpServer(this.app);
 
     return this.app;
@@ -57,7 +64,13 @@ export class TestAppBootstrap {
 
   async close(): Promise<void> {
     if (!this.app) return;
+
+    // Drain all queues to avoid open handles in tests
+    if (this.queueManager) await this.queueManager.close();
+
+    // Close the module - this will trigger OnModuleDestroy on all services
     await this.app.close();
+
     if (this.db) await this.db.dropTestDatabase();
   }
 

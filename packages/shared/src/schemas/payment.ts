@@ -1,46 +1,36 @@
 import { z } from 'zod';
 
 export const CreatePaymentSchema = z.object({
-  amountFiat: z.number().min(1).describe('The amount to be charged in cents'),
-  fiatCurrency: z
-    .string()
-    .length(3)
-    .describe('The three-letter ISO currency code, e.g., "USD"'),
   network: z
     .string()
     .min(1)
     .describe('The blockchain network, e.g., "ethereum"'),
   address: z.string().min(1).describe('The payment address'),
-  minConfirmations: z
-    .number()
-    .int()
-    .min(1)
+  txHash: z
+    .string()
     .optional()
-    .describe('Minimum number of confirmations required (default: 12)'),
-  metadata: z
-    .record(z.string())
+    .describe('The transaction hash from the blockchain'),
+  tokenAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
     .optional()
-    .describe('Optional key-value pairs to attach to the payment'),
-  expiresAt: z
-    .date()
+    .describe(
+      'Token address for ERC-20 payments (undefined for native payments)',
+    ),
+  paidAmount: z
+    .string()
+    .regex(/^\d+$/, 'Must be a valid numeric string')
     .optional()
-    .describe('Optional expiration time for the payment'),
+    .describe(
+      'The amount that was paid in crypto. For native payments: amount in wei. For token payments: amount in token units (not converted to ETH)',
+    ),
 });
 
 export type CreatePayment = z.infer<typeof CreatePaymentSchema>;
 
 export const UpdatePaymentSchema = z.object({
   status: z
-    .enum([
-      'pending',
-      'waiting_for_confirmations',
-      'confirmed',
-      'underpaid',
-      'overpaid',
-      'expired',
-      'failed',
-      'canceled',
-    ])
+    .enum(['pending', 'confirmed', 'failed'])
     .optional()
     .describe('The payment status'),
   txHash: z
@@ -53,15 +43,19 @@ export const UpdatePaymentSchema = z.object({
     .min(0)
     .optional()
     .describe('The number of confirmations received'),
-  metadata: z
-    .record(z.string())
+  tokenAddress: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid Ethereum address')
     .optional()
-    .describe('Optional key-value pairs to update on the payment'),
-  expiresAt: z
-    .date()
-    .nullish()
     .describe(
-      'Optional expiration time for the payment (null to clear, undefined to leave unchanged)',
+      'Token address for ERC-20 payments (null/undefined for native payments)',
+    ),
+  paidAmount: z
+    .string()
+    .regex(/^\d+$/, 'Must be a valid numeric string')
+    .optional()
+    .describe(
+      'The amount that was paid in crypto. For native payments: amount in wei. For token payments: amount in token units (not converted to ETH)',
     ),
 });
 

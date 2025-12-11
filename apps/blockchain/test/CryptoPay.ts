@@ -8,8 +8,8 @@ describe('CryptoPay', async function () {
   const { viem } = await network.connect();
   const publicClient = await viem.getPublicClient();
 
-  async function deployCryptoPay(platform: Hash, fee: bigint) {
-    return await viem.deployContract('CryptoPay', [platform, fee]);
+  async function deployCryptoPay(fee: bigint) {
+    return await viem.deployContract('CryptoPay', [fee]);
   }
 
   async function deployMockERC20Permit(name: string, symbol: string) {
@@ -19,7 +19,6 @@ describe('CryptoPay', async function () {
   let cryptoPay: Awaited<ReturnType<typeof deployCryptoPay>>;
   let mockToken: Awaited<ReturnType<typeof deployMockERC20Permit>>;
   let owner: Hash;
-  let platform: Hash;
   let merchant: Hash;
   let payer: Hash;
   let nonOwner: Hash;
@@ -30,13 +29,12 @@ describe('CryptoPay', async function () {
   beforeEach(async function () {
     // Use hardcoded test addresses (hardhat network provides these)
     owner = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
-    platform = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
     merchant = '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC';
     payer = '0x90F79bf6EB2c4f870365E785982E1f101E93b906';
     nonOwner = '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65';
 
-    // Deploy CryptoPay contract
-    cryptoPay = await deployCryptoPay(platform, INITIAL_FEE_BPS);
+    // Deploy CryptoPay contract (deployer becomes owner and fee recipient)
+    cryptoPay = await deployCryptoPay(INITIAL_FEE_BPS);
 
     // Deploy MockERC20Permit token
     mockToken = await viem.deployContract('MockERC20Permit', [
@@ -56,59 +54,20 @@ describe('CryptoPay', async function () {
 
   await it('Should initialize with correct values', async function () {
     assert.equal(await cryptoPay.read.owner(), owner);
-    assert.equal(await cryptoPay.read.platform(), platform);
     assert.equal(await cryptoPay.read.feeBps(), INITIAL_FEE_BPS);
     assert.equal(await cryptoPay.read.BPS_DENOMINATOR(), 10000n);
     assert.equal(await cryptoPay.read.MAX_FEE_BPS(), 1000n);
   });
 
-  await it('Should revert when platform is zero address', async function () {
-    await assert.rejects(async () => {
-      await viem.deployContract('CryptoPay', [
-        '0x0000000000000000000000000000000000000000',
-        INITIAL_FEE_BPS,
-      ]);
-    }, /ZeroAddress/);
-  });
-
   await it('Should revert when fee exceeds maximum', async function () {
     await assert.rejects(async () => {
-      await viem.deployContract('CryptoPay', [platform, 1001n]);
+      await viem.deployContract('CryptoPay', [1001n]);
     }, /InvalidFee/);
   });
 
   // ==========================
   //    Admin Function Tests
   // ==========================
-
-  await it('Should allow owner to set platform', async function () {
-    const newPlatform = '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc';
-
-    await viem.assertions.emitWithArgs(
-      cryptoPay.write.setPlatform([newPlatform], { account: owner }),
-      cryptoPay,
-      'PlatformUpdated',
-      [platform, newPlatform],
-    );
-
-    assert.equal(await cryptoPay.read.platform(), newPlatform);
-  });
-
-  await it('Should revert when setting platform to zero address', async function () {
-    await assert.rejects(async () => {
-      await cryptoPay.write.setPlatform(
-        ['0x0000000000000000000000000000000000000000'],
-        { account: owner },
-      );
-    }, /ZeroAddress/);
-  });
-
-  await it('Should revert when non-owner tries to set platform', async function () {
-    const newPlatform = '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc';
-    await assert.rejects(async () => {
-      await cryptoPay.write.setPlatform([newPlatform], { account: nonOwner });
-    }, /OwnableUnauthorizedAccount/);
-  });
 
   await it('Should allow owner to set fee', async function () {
     const newFeeBps = 500n;
@@ -156,58 +115,58 @@ describe('CryptoPay', async function () {
   // ==========================
 
   await it('Should process native payment successfully', async function () {
-    const invoiceId = keccak256(toHex('test-invoice-1'));
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-1'));
     const paymentAmount = parseEther('1');
     const expectedFee = (paymentAmount * INITIAL_FEE_BPS) / 10000n;
     const expectedToMerchant = paymentAmount - expectedFee;
 
-    const platformBalanceBefore = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceBefore = await publicClient.getBalance({
+      address: owner,
     });
     const merchantBalanceBefore = await publicClient.getBalance({
       address: merchant,
     });
 
     await viem.assertions.emitWithArgs(
-      cryptoPay.write.payNative([invoiceId, merchant], {
+      cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: paymentAmount,
       }),
       cryptoPay,
       'PaidNative',
-      [invoiceId, payer, merchant, paymentAmount, expectedFee],
+      [checkoutSessionId, payer, merchant, paymentAmount, expectedFee],
     );
 
-    const platformBalanceAfter = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceAfter = await publicClient.getBalance({
+      address: owner,
     });
     const merchantBalanceAfter = await publicClient.getBalance({
       address: merchant,
     });
 
-    assert.equal(platformBalanceAfter, platformBalanceBefore + expectedFee);
+    assert.equal(ownerBalanceAfter, ownerBalanceBefore + expectedFee);
     assert.equal(
       merchantBalanceAfter,
       merchantBalanceBefore + expectedToMerchant,
     );
-    assert.equal(await cryptoPay.read.invoicePaid([invoiceId]), true);
+    assert.equal(await cryptoPay.read.checkoutSessionPaid([checkoutSessionId]), true);
   });
 
   await it('Should process native payment with zero fee', async function () {
     // Set fee to 0
     await cryptoPay.write.setFeeBps([0n], { account: owner });
 
-    const invoiceId = keccak256(toHex('test-invoice-zero-fee'));
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-zero-fee'));
     const paymentAmount = parseEther('1');
 
     const merchantBalanceBefore = await publicClient.getBalance({
       address: merchant,
     });
-    const platformBalanceBefore = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceBefore = await publicClient.getBalance({
+      address: owner,
     });
 
-    await cryptoPay.write.payNative([invoiceId, merchant], {
+    await cryptoPay.write.payNative([checkoutSessionId, merchant], {
       account: payer,
       value: paymentAmount,
     });
@@ -215,20 +174,20 @@ describe('CryptoPay', async function () {
     const merchantBalanceAfter = await publicClient.getBalance({
       address: merchant,
     });
-    const platformBalanceAfter = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceAfter = await publicClient.getBalance({
+      address: owner,
     });
 
     assert.equal(merchantBalanceAfter, merchantBalanceBefore + paymentAmount);
-    assert.equal(platformBalanceAfter, platformBalanceBefore); // No additional fee sent to platform
+    assert.equal(ownerBalanceAfter, ownerBalanceBefore); // No additional fee sent to owner
   });
 
   await it('Should revert when merchant is zero address', async function () {
-    const invoiceId = keccak256(toHex('test-invoice-zero-merchant'));
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-zero-merchant'));
 
     await assert.rejects(async () => {
       await cryptoPay.write.payNative(
-        [invoiceId, '0x0000000000000000000000000000000000000000'],
+        [checkoutSessionId, '0x0000000000000000000000000000000000000000'],
         {
           account: payer,
           value: parseEther('1'),
@@ -238,28 +197,28 @@ describe('CryptoPay', async function () {
   });
 
   await it('Should revert when payment amount is zero', async function () {
-    const invoiceId = keccak256(toHex('test-invoice-zero-amount'));
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-zero-amount'));
 
     await assert.rejects(async () => {
-      await cryptoPay.write.payNative([invoiceId, merchant], {
+      await cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: 0n,
       });
     }, /ZeroAmount/);
   });
 
-  await it('Should revert when invoice is already paid', async function () {
-    const invoiceId = keccak256(toHex('test-invoice-already-paid'));
+  await it('Should revert when checkout session is already paid', async function () {
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-already-paid'));
 
     // First payment
-    await cryptoPay.write.payNative([invoiceId, merchant], {
+    await cryptoPay.write.payNative([checkoutSessionId, merchant], {
       account: payer,
       value: parseEther('1'),
     });
 
-    // Second payment with same invoice ID
+    // Second payment with same checkout session ID
     await assert.rejects(async () => {
-      await cryptoPay.write.payNative([invoiceId, merchant], {
+      await cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: parseEther('1'),
       });
@@ -269,10 +228,10 @@ describe('CryptoPay', async function () {
   await it('Should revert when contract is paused', async function () {
     await cryptoPay.write.pause({ account: owner });
 
-    const invoiceId = keccak256(toHex('test-invoice-paused'));
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-paused'));
 
     await assert.rejects(async () => {
-      await cryptoPay.write.payNative([invoiceId, merchant], {
+      await cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: parseEther('1'),
       });
@@ -284,7 +243,7 @@ describe('CryptoPay', async function () {
   // ==========================
 
   await it('Should process token payment successfully', async function () {
-    const invoiceId = keccak256(toHex('test-token-invoice-1'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-1'));
     const paymentAmount = parseEther('1000');
     const expectedFee = (paymentAmount * INITIAL_FEE_BPS) / 10000n;
 
@@ -293,31 +252,31 @@ describe('CryptoPay', async function () {
       account: payer,
     });
 
-    const platformBalanceBefore = await mockToken.read.balanceOf([platform]);
+    const ownerBalanceBefore = await mockToken.read.balanceOf([owner]);
     const merchantBalanceBefore = await mockToken.read.balanceOf([merchant]);
 
     // Execute the token payment
     await cryptoPay.write.payToken(
-      [invoiceId, merchant, mockToken.address, paymentAmount],
+      [checkoutSessionId, merchant, mockToken.address, paymentAmount],
       { account: payer },
     );
 
-    const platformBalanceAfter = await mockToken.read.balanceOf([platform]);
+    const ownerBalanceAfter = await mockToken.read.balanceOf([owner]);
     const merchantBalanceAfter = await mockToken.read.balanceOf([merchant]);
 
-    assert.equal(platformBalanceAfter, platformBalanceBefore + expectedFee);
+    assert.equal(ownerBalanceAfter, ownerBalanceBefore + expectedFee);
     assert.equal(
       merchantBalanceAfter,
       merchantBalanceBefore + paymentAmount - expectedFee,
     );
-    assert.equal(await cryptoPay.read.invoicePaid([invoiceId]), true);
+    assert.equal(await cryptoPay.read.checkoutSessionPaid([checkoutSessionId]), true);
   });
 
   await it('Should process token payment with zero fee', async function () {
     // Set fee to 0
     await cryptoPay.write.setFeeBps([0n], { account: owner });
 
-    const invoiceId = keccak256(toHex('test-token-invoice-zero-fee'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-zero-fee'));
     const paymentAmount = parseEther('1000');
 
     await mockToken.write.approve([cryptoPay.address, paymentAmount], {
@@ -325,22 +284,22 @@ describe('CryptoPay', async function () {
     });
 
     const merchantBalanceBefore = await mockToken.read.balanceOf([merchant]);
-    const platformBalanceBefore = await mockToken.read.balanceOf([platform]);
+    const ownerBalanceBefore = await mockToken.read.balanceOf([owner]);
 
     await cryptoPay.write.payToken(
-      [invoiceId, merchant, mockToken.address, paymentAmount],
+      [checkoutSessionId, merchant, mockToken.address, paymentAmount],
       { account: payer },
     );
 
     const merchantBalanceAfter = await mockToken.read.balanceOf([merchant]);
-    const platformBalanceAfter = await mockToken.read.balanceOf([platform]);
+    const ownerBalanceAfter = await mockToken.read.balanceOf([owner]);
 
     assert.equal(merchantBalanceAfter, merchantBalanceBefore + paymentAmount);
-    assert.equal(platformBalanceAfter, platformBalanceBefore); // No additional fee sent to platform
+    assert.equal(ownerBalanceAfter, ownerBalanceBefore); // No additional fee sent to owner
   });
 
   await it('Should revert when merchant is zero address for token payment', async function () {
-    const invoiceId = keccak256(toHex('test-token-invoice-zero-merchant'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-zero-merchant'));
     const paymentAmount = parseEther('1000');
 
     await mockToken.write.approve([cryptoPay.address, paymentAmount], {
@@ -350,7 +309,7 @@ describe('CryptoPay', async function () {
     await assert.rejects(async () => {
       await cryptoPay.write.payToken(
         [
-          invoiceId,
+          checkoutSessionId,
           '0x0000000000000000000000000000000000000000',
           mockToken.address,
           paymentAmount,
@@ -361,13 +320,13 @@ describe('CryptoPay', async function () {
   });
 
   await it('Should revert when token is zero address', async function () {
-    const invoiceId = keccak256(toHex('test-token-invoice-zero-token'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-zero-token'));
     const paymentAmount = parseEther('1000');
 
     await assert.rejects(async () => {
       await cryptoPay.write.payToken(
         [
-          invoiceId,
+          checkoutSessionId,
           merchant,
           '0x0000000000000000000000000000000000000000',
           paymentAmount,
@@ -378,18 +337,18 @@ describe('CryptoPay', async function () {
   });
 
   await it('Should revert when token payment amount is zero', async function () {
-    const invoiceId = keccak256(toHex('test-token-invoice-zero-amount'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-zero-amount'));
 
     await assert.rejects(async () => {
       await cryptoPay.write.payToken(
-        [invoiceId, merchant, mockToken.address, 0n],
+        [checkoutSessionId, merchant, mockToken.address, 0n],
         { account: payer },
       );
     }, /ZeroAmount/);
   });
 
-  await it('Should revert when token invoice is already paid', async function () {
-    const invoiceId = keccak256(toHex('test-token-invoice-already-paid'));
+  await it('Should revert when token checkout session is already paid', async function () {
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-already-paid'));
     const paymentAmount = parseEther('1000');
 
     await mockToken.write.approve([cryptoPay.address, paymentAmount * 2n], {
@@ -398,14 +357,14 @@ describe('CryptoPay', async function () {
 
     // First payment
     await cryptoPay.write.payToken(
-      [invoiceId, merchant, mockToken.address, paymentAmount],
+      [checkoutSessionId, merchant, mockToken.address, paymentAmount],
       { account: payer },
     );
 
-    // Second payment with same invoice ID
+    // Second payment with same checkout session ID
     await assert.rejects(async () => {
       await cryptoPay.write.payToken(
-        [invoiceId, merchant, mockToken.address, paymentAmount],
+        [checkoutSessionId, merchant, mockToken.address, paymentAmount],
         { account: payer },
       );
     }, /AlreadyPaid/);
@@ -414,7 +373,7 @@ describe('CryptoPay', async function () {
   await it('Should revert when token payment is made while paused', async function () {
     await cryptoPay.write.pause({ account: owner });
 
-    const invoiceId = keccak256(toHex('test-token-invoice-paused'));
+    const checkoutSessionId = keccak256(toHex('test-token-checkout-session-paused'));
     const paymentAmount = parseEther('1000');
 
     await mockToken.write.approve([cryptoPay.address, paymentAmount], {
@@ -423,7 +382,7 @@ describe('CryptoPay', async function () {
 
     await assert.rejects(async () => {
       await cryptoPay.write.payToken(
-        [invoiceId, merchant, mockToken.address, paymentAmount],
+        [checkoutSessionId, merchant, mockToken.address, paymentAmount],
         { account: payer },
       );
     }, /EnforcedPause/);
@@ -448,17 +407,17 @@ describe('CryptoPay', async function () {
   //    Event Tests
   // ==========================
 
-  await it('Should emit InvoiceConsumed event', async function () {
-    const invoiceId = keccak256(toHex('test-invoice-consumed'));
+  await it('Should emit CheckoutSessionConsumed event', async function () {
+    const checkoutSessionId = keccak256(toHex('test-checkout-session-consumed'));
 
     await viem.assertions.emitWithArgs(
-      cryptoPay.write.payNative([invoiceId, merchant], {
+      cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: parseEther('1'),
       }),
       cryptoPay,
-      'InvoiceConsumed',
-      [invoiceId],
+      'CheckoutSessionConsumed',
+      [checkoutSessionId],
     );
   });
 
@@ -469,54 +428,54 @@ describe('CryptoPay', async function () {
   await it('Should handle maximum fee correctly', async function () {
     await cryptoPay.write.setFeeBps([1000n], { account: owner }); // MAX_FEE_BPS (10%)
 
-    const invoiceId = keccak256(toHex('test-max-fee'));
+    const checkoutSessionId = keccak256(toHex('test-max-fee'));
     const paymentAmount = parseEther('1');
     const expectedFee = (paymentAmount * 1000n) / 10000n; // 10% fee
     const expectedToMerchant = paymentAmount - expectedFee; // 90%
 
-    const platformBalanceBefore = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceBefore = await publicClient.getBalance({
+      address: owner,
     });
     const merchantBalanceBefore = await publicClient.getBalance({
       address: merchant,
     });
 
-    await cryptoPay.write.payNative([invoiceId, merchant], {
+    await cryptoPay.write.payNative([checkoutSessionId, merchant], {
       account: payer,
       value: paymentAmount,
     });
 
-    const platformBalanceAfter = await publicClient.getBalance({
-      address: platform,
+    const ownerBalanceAfter = await publicClient.getBalance({
+      address: owner,
     });
     const merchantBalanceAfter = await publicClient.getBalance({
       address: merchant,
     });
 
-    assert.equal(platformBalanceAfter, platformBalanceBefore + expectedFee);
+    assert.equal(ownerBalanceAfter, ownerBalanceBefore + expectedFee);
     assert.equal(
       merchantBalanceAfter,
       merchantBalanceBefore + expectedToMerchant,
     );
   });
 
-  await it('Should handle multiple unique invoice IDs', async function () {
-    const invoiceId1 = keccak256(toHex('unique-invoice-1'));
-    const invoiceId2 = keccak256(toHex('unique-invoice-2'));
+  await it('Should handle multiple unique checkout session IDs', async function () {
+    const checkoutSessionId1 = keccak256(toHex('unique-checkout-session-1'));
+    const checkoutSessionId2 = keccak256(toHex('unique-checkout-session-2'));
 
     // Both should be able to be paid
-    await cryptoPay.write.payNative([invoiceId1, merchant], {
+    await cryptoPay.write.payNative([checkoutSessionId1, merchant], {
       account: payer,
       value: parseEther('1'),
     });
 
-    await cryptoPay.write.payNative([invoiceId2, merchant], {
+    await cryptoPay.write.payNative([checkoutSessionId2, merchant], {
       account: payer,
       value: parseEther('1'),
     });
 
-    assert.equal(await cryptoPay.read.invoicePaid([invoiceId1]), true);
-    assert.equal(await cryptoPay.read.invoicePaid([invoiceId2]), true);
+    assert.equal(await cryptoPay.read.checkoutSessionPaid([checkoutSessionId1]), true);
+    assert.equal(await cryptoPay.read.checkoutSessionPaid([checkoutSessionId2]), true);
   });
 
   // ==========================
@@ -533,32 +492,32 @@ describe('CryptoPay', async function () {
     ];
 
     for (let i = 0; i < testAmounts.length; i++) {
-      const invoiceId = keccak256(toHex(`fuzz-invoice-${i}`));
+      const checkoutSessionId = keccak256(toHex(`fuzz-checkout-session-${i}`));
       const amount = testAmounts[i];
       const expectedFee = (amount * INITIAL_FEE_BPS) / 10000n;
       const expectedToMerchant = amount - expectedFee;
 
-      const platformBalanceBefore = await publicClient.getBalance({
-        address: platform,
+      const ownerBalanceBefore = await publicClient.getBalance({
+        address: owner,
       });
       const merchantBalanceBefore = await publicClient.getBalance({
         address: merchant,
       });
 
       // Payer already has sufficient balance from hardhat network
-      await cryptoPay.write.payNative([invoiceId, merchant], {
+      await cryptoPay.write.payNative([checkoutSessionId, merchant], {
         account: payer,
         value: amount,
       });
 
-      const platformBalanceAfter = await publicClient.getBalance({
-        address: platform,
+      const ownerBalanceAfter = await publicClient.getBalance({
+        address: owner,
       });
       const merchantBalanceAfter = await publicClient.getBalance({
         address: merchant,
       });
 
-      assert.equal(platformBalanceAfter, platformBalanceBefore + expectedFee);
+      assert.equal(ownerBalanceAfter, ownerBalanceBefore + expectedFee);
       assert.equal(
         merchantBalanceAfter,
         merchantBalanceBefore + expectedToMerchant,
@@ -576,7 +535,7 @@ describe('CryptoPay', async function () {
     ];
 
     for (let i = 0; i < testAmounts.length; i++) {
-      const invoiceId = keccak256(toHex(`fuzz-token-invoice-${i}`));
+      const checkoutSessionId = keccak256(toHex(`fuzz-token-checkout-session-${i}`));
       const amount = testAmounts[i];
       const expectedFee = (amount * INITIAL_FEE_BPS) / 10000n;
 
@@ -586,18 +545,18 @@ describe('CryptoPay', async function () {
         account: payer,
       });
 
-      const platformBalanceBefore = await mockToken.read.balanceOf([platform]);
+      const ownerBalanceBefore = await mockToken.read.balanceOf([owner]);
       const merchantBalanceBefore = await mockToken.read.balanceOf([merchant]);
 
       await cryptoPay.write.payToken(
-        [invoiceId, merchant, mockToken.address, amount],
+        [checkoutSessionId, merchant, mockToken.address, amount],
         { account: payer },
       );
 
-      const platformBalanceAfter = await mockToken.read.balanceOf([platform]);
+      const ownerBalanceAfter = await mockToken.read.balanceOf([owner]);
       const merchantBalanceAfter = await mockToken.read.balanceOf([merchant]);
 
-      assert.equal(platformBalanceAfter, platformBalanceBefore + expectedFee);
+      assert.equal(ownerBalanceAfter, ownerBalanceBefore + expectedFee);
       assert.equal(
         merchantBalanceAfter,
         merchantBalanceBefore + amount - expectedFee,

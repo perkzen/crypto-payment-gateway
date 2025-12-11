@@ -15,6 +15,8 @@ export const config: ReturnType<typeof getDefaultConfig> =
     chains: [hardhat],
     ssr: true,
     transports: {
-      [hardhat.id]: http('http://localhost:8545'),
+      [hardhat.id]: http(
+        process.env.NEXT_PUBLIC_BLOCKCHAIN_RPC_URL || 'http://localhost:8545',
+      ),
     },
   }));

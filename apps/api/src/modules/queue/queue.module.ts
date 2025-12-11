@@ -6,7 +6,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-Module({
+@Module({
   imports: [
     BullBoardModule.forRoot({
       route: BullBoardSetup.BULL_BOARD_PATH,
@@ -23,5 +23,5 @@ Module({
       },
     }),
   ],
-});
+})
 export class QueueModule {}
