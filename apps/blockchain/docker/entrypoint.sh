@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # Change to the correct directory
-cd /usr/src/app/apps/blockchain
+cd /usr/src/app/apps/blockchain || {
+  echo "Error: Failed to change directory to /usr/src/app/apps/blockchain" >&2
+  exit 1
+}
 
 # Start hardhat node as a background process
 pnpm dev &

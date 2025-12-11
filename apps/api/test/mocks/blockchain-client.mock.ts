@@ -1,4 +1,3 @@
-import { BLOCKCHAIN_CLIENT } from '@app/modules/blockchain/decorators/blockchain.decorator';
 import { faker } from '@faker-js/faker';
 import { type PublicClient } from 'viem';
 import { type Address } from 'viem';
@@ -7,7 +6,7 @@ import { type Address } from 'viem';
  * Mock implementation of viem's PublicClient for testing.
  * Provides default implementations for methods used by BlockchainService.
  */
-export class BlockchainClientMock {
+export class BlockchainClientMock implements Partial<PublicClient> {
   private blockNumber: bigint = 0n;
   private contractCode: `0x${string}` | null =
     faker.finance.ethereumAddress() as `0x${string}`;
@@ -82,19 +81,4 @@ export class BlockchainClientMock {
     this.unwatchCallbacks.push(unwatch);
     return unwatch;
   }
-}
-
-// Type assertion to make the mock compatible with PublicClient
-export type BlockchainClientMockType = BlockchainClientMock & PublicClient;
-
-/**
- * Helper function to override the blockchain client provider in tests
- */
-export function overrideBlockchainClient(
-  builder: any,
-  mock?: BlockchainClientMock,
-): void {
-  const blockchainMock = (mock ??
-    new BlockchainClientMock()) as unknown as PublicClient;
-  builder.overrideProvider(BLOCKCHAIN_CLIENT).useValue(blockchainMock);
 }

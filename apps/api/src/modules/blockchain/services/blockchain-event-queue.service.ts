@@ -19,7 +19,6 @@ export class BlockchainEventQueueService implements OnModuleDestroy {
   ) {}
 
   async onModuleDestroy(): Promise<void> {
-    await this.queue.drain();
     await this.queue.close();
   }
 

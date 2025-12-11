@@ -32,7 +32,6 @@ export function createCheckoutSessionResultFixture(
     id: faker.string.uuid(),
     checkoutUrl: faker.internet.url(),
     expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
-    metadata: null,
     ...overrides,
   };
 }
