@@ -22,6 +22,13 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      type: 'edr-simulated',
+      mining: {
+        auto: false,
+        interval: 2000, // Mine a block every 2 seconds
+      },
+    },
     hardhatMainnet: {
       type: 'edr-simulated',
       chainType: 'l1',
