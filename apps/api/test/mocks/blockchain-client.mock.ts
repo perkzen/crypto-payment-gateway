@@ -46,8 +46,9 @@ export class BlockchainClientMock implements Partial<PublicClient> {
    * Useful for cleanup in tests
    */
   cleanup(): void {
-    this.unwatchCallbacks.forEach((unwatch) => unwatch());
+    const callbacks = this.unwatchCallbacks.slice();
     this.unwatchCallbacks = [];
+    callbacks.forEach((unwatch) => unwatch());
   }
 
   /**

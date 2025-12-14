@@ -17,6 +17,7 @@ export class TestQueueManager {
       Object.values(QueueName).map(async (name) => {
         const queue = this.app.get<Queue>(getQueueToken(name));
         await queue.drain();
+        await queue.close();
       }),
     );
   }
