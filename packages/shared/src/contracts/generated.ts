@@ -112,43 +112,6 @@ export const cryptoPayAbi = [
         indexed: true,
       },
       {
-        name: 'grossAmount',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'feeAmount',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-    ],
-    name: 'PaidNative',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
-        name: 'checkoutSessionId',
-        internalType: 'bytes32',
-        type: 'bytes32',
-        indexed: true,
-      },
-      {
-        name: 'payer',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
-        name: 'merchant',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
         name: 'token',
         internalType: 'address',
         type: 'address',
@@ -167,7 +130,7 @@ export const cryptoPayAbi = [
         indexed: false,
       },
     ],
-    name: 'PaidToken',
+    name: 'Paid',
   },
   {
     type: 'event',
@@ -563,21 +526,12 @@ export const useWatchCryptoPayOwnershipTransferredEvent =
   });
 
 /**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"PaidNative"`
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"Paid"`
  */
-export const useWatchCryptoPayPaidNativeEvent =
+export const useWatchCryptoPayPaidEvent =
   /*#__PURE__*/ createUseWatchContractEvent({
     abi: cryptoPayAbi,
-    eventName: 'PaidNative',
-  });
-
-/**
- * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link cryptoPayAbi}__ and `eventName` set to `"PaidToken"`
- */
-export const useWatchCryptoPayPaidTokenEvent =
-  /*#__PURE__*/ createUseWatchContractEvent({
-    abi: cryptoPayAbi,
-    eventName: 'PaidToken',
+    eventName: 'Paid',
   });
 
 /**

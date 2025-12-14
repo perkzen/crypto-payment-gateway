@@ -35,19 +35,11 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
   mapping(bytes32 => bool) public checkoutSessionPaid; // checkoutSessionId => consumed
 
   // --- Events ---
-  event PaidNative(
+  event Paid(
     bytes32 indexed checkoutSessionId,
     address indexed payer,
     address indexed merchant,
-    uint256 grossAmount,
-    uint256 feeAmount
-  );
-
-  event PaidToken(
-    bytes32 indexed checkoutSessionId,
-    address indexed payer,
-    address indexed merchant,
-    address token,
+    address token, // address(0) for native payments, token address for ERC-20
     uint256 grossAmount,
     uint256 feeAmount
   );
@@ -111,7 +103,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
     if (fee > 0) _sendNative(owner(), fee);
     _sendNative(merchant, toMerchant);
 
-    emit PaidNative(checkoutSessionId, msg.sender, merchant, msg.value, fee);
+    emit Paid(checkoutSessionId, msg.sender, merchant, address(0), msg.value, fee);
   }
 
   /**
@@ -143,7 +135,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
       erc20.safeTransferFrom(msg.sender, owner(), fee);
     }
 
-    emit PaidToken(checkoutSessionId, msg.sender, merchant, token, amount, fee);
+    emit Paid(checkoutSessionId, msg.sender, merchant, token, amount, fee);
   }
 
   /**
@@ -186,7 +178,7 @@ contract CryptoPay is Ownable, ReentrancyGuard, Pausable {
       erc20.safeTransferFrom(msg.sender, owner(), fee);
     }
 
-    emit PaidToken(checkoutSessionId, msg.sender, merchant, token, amount, fee);
+    emit Paid(checkoutSessionId, msg.sender, merchant, token, amount, fee);
   }
 
   // ==========================

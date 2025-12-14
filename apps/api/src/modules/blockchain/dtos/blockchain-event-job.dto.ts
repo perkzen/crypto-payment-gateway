@@ -1,18 +1,12 @@
 import {
   type BlockchainEventName,
-  type PaidNativeEvent,
-  type PaidTokenEvent,
+  type PaidEvent,
 } from '@workspace/shared';
 
 /**
  * Job data for processing blockchain events
  */
-export type BlockchainEventJobData =
-  | {
-      eventName: typeof BlockchainEventName.PaidNative;
-      event: PaidNativeEvent;
-    }
-  | {
-      eventName: typeof BlockchainEventName.PaidToken;
-      event: PaidTokenEvent;
-    };
+export type BlockchainEventJobData = {
+  eventName: typeof BlockchainEventName.Paid;
+  event: PaidEvent;
+};

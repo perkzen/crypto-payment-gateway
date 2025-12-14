@@ -9,10 +9,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   BlockchainEventName,
-  type PaidNativeEvent,
-  PaidNativeEventSchema,
-  type PaidTokenEvent,
-  PaidTokenEventSchema,
+  type PaidEvent,
+  PaidEventSchema,
   cryptoPayAbi,
 } from '@workspace/shared';
 import { type Address, type PublicClient } from 'viem';
@@ -21,8 +19,7 @@ import { type z } from 'zod';
 @Injectable()
 export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BlockchainService.name);
-  private unwatchPaidNative: (() => void) | null = null;
-  private unwatchPaidToken: (() => void) | null = null;
+  private unwatchPaid: (() => void) | null = null;
   private readonly SMART_CONTRACT_ADDRESS: Address;
 
   constructor(
@@ -39,22 +36,16 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     await this.assertContractExists();
     const latestBlock = await this.blockchain.getBlockNumber();
-    await this.startPaidNativeListener(latestBlock);
-    await this.startPaidTokenListener(latestBlock);
+    await this.startPaidListener(latestBlock);
     this.logger.log('Event listeners started successfully');
   }
 
   async onModuleDestroy(): Promise<void> {
     this.logger.log('Stopping blockchain event listeners');
 
-    if (this.unwatchPaidNative) {
-      this.unwatchPaidNative();
-      this.unwatchPaidNative = null;
-    }
-
-    if (this.unwatchPaidToken) {
-      this.unwatchPaidToken();
-      this.unwatchPaidToken = null;
+    if (this.unwatchPaid) {
+      this.unwatchPaid();
+      this.unwatchPaid = null;
     }
   }
 
@@ -127,31 +118,17 @@ export class BlockchainService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
-  private async startPaidNativeListener(fromBlock: bigint): Promise<void> {
-    this.unwatchPaidNative = this.watchContractEvent({
+  private async startPaidListener(fromBlock: bigint): Promise<void> {
+    this.unwatchPaid = this.watchContractEvent({
       fromBlock,
-      eventName: BlockchainEventName.PaidNative,
-      schema: PaidNativeEventSchema,
-      onEvents: (events: PaidNativeEvent[]) =>
-        this.blockchainEventQueueService.enqueuePaidNative(events),
+      eventName: BlockchainEventName.Paid,
+      schema: PaidEventSchema,
+      onEvents: (events: PaidEvent[]) =>
+        this.blockchainEventQueueService.enqueuePaid(events),
     });
 
     this.logger.log(
-      `PaidNative event listener registered and watching for live events from block ${fromBlock}`,
-    );
-  }
-
-  private async startPaidTokenListener(fromBlock: bigint): Promise<void> {
-    this.unwatchPaidToken = this.watchContractEvent({
-      fromBlock,
-      eventName: BlockchainEventName.PaidToken,
-      schema: PaidTokenEventSchema,
-      onEvents: (events: PaidTokenEvent[]) =>
-        this.blockchainEventQueueService.enqueuePaidToken(events),
-    });
-
-    this.logger.log(
-      `PaidToken event listener registered and watching for live events from block ${fromBlock}`,
+      `Paid event listener registered and watching for live events from block ${fromBlock}`,
     );
   }
 }

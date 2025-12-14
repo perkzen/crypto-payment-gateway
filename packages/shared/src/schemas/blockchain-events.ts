@@ -19,22 +19,16 @@ const bigintToStringSchema = z.union([
   z.string().regex(/^\d+$/, 'Must be a valid numeric string'),
 ]);
 
-// Base schema for PaidNative event (with BigInt as strings for serialization)
-export const PaidNativeEventSchema = z.object({
+// token is address(0) for native payments, token address for ERC-20 payments
+export const PaidEventSchema = z.object({
   checkoutSessionId: bytes32Schema,
   payer: addressSchema,
   merchant: addressSchema,
+  token: addressSchema, // address(0) for native, token address for ERC-20
   grossAmount: bigintToStringSchema,
   feeAmount: bigintToStringSchema,
   transactionHash: transactionHashSchema,
   blockNumber: bigintToStringSchema,
 });
 
-export type PaidNativeEvent = z.infer<typeof PaidNativeEventSchema>;
-
-// PaidToken event extends PaidNative and adds token address
-export const PaidTokenEventSchema = PaidNativeEventSchema.extend({
-  token: addressSchema,
-});
-
-export type PaidTokenEvent = z.infer<typeof PaidTokenEventSchema>;
+export type PaidEvent = z.infer<typeof PaidEventSchema>;

@@ -3,8 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import {
   BlockchainEventName,
-  PaidNativeEvent,
-  PaidTokenEvent,
+  PaidEvent,
 } from '@workspace/shared';
 import { Queue } from 'bullmq';
 import { BlockchainEventJobData } from '../dtos/blockchain-event-job.dto';
@@ -23,27 +22,13 @@ export class BlockchainEventQueueService implements OnModuleDestroy {
   }
 
   /**
-   * Enqueue PaidNative events for processing
+   * Enqueue Paid events for processing (both native and token payments)
    */
-  async enqueuePaidNative(events: PaidNativeEvent[]): Promise<void> {
+  async enqueuePaid(events: PaidEvent[]): Promise<void> {
     await Promise.all(
       events.map((event) =>
         this.enqueue({
-          eventName: BlockchainEventName.PaidNative,
-          event,
-        }),
-      ),
-    );
-  }
-
-  /**
-   * Enqueue PaidToken events for processing
-   */
-  async enqueuePaidToken(events: PaidTokenEvent[]): Promise<void> {
-    await Promise.all(
-      events.map((event) =>
-        this.enqueue({
-          eventName: BlockchainEventName.PaidToken,
+          eventName: BlockchainEventName.Paid,
           event,
         }),
       ),

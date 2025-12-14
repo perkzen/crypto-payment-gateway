@@ -5,8 +5,7 @@
  * that can be watched on the blockchain.
  */
 export const BlockchainEventName = {
-  PaidNative: 'PaidNative',
-  PaidToken: 'PaidToken',
+  Paid: 'Paid',
 } as const;
 
 /**

@@ -25,14 +25,18 @@ export const payment = pgTable('payments', {
 
   network: text('network').notNull(),
   address: text('address').notNull(),
-  txHash: text('tx_hash'),
+  txHash: text('tx_hash').notNull(),
   // Token address for ERC-20 payments (null for native payments)
   tokenAddress: text('token_address'),
   // Amount paid in crypto (stored as string to handle large BigInt values)
   // For native payments: amount in wei
   // For token payments: amount in token units (not converted to ETH)
-  paidAmount: text('paid_amount'),
+  paidAmount: text('paid_amount').notNull(),
   confirmations: integer('confirmations').notNull().default(0),
+  // Block number where the transaction was mined (for confirmation tracking)
+  blockNumber: text('block_number').notNull(),
+  // Timestamp when payment reached minimum confirmations
+  confirmedAt: timestamp('confirmed_at'),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

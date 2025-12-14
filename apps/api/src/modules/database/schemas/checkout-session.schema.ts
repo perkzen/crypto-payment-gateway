@@ -16,7 +16,9 @@ export const checkoutSession = pgTable('checkout_sessions', {
     .notNull()
     .references(() => merchant.id),
 
-  // fiat price in cents
+  // Hashed ID (bytes32) for smart contract - keccak256(toHex(id))
+  hashedId: text('hashed_id').unique(),
+
   amountFiat: integer('amount_fiat').notNull(),
   fiatCurrency: text('fiat_currency').notNull(),
 
@@ -26,8 +28,8 @@ export const checkoutSession = pgTable('checkout_sessions', {
 
   allowedNetworks: jsonb('allowed_networks').$type<string[]>().notNull(),
 
-  // linked payment (null until created)
   paymentId: uuid('payment_id').references(() => payment.id),
+  completedAt: timestamp('completed_at'),
 
   successUrl: text('success_url').notNull(),
   cancelUrl: text('cancel_url').notNull(),

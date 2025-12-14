@@ -68,7 +68,7 @@ export function PaymentActions() {
     fiatCurrency,
   });
 
-  // Generate checkoutSessionId from checkout session ID
+  // Generate checkoutSessionId from checkout session ID using keccak256 hash
   const checkoutSessionId = useMemo(() => {
     return keccak256(toHex(checkoutSession.id)) as `0x${string}`;
   }, [checkoutSession.id]);

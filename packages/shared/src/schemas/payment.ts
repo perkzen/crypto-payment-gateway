@@ -8,7 +8,6 @@ export const CreatePaymentSchema = z.object({
   address: z.string().min(1).describe('The payment address'),
   txHash: z
     .string()
-    .optional()
     .describe('The transaction hash from the blockchain'),
   tokenAddress: z
     .string()
@@ -20,10 +19,12 @@ export const CreatePaymentSchema = z.object({
   paidAmount: z
     .string()
     .regex(/^\d+$/, 'Must be a valid numeric string')
-    .optional()
     .describe(
       'The amount that was paid in crypto. For native payments: amount in wei. For token payments: amount in token units (not converted to ETH)',
     ),
+  blockNumber: z
+    .string()
+    .describe('The block number where the transaction was mined'),
 });
 
 export type CreatePayment = z.infer<typeof CreatePaymentSchema>;
@@ -57,6 +58,14 @@ export const UpdatePaymentSchema = z.object({
     .describe(
       'The amount that was paid in crypto. For native payments: amount in wei. For token payments: amount in token units (not converted to ETH)',
     ),
+  blockNumber: z
+    .string()
+    .optional()
+    .describe('The block number where the transaction was mined'),
+  confirmedAt: z
+    .date()
+    .optional()
+    .describe('The timestamp when the payment reached minimum confirmations'),
 });
 
 export type UpdatePayment = z.infer<typeof UpdatePaymentSchema>;
