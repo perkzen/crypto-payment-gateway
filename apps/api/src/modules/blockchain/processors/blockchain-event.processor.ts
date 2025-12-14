@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { BlockchainEventName, PaidEvent } from '@workspace/shared';
 import { Job } from 'bullmq';
 import { BlockchainEventJobData } from '../dtos/blockchain-event-job.dto';
-import { extractTokenAddress } from '../utils/token-address.utils';
+import { extractTokenAddress } from '@workspace/shared';
 
 @Processor(QueueName.BLOCKCHAIN_EVENTS)
 export class BlockchainEventProcessor extends WorkerHost {

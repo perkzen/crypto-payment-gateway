@@ -5,12 +5,10 @@ import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
+import type { PublicCheckoutSession } from '@workspace/shared';
 import { eq } from 'drizzle-orm';
 import { keccak256, toHex } from 'viem';
-import {
-  CreateCheckoutSessionDto,
-  UpdateCheckoutSessionDto,
-} from './dtos';
+import { CreateCheckoutSessionDto, UpdateCheckoutSessionDto } from './dtos';
 import { CheckoutSessionNotFoundException } from './exceptions';
 
 @Injectable()
@@ -67,7 +65,7 @@ export class CheckoutSessionsService {
     };
   }
 
-  async getCheckoutSessionById(id: string) {
+  async getCheckoutSessionById(id: string): Promise<PublicCheckoutSession> {
     const session =
       await this.databaseService.db.query.checkoutSession.findFirst({
         where: eq(checkoutSession.id, id),
@@ -83,7 +81,7 @@ export class CheckoutSessionsService {
         session.merchantId,
       );
 
-    return {
+    const result: PublicCheckoutSession = {
       id: session.id,
       amountFiat: session.amountFiat,
       fiatCurrency: session.fiatCurrency,
@@ -93,7 +91,10 @@ export class CheckoutSessionsService {
       expiresAt: session.expiresAt,
       successUrl: session.successUrl,
       cancelUrl: session.cancelUrl,
+      completedAt: session.completedAt ?? null,
+      hashedId: session.hashedId,
     };
+    return result;
   }
 
   /**

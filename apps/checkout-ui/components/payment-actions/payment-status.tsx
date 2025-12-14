@@ -3,7 +3,7 @@
 import { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, Check } from 'lucide-react';
-import { type useAccount } from 'wagmi';
+import { type useConnection } from 'wagmi';
 
 type PaymentStatusType = 'confirmed' | 'error' | 'pending' | 'idle';
 
@@ -11,13 +11,13 @@ interface PaymentStatusProps {
   isConfirmed: boolean;
   transactionError: Error | null;
   hash: `0x${string}` | undefined;
-  chain: ReturnType<typeof useAccount>['chain'];
+  chain: ReturnType<typeof useConnection>['chain'];
 }
 
 interface PaymentStatusParams {
   transactionError: Error | null;
   hash: `0x${string}` | undefined;
-  chain: ReturnType<typeof useAccount>['chain'];
+  chain: ReturnType<typeof useConnection>['chain'];
 }
 
 interface PaymentStatusState {

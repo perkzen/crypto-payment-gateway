@@ -1,4 +1,4 @@
-import { ZERO_ADDRESS } from '../constants/addresses.constants';
+import { ZERO_ADDRESS } from '../constants/addresses';
 
 /**
  * Extract token address from event (undefined for native payments)

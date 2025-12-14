@@ -16,6 +16,8 @@ export * from './types/exchange';
 export * from './contracts/generated';
 export * from './utils/calculations';
 export * from './utils/formatting';
+export * from './utils/token-address';
 export * from './constants/webhook-events';
 export * from './constants/blockchain-events';
 export * from './constants/networks';
+export * from './constants/addresses';
