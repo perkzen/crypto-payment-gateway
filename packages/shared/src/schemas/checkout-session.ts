@@ -115,3 +115,17 @@ export const PublicCheckoutSessionSchema = z.object({
 });
 
 export type PublicCheckoutSession = z.infer<typeof PublicCheckoutSessionSchema>;
+
+export const UpdateCheckoutSessionSchema = z.object({
+  paymentId: z
+    .string()
+    .uuid()
+    .optional()
+    .describe('The payment ID to link to this checkout session'),
+  completedAt: z
+    .coerce.date()
+    .optional()
+    .describe('The timestamp when the checkout session was completed'),
+});
+
+export type UpdateCheckoutSession = z.infer<typeof UpdateCheckoutSessionSchema>;

@@ -92,6 +92,13 @@
       "when": 1765739093667,
       "tag": "0012_whole_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1765741103236,
+      "tag": "0013_gifted_scourge",
+      "breakpoints": true
     }
   ]
 }

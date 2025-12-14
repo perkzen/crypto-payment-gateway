@@ -7,7 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
 import { keccak256, toHex } from 'viem';
-import { CreateCheckoutSessionDto } from './dtos';
+import {
+  CreateCheckoutSessionDto,
+  UpdateCheckoutSessionDto,
+} from './dtos';
 import { CheckoutSessionNotFoundException } from './exceptions';
 
 @Injectable()
@@ -32,24 +35,29 @@ export class CheckoutSessionsService {
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
     const baseCheckoutUrl = this.configService.getOrThrow('CHECKOUT_URL');
-    const [createdSession] = await this.databaseService.db
-      .insert(checkoutSession)
-      .values({
-        ...input,
-        expiresAt,
-        merchantId: merchant.id,
-        checkoutUrl: baseCheckoutUrl,
-      })
-      .returning();
 
-    // Compute hashedId from the generated session ID and update
-    const hashedId = keccak256(toHex(createdSession.id));
-    await this.databaseService.db
-      .update(checkoutSession)
-      .set({ hashedId })
-      .where(eq(checkoutSession.id, createdSession.id));
+    const createdSession = await this.databaseService.db.transaction(
+      async (tx) => {
+        const [session] = await tx
+          .insert(checkoutSession)
+          .values({
+            ...input,
+            expiresAt,
+            merchantId: merchant.id,
+            checkoutUrl: baseCheckoutUrl,
+          })
+          .returning();
 
-    // Construct the full checkout URL with session ID as query parameter
+        const hashedId = keccak256(toHex(session.id));
+        await tx
+          .update(checkoutSession)
+          .set({ hashedId })
+          .where(eq(checkoutSession.id, session.id));
+
+        return session;
+      },
+    );
+
     const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}?sessionId=${createdSession.id}`;
 
     return {
@@ -99,24 +107,9 @@ export class CheckoutSessionsService {
   }
 
   /**
-   * Find checkout session by payment ID
-   */
-  async findCheckoutSessionByPaymentId(paymentId: string) {
-    return this.databaseService.db.query.checkoutSession.findFirst({
-      where: eq(checkoutSession.paymentId, paymentId),
-    });
-  }
-
-  /**
    * Update checkout session
    */
-  async updateCheckoutSession(
-    id: string,
-    data: {
-      paymentId?: string;
-      completedAt?: Date;
-    },
-  ) {
+  async updateCheckoutSession(id: string, data: UpdateCheckoutSessionDto) {
     const existingSession =
       await this.databaseService.db.query.checkoutSession.findFirst({
         where: eq(checkoutSession.id, id),
