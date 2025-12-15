@@ -82,4 +82,30 @@ export class BlockchainClientMock implements Partial<PublicClient> {
     this.unwatchCallbacks.push(unwatch);
     return unwatch;
   }
+
+  /**
+   * Mock implementation of watchBlockNumber()
+   * Immediately invokes onBlockNumber with the current block number (like emitOnBegin)
+   * and returns an unwatch function that can be used for cleanup.
+   * Uses 'any' for parameters to keep the mock simple.
+   */
+  watchBlockNumber(params: any): () => void {
+    const { onBlockNumber } = params ?? {};
+
+    const unwatch = () => {
+      const index = this.unwatchCallbacks.indexOf(unwatch);
+      if (index > -1) {
+        this.unwatchCallbacks.splice(index, 1);
+      }
+    };
+
+    this.unwatchCallbacks.push(unwatch);
+
+    if (typeof onBlockNumber === 'function') {
+      // Fire once with the current mocked block number so code paths are exercised in tests.
+      void onBlockNumber(this.blockNumber);
+    }
+
+    return unwatch;
+  }
 }

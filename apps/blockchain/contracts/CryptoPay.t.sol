@@ -51,7 +51,7 @@ contract CryptoPayTest is Test {
     //    Constructor Tests
     // ==========================
 
-    function test_Constructor_Success() public {
+    function test_Constructor_Success() public view {
         assertEq(cryptoPay.owner(), owner);
         assertEq(cryptoPay.feeBps(), INITIAL_FEE_BPS);
         assertEq(cryptoPay.BPS_DENOMINATOR(), 10000);
