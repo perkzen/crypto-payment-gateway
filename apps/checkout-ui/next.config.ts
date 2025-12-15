@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
+    // https://github.com/vercel/next.js/issues/86866
     resolveAlias: {
       // Ignore optional dependencies that aren't needed for web builds
       // Turbopack requires file paths, not 'false' strings
