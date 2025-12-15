@@ -56,7 +56,9 @@ export class CheckoutSessionsService {
       },
     );
 
-    const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}?sessionId=${createdSession.id}`;
+    const url = new URL(baseCheckoutUrl);
+    url.searchParams.set('sessionId', createdSession.id);
+    const fullCheckoutUrl = url.toString();
 
     return {
       id: createdSession.id,
@@ -122,7 +124,11 @@ export class CheckoutSessionsService {
 
     const [updatedSession] = await this.databaseService.db
       .update(checkoutSession)
-      .set(data)
+      .set({
+        // Only allow updating explicitly whitelisted, mutable fields
+        paymentId: data.paymentId,
+        completedAt: data.completedAt,
+      })
       .where(eq(checkoutSession.id, id))
       .returning();
 

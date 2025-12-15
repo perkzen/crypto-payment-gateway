@@ -20,9 +20,11 @@ export const payment = pgTable(
   'payments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    merchantId: uuid('merchant_id').references(() => merchant.id, {
-      onDelete: 'cascade',
-    }),
+    merchantId: uuid('merchant_id')
+      .notNull()
+      .references(() => merchant.id, {
+        onDelete: 'cascade',
+      }),
 
     status: paymentStatusEnum('status').notNull(),
 
