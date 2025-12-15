@@ -25,6 +25,9 @@ export class PaymentsService {
         status: 'pending',
         confirmations: 0,
       })
+      .onConflictDoNothing({
+        target: payment.txHash,
+      })
       .returning();
 
     return createdPayment;
@@ -47,15 +50,6 @@ export class PaymentsService {
       .returning();
 
     return updatedPayment;
-  }
-
-  /**
-   * Find payment by transaction hash (for deduplication)
-   */
-  async findPaymentByTxHash(txHash: string) {
-    return this.databaseService.db.query.payment.findFirst({
-      where: eq(payment.txHash, txHash),
-    });
   }
 
   /**

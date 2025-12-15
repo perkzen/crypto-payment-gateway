@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm';
 import {
-  index,
   integer,
   pgEnum,
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { merchant } from './merchant.schema';
@@ -47,7 +47,10 @@ export const payment = pgTable(
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('payment_tx_hash_idx').on(table.txHash)],
+  (table) => [
+    // Ensure we never create duplicate payments for the same transaction
+    unique('payment_tx_hash_unique').on(table.txHash),
+  ],
 );
 
 export const paymentRelations = relations(payment, ({ one }) => ({

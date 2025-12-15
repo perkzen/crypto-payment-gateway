@@ -86,7 +86,7 @@ export function PaymentActions() {
   const paymentAmount = parseEther(cryptoAmount.toString());
 
   const {
-    mutate: writeContract,
+    writeContract,
     data: hash,
     isPending: isTransactionPending,
     error: writeError,

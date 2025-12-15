@@ -5,9 +5,9 @@ import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { BlockchainEventName, PaidEvent } from '@workspace/shared';
+import { extractTokenAddress } from '@workspace/shared';
 import { Job } from 'bullmq';
 import { BlockchainEventJobData } from '../dtos/blockchain-event-job.dto';
-import { extractTokenAddress } from '@workspace/shared';
 
 @Processor(QueueName.BLOCKCHAIN_EVENTS)
 export class BlockchainEventProcessor extends WorkerHost {
@@ -52,15 +52,9 @@ export class BlockchainEventProcessor extends WorkerHost {
       if (!session) return;
 
       const network = session.allowedNetworks[0];
-      if (!network) return;
 
-      // Check if payment already exists by txHash
-      const existingPayment = await this.paymentsService.findPaymentByTxHash(
-        event.transactionHash,
-      );
-      if (existingPayment) {
-        return;
-      }
+      // Check if payment already exists
+      if (session.paymentId) return;
 
       const merchantWalletAddress =
         await this.walletsService.getWalletAddressByMerchantId(
