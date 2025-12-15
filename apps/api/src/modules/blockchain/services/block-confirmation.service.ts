@@ -23,7 +23,7 @@ export class BlockConfirmationService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.startBlockWatcher();
+    await this.startBlockWatcher();
     this.logger.log('Block confirmation watcher started');
   }
 
@@ -35,7 +35,7 @@ export class BlockConfirmationService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('Block confirmation watcher stopped');
   }
 
-  private startBlockWatcher(): void {
+  private async startBlockWatcher() {
     this.unwatchBlockNumber = this.blockchain.watchBlockNumber({
       onBlockNumber: async (blockNumber) => {
         await this.processNewBlock(blockNumber);
@@ -51,6 +51,7 @@ export class BlockConfirmationService implements OnModuleInit, OnModuleDestroy {
 
   private async processNewBlock(blockNumber: bigint): Promise<void> {
     try {
+      this.logger.debug(`New block detected: ${blockNumber}`);
       const pendingPayments = await this.paymentsService.findPendingPayments();
 
       if (pendingPayments.length === 0) return;
