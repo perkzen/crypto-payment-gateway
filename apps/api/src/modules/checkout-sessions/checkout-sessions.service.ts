@@ -93,7 +93,7 @@ export class CheckoutSessionsService {
       expiresAt: session.expiresAt,
       successUrl: session.successUrl,
       cancelUrl: session.cancelUrl,
-      completedAt: session.completedAt ?? null,
+      completedAt: session.completedAt,
       hashedId: session.hashedId,
     };
     return result;
