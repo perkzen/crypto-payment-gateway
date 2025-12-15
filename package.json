@@ -29,7 +29,7 @@
       "esbuild": ">=0.25.0",
       "tmp": ">=0.2.4",
       "body-parser": ">=2.2.1",
-      "next": ">=15.4.8"
+      "next": ">=15.5.8"
     },
     "peerDependencyRules": {
       "allowedVersions": {

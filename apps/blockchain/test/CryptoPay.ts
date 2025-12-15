@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it, beforeEach } from 'node:test';
 
 import { network } from 'hardhat';
-import { parseEther, keccak256, toHex, type Hash } from 'viem';
+import { parseEther, keccak256, toHex, zeroAddress, type Hash } from 'viem';
 
 describe('CryptoPay', async function () {
   const { viem } = await network.connect();
@@ -133,8 +133,8 @@ describe('CryptoPay', async function () {
         value: paymentAmount,
       }),
       cryptoPay,
-      'PaidNative',
-      [checkoutSessionId, payer, merchant, paymentAmount, expectedFee],
+      'Paid',
+      [checkoutSessionId, payer, merchant, zeroAddress, paymentAmount, expectedFee],
     );
 
     const ownerBalanceAfter = await publicClient.getBalance({
@@ -187,7 +187,7 @@ describe('CryptoPay', async function () {
 
     await assert.rejects(async () => {
       await cryptoPay.write.payNative(
-        [checkoutSessionId, '0x0000000000000000000000000000000000000000'],
+        [checkoutSessionId, zeroAddress],
         {
           account: payer,
           value: parseEther('1'),
@@ -310,7 +310,7 @@ describe('CryptoPay', async function () {
       await cryptoPay.write.payToken(
         [
           checkoutSessionId,
-          '0x0000000000000000000000000000000000000000',
+          zeroAddress,
           mockToken.address,
           paymentAmount,
         ],
@@ -328,7 +328,7 @@ describe('CryptoPay', async function () {
         [
           checkoutSessionId,
           merchant,
-          '0x0000000000000000000000000000000000000000',
+          zeroAddress,
           paymentAmount,
         ],
         { account: payer },
