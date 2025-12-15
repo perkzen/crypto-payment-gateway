@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useWriteCryptoPayPayNative } from '@workspace/shared';
 import { parseEther } from 'viem';
-import { hardhat } from 'viem/chains';
 import {
   useBalance,
   useConnection,

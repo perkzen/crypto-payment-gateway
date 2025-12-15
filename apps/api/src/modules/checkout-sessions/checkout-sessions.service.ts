@@ -5,11 +5,11 @@ import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
-import type { PublicCheckoutSession } from '@workspace/shared';
 import { eq } from 'drizzle-orm';
 import { keccak256, toHex } from 'viem';
 import { CreateCheckoutSessionDto, UpdateCheckoutSessionDto } from './dtos';
 import { CheckoutSessionNotFoundException } from './exceptions';
+import type { PublicCheckoutSession } from '@workspace/shared';
 
 @Injectable()
 export class CheckoutSessionsService {

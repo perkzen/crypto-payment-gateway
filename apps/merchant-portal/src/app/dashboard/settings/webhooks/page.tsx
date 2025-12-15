@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { WebhookEventName } from '@workspace/shared';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import {
@@ -11,7 +12,6 @@ import {
   Webhook,
   XCircle,
 } from 'lucide-react';
-import { WebhookEventName } from '@workspace/shared';
 import { PageHeader } from '@/components/page-header';
 
 type WebhookEndpoint = {
