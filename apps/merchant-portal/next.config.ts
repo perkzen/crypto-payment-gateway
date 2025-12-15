@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@workspace/ui'],
+  reactCompiler: true,
   images: {
     remotePatterns: [
       {
@@ -10,9 +11,6 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-  },
-  experimental: {
-    reactCompiler: true,
   },
   turbopack: {
     resolveAlias: {
