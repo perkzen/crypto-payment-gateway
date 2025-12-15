@@ -6,8 +6,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type UserSession } from '@thallesp/nestjs-better-auth';
 import { eq } from 'drizzle-orm';
-import { CreateCheckoutSessionDto } from './dtos';
+import { keccak256, toHex } from 'viem';
+import { CreateCheckoutSessionDto, UpdateCheckoutSessionDto } from './dtos';
 import { CheckoutSessionNotFoundException } from './exceptions';
+import type { PublicCheckoutSession } from '@workspace/shared';
 
 @Injectable()
 export class CheckoutSessionsService {
@@ -31,28 +33,41 @@ export class CheckoutSessionsService {
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
 
     const baseCheckoutUrl = this.configService.getOrThrow('CHECKOUT_URL');
-    const [createdSession] = await this.databaseService.db
-      .insert(checkoutSession)
-      .values({
-        ...input,
-        expiresAt,
-        merchantId: merchant.id,
-        checkoutUrl: baseCheckoutUrl,
-      })
-      .returning();
 
-    // Construct the full checkout URL with session ID as query parameter
-    const fullCheckoutUrl = `${baseCheckoutUrl.replace(/\/$/, '')}?sessionId=${createdSession.id}`;
+    const createdSession = await this.databaseService.db.transaction(
+      async (tx) => {
+        const [session] = await tx
+          .insert(checkoutSession)
+          .values({
+            ...input,
+            expiresAt,
+            merchantId: merchant.id,
+            checkoutUrl: baseCheckoutUrl,
+          })
+          .returning();
+
+        const hashedId = keccak256(toHex(session.id));
+        await tx
+          .update(checkoutSession)
+          .set({ hashedId })
+          .where(eq(checkoutSession.id, session.id));
+
+        return session;
+      },
+    );
+
+    const url = new URL(baseCheckoutUrl);
+    url.searchParams.set('sessionId', createdSession.id);
+    const fullCheckoutUrl = url.toString();
 
     return {
       id: createdSession.id,
       checkoutUrl: fullCheckoutUrl,
       expiresAt: createdSession.expiresAt,
-      metadata: createdSession.metadata ?? null,
     };
   }
 
-  async getCheckoutSessionById(id: string) {
+  async getCheckoutSessionById(id: string): Promise<PublicCheckoutSession> {
     const session =
       await this.databaseService.db.query.checkoutSession.findFirst({
         where: eq(checkoutSession.id, id),
@@ -64,9 +79,11 @@ export class CheckoutSessionsService {
 
     // Get merchant's primary wallet address dynamically
     const merchantWalletAddress =
-      await this.walletsService.getWalletAddressByMerchantId(session.merchantId);
+      await this.walletsService.getWalletAddressByMerchantId(
+        session.merchantId,
+      );
 
-    return {
+    const result: PublicCheckoutSession = {
       id: session.id,
       amountFiat: session.amountFiat,
       fiatCurrency: session.fiatCurrency,
@@ -76,6 +93,45 @@ export class CheckoutSessionsService {
       expiresAt: session.expiresAt,
       successUrl: session.successUrl,
       cancelUrl: session.cancelUrl,
+      completedAt: session.completedAt,
+      hashedId: session.hashedId,
     };
+    return result;
+  }
+
+  /**
+   * Find checkout session by hashed ID (bytes32 from blockchain event)
+   * The frontend uses keccak256(toHex(checkoutSession.id)) to generate the bytes32 hash
+   */
+  async findCheckoutSessionByHashedId(hashedId: string) {
+    return this.databaseService.db.query.checkoutSession.findFirst({
+      where: eq(checkoutSession.hashedId, hashedId.toLowerCase()),
+    });
+  }
+
+  /**
+   * Update checkout session
+   */
+  async updateCheckoutSession(id: string, data: UpdateCheckoutSessionDto) {
+    const existingSession =
+      await this.databaseService.db.query.checkoutSession.findFirst({
+        where: eq(checkoutSession.id, id),
+      });
+
+    if (!existingSession) {
+      throw new CheckoutSessionNotFoundException(id);
+    }
+
+    const [updatedSession] = await this.databaseService.db
+      .update(checkoutSession)
+      .set({
+        // Only allow updating explicitly whitelisted, mutable fields
+        paymentId: data.paymentId,
+        completedAt: data.completedAt,
+      })
+      .where(eq(checkoutSession.id, id))
+      .returning();
+
+    return updatedSession;
   }
 }

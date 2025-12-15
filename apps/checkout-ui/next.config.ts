@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@workspace/ui', '@workspace/shared'],
+  reactCompiler: true,
+  // Mark packages as external to prevent Turbopack from processing test files
+  serverExternalPackages: ['thread-stream', 'pino', 'pino-pretty'],
   images: {
     remotePatterns: [
       {
@@ -12,10 +15,20 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
+    // https://github.com/vercel/next.js/issues/86866
     resolveAlias: {
       // Ignore optional dependencies that aren't needed for web builds
-      '@react-native-async-storage/async-storage': 'false',
-      'pino-pretty': 'false',
+      // Turbopack requires file paths, not 'false' strings
+      '@react-native-async-storage/async-storage': { browser: './empty.ts' },
+      'pino-pretty': { browser: './empty.ts' },
+      // Stop thread-stream test files from being bundled
+      tap: { browser: './empty.ts' },
+      tape: { browser: './empty.ts' },
+      'why-is-node-running': { browser: './empty.ts' },
+      // Keep pino from pulling in thread-stream on the browser graph
+      // Apply unconditionally to prevent thread-stream from being imported
+      pino: 'pino/browser',
+      'thread-stream': './empty.ts',
     },
   },
   webpack: (config, { isServer }) => {
@@ -26,18 +39,15 @@ const nextConfig: NextConfig = {
       'pino-pretty': false,
     };
 
-    // Ensure wagmi resolves from the app's node_modules first
-    // This fixes React Context issues in monorepos where hooks from shared packages
-    // might resolve wagmi from a different instance
-    // We use modules array to prioritize app's node_modules while preserving subpath imports
+    // Mirror Turbopack aliases for webpack (client-side only)
     if (!isServer) {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path');
-      const appNodeModules = path.resolve(__dirname, 'node_modules');
-      config.resolve.modules = [
-        appNodeModules,
-        ...(config.resolve.modules || ['node_modules']),
-      ];
+      config.resolve.alias = {
+        ...(config.resolve.alias ?? {}),
+        pino: require.resolve('pino/browser'),
+        'thread-stream': path.resolve(__dirname, 'empty.ts'),
+      };
     }
 
     // Ignore these modules during webpack bundling

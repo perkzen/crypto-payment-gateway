@@ -8,5 +8,6 @@ import { CheckoutSessionsController } from './checkout-sessions.controller';
   imports: [MerchantsModule, WalletsModule],
   controllers: [CheckoutSessionsController],
   providers: [CheckoutSessionsService],
+  exports: [CheckoutSessionsService],
 })
 export class CheckoutSessionsModule {}

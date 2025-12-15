@@ -28,13 +28,6 @@ export const CreateCheckoutSessionSchema = z.object({
     .optional()
     .describe('Optional email address of the customer'),
 
-  metadata: z
-    .record(z.string())
-    .optional()
-    .describe(
-      'Optional key-value pairs to attach to the checkout session for later reference',
-    ),
-
   successUrl: z
     .string()
     .url()
@@ -68,17 +61,9 @@ export const CreateCheckoutSessionResultSchema = z.object({
     .url()
     .describe('The URL where the customer can complete the payment'),
 
-  expiresAt: z
-    .coerce.date()
+  expiresAt: z.coerce
+    .date()
     .describe('The timestamp when the checkout session expires'),
-
-  metadata: z
-    .record(z.string())
-    .nullable()
-    .optional()
-    .describe(
-      'Optional key-value pairs attached to the checkout session for later reference',
-    ),
 });
 
 export type CreateCheckoutSessionResult = z.infer<
@@ -114,8 +99,8 @@ export const PublicCheckoutSessionSchema = z.object({
     .string()
     .describe('The merchant wallet address where payments should be sent'),
 
-  expiresAt: z
-    .coerce.date()
+  expiresAt: z.coerce
+    .date()
     .describe('The ISO 8601 timestamp when the checkout session expires'),
 
   successUrl: z
@@ -127,6 +112,33 @@ export const PublicCheckoutSessionSchema = z.object({
     .string()
     .url()
     .describe('The URL to redirect to if the payment is canceled'),
+
+  completedAt: z.coerce
+    .date()
+    .nullable()
+    .describe(
+      'The timestamp when the checkout session was completed, null if not completed',
+    ),
+
+  hashedId: z
+    .string()
+    .describe(
+      'The hashed ID (bytes32) for smart contract - keccak256(toHex(id))',
+    ),
 });
 
 export type PublicCheckoutSession = z.infer<typeof PublicCheckoutSessionSchema>;
+
+export const UpdateCheckoutSessionSchema = z.object({
+  paymentId: z
+    .string()
+    .uuid()
+    .optional()
+    .describe('The payment ID to link to this checkout session'),
+  completedAt: z.coerce
+    .date()
+    .optional()
+    .describe('The timestamp when the checkout session was completed'),
+});
+
+export type UpdateCheckoutSession = z.infer<typeof UpdateCheckoutSessionSchema>;

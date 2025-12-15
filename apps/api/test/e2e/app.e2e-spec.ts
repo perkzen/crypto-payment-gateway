@@ -1,4 +1,4 @@
-import { beforeAll, describe, it } from '@jest/globals';
+import { afterAll, beforeAll, describe, it } from '@jest/globals';
 import { TestAppBootstrap } from '@test/common/test-app-bootstrap';
 
 describe('AppController (e2e)', () => {
@@ -7,6 +7,10 @@ describe('AppController (e2e)', () => {
   beforeAll(async () => {
     app = new TestAppBootstrap();
     await app.compile();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   it('/health (GET)', () => {

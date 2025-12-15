@@ -1,4 +1,5 @@
 import { HttpExceptionFilter } from '@app/common/filters/http-exception.filter';
+import { LoggingInterceptor } from '@app/common/interceptors/logging.interceptor';
 import { BaseSetup } from '@app/config/setups/base.setup';
 import { Reflector } from '@nestjs/core';
 import { type NestExpressApplication } from '@nestjs/platform-express';
@@ -86,7 +87,10 @@ export class MiddlewareSetup extends BaseSetup {
 
   private setupGlobalInterceptors() {
     const reflector = this.app.get(Reflector);
-    this.app.useGlobalInterceptors(new ZodSerializerInterceptor(reflector));
+    this.app.useGlobalInterceptors(
+      new LoggingInterceptor(),
+      new ZodSerializerInterceptor(reflector),
+    );
   }
 
   private setupGlobalFilters() {

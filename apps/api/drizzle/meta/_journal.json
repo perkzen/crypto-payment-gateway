@@ -57,6 +57,62 @@
       "when": 1765051358013,
       "tag": "0007_tired_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1765404541553,
+      "tag": "0008_little_marauders",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1765404669717,
+      "tag": "0009_mature_wildside",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1765404928370,
+      "tag": "0010_old_arachne",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1765733573585,
+      "tag": "0011_acoustic_warbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1765739093667,
+      "tag": "0012_whole_snowbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1765741103236,
+      "tag": "0013_gifted_scourge",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1765818961939,
+      "tag": "0014_brief_odin",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1765825354999,
+      "tag": "0015_empty_valeria_richards",
+      "breakpoints": true
     }
   ]
 }

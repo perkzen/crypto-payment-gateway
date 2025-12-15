@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { WebhookEventName } from '@workspace/shared';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import {
@@ -30,11 +31,11 @@ export default function WebhooksPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const availableEvents = [
-    'payment.created',
-    'payment.pending',
-    'payment.completed',
-    'payment.failed',
-    'payment.expired',
+    WebhookEventName.PaymentCreated,
+    WebhookEventName.PaymentPending,
+    WebhookEventName.PaymentCompleted,
+    WebhookEventName.PaymentFailed,
+    WebhookEventName.PaymentExpired,
   ];
 
   const toggleEvent = (event: string) => {

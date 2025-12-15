@@ -2,8 +2,7 @@ import { DatabaseService } from '@app/modules/database/database.service';
 import { payment } from '@app/modules/database/schemas';
 import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { Injectable } from '@nestjs/common';
-import { type UserSession } from '@thallesp/nestjs-better-auth';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { CreatePaymentDto, UpdatePaymentDto } from './dtos';
 import { PaymentNotFoundException } from './exceptions';
 
@@ -14,18 +13,20 @@ export class PaymentsService {
     private readonly merchantsService: MerchantsService,
   ) {}
 
-  async createPayment(data: CreatePaymentDto, { session }: UserSession) {
-    const { userId } = session;
-
-    const merchant = await this.merchantsService.findMerchantByUserId(userId);
-
+  /**
+   * Create payment
+   */
+  async createPayment(merchantId: string, data: CreatePaymentDto) {
     const [createdPayment] = await this.databaseService.db
       .insert(payment)
       .values({
         ...data,
-        merchantId: merchant.id,
+        merchantId,
         status: 'pending',
         confirmations: 0,
+      })
+      .onConflictDoNothing({
+        target: payment.txHash,
       })
       .returning();
 
@@ -49,5 +50,30 @@ export class PaymentsService {
       .returning();
 
     return updatedPayment;
+  }
+
+  /**
+   * Find payment by ID
+   */
+  async findPaymentById(id: string) {
+    const foundPayment = await this.databaseService.db.query.payment.findFirst({
+      where: eq(payment.id, id),
+    });
+
+    if (!foundPayment) {
+      throw new PaymentNotFoundException(id);
+    }
+
+    return foundPayment;
+  }
+
+  /**
+   * Get all pending payments with transaction hashes
+   */
+  async findPendingPayments() {
+    return this.databaseService.db
+      .select()
+      .from(payment)
+      .where(and(eq(payment.status, 'pending'), isNotNull(payment.txHash)));
   }
 }
