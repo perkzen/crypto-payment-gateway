@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createPaginatedResponseSchema } from './pagination';
 
 export const CreatePaymentSchema = z.object({
   network: z
@@ -69,3 +70,58 @@ export const UpdatePaymentSchema = z.object({
 });
 
 export type UpdatePayment = z.infer<typeof UpdatePaymentSchema>;
+
+export const GetPaymentsQuerySchema = z.object({
+  page: z
+    .coerce
+    .number()
+    .int()
+    .min(1)
+    .default(1)
+    .describe('Page number (1-indexed)'),
+  limit: z
+    .coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(20)
+    .describe('Number of items per page (max 100)'),
+  status: z
+    .enum(['pending', 'confirmed', 'failed'])
+    .optional()
+    .describe('Filter by payment status'),
+  sortOrder: z
+    .enum(['asc', 'desc'])
+    .default('desc')
+    .describe('Sort order by createdAt'),
+});
+
+export type GetPaymentsQuery = z.infer<typeof GetPaymentsQuerySchema>;
+
+export const PaymentSchema = z.object({
+  id: z.string().uuid().describe('Payment ID'),
+  merchantId: z.string().uuid().describe('Merchant ID'),
+  status: z
+    .enum(['pending', 'confirmed', 'failed'])
+    .describe('Payment status'),
+  network: z.string().describe('Blockchain network'),
+  address: z.string().describe('Payment address'),
+  txHash: z.string().describe('Transaction hash'),
+  tokenAddress: z.string().nullable().describe('Token address (null for native payments)'),
+  paidAmount: z.string().describe('Amount paid in crypto'),
+  confirmations: z.number().int().min(0).describe('Number of confirmations'),
+  blockNumber: z.string().describe('Block number'),
+  confirmedAt: z.date().nullable().describe('Confirmation timestamp'),
+  createdAt: z.date().describe('Creation timestamp'),
+  updatedAt: z.date().describe('Last update timestamp'),
+});
+
+export type Payment = z.infer<typeof PaymentSchema>;
+
+export const PaginatedPaymentsResponseSchema =
+  createPaginatedResponseSchema(PaymentSchema);
+
+export type PaginatedPaymentsResponse = z.infer<
+  typeof PaginatedPaymentsResponseSchema
+>;

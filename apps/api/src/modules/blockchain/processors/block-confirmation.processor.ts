@@ -24,70 +24,149 @@ export class BlockConfirmationProcessor extends WorkerHost {
   }
 
   async process(job: Job<BlockConfirmationJobData>): Promise<void> {
-    const {
-      jobType,
-      paymentId,
-      currentBlockNumber,
-      txHash,
-      transactionBlockNumber,
-    } = job.data;
+    const { jobType } = job.data;
 
-    this.logger.log(
-      `Processing confirmation for payment ${paymentId} at block ${currentBlockNumber}`,
-    );
+    if (jobType !== BlockConfirmationJobType.ProcessBlock) {
+      this.logger.warn(`Unknown job type: ${jobType}`);
+      return;
+    }
 
-    switch (jobType) {
-      case BlockConfirmationJobType.ProcessConfirmation:
-        await this.handleBlockConfirmation({
-          paymentId,
-          currentBlockNumber,
-          txHash,
-          transactionBlockNumber,
-        });
-        break;
-      default:
-        this.logger.warn(`Unknown job type: ${jobType}`);
+    await this.handleProcessBlock(job.data);
+  }
+
+  private async handleProcessBlock(
+    data: BlockConfirmationJobData,
+  ): Promise<void> {
+    if (data.jobType !== BlockConfirmationJobType.ProcessBlock) {
+      throw new Error('Invalid job data for ProcessBlock');
+    }
+
+    const { blockNumber } = data;
+    const currentBlock = BigInt(blockNumber);
+
+    try {
+      this.logger.debug(`Processing new block: ${blockNumber}`);
+      const pendingPayments = await this.paymentsService.findPendingPayments();
+
+      if (pendingPayments.length === 0) {
+        this.logger.debug(`No pending payments for block ${blockNumber}`);
+        return;
+      }
+
+      this.logger.debug(
+        `Processing ${pendingPayments.length} pending payment(s) for block ${blockNumber}`,
+      );
+
+      await Promise.all(
+        pendingPayments.map((payment) =>
+          this.processPaymentConfirmation(payment.id, {
+            currentBlock,
+            txHash: payment.txHash,
+            transactionBlockNumber: payment.blockNumber,
+            network: payment.network,
+          }),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error processing block ${blockNumber}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
     }
   }
 
-  private async handleBlockConfirmation(
-    data: Omit<BlockConfirmationJobData, 'jobType'>,
+  private async processPaymentConfirmation(
+    paymentId: string,
+    data: {
+      currentBlock: bigint;
+      txHash: string;
+      transactionBlockNumber: string;
+      network: string;
+    },
   ): Promise<void> {
     try {
-      const { paymentId, currentBlockNumber, txHash, transactionBlockNumber } =
-        data;
+      const { currentBlock, txHash, transactionBlockNumber } = data;
 
       const receipt = await this.blockchain.getTransactionReceipt({
         hash: txHash as `0x${string}`,
       });
 
-      if (!receipt) return;
+      // If receipt doesn't exist, transaction might not be mined yet
+      // Skip for now - will be checked again on next block
+      if (!receipt) {
+        this.logger.debug(
+          `Receipt not found for payment ${paymentId}, transaction may not be mined yet`,
+        );
+        return;
+      }
 
-      const currentBlock = BigInt(currentBlockNumber);
+      // Check if transaction was reverted/failed
+      // In viem, status is 'success' or 'reverted'
+      if (receipt.status !== 'success') {
+        this.logger.warn(
+          `Transaction ${txHash} was reverted or failed for payment ${paymentId} (status: ${receipt.status})`,
+        );
+        await this.paymentsService.updatePayment(paymentId, {
+          status: 'failed',
+        });
+        return;
+      }
+
       const txBlock = BigInt(transactionBlockNumber);
       const confirmations = Math.max(0, Number(currentBlock - txBlock));
 
       const existingPayment =
         await this.paymentsService.findPaymentById(paymentId);
 
-      const minConfirmations = getMinConfirmationsForNetwork(
-        existingPayment.network,
-      );
+      // If payment is already failed or confirmed, skip processing
+      if (existingPayment.status === 'failed') {
+        this.logger.debug(
+          `Payment ${paymentId} is already marked as failed, skipping`,
+        );
+        return;
+      }
+
+      if (existingPayment.status === 'confirmed') {
+        // Still update confirmations count even if already confirmed
+        await this.paymentsService.updatePayment(paymentId, {
+          confirmations,
+        });
+        return;
+      }
+
+      const minConfirmations = getMinConfirmationsForNetwork(data.network);
+      // At this point, we know status is 'pending' (we already checked for 'confirmed' and 'failed')
       const shouldConfirm = confirmations >= minConfirmations;
-      const isNewlyConfirmed =
-        shouldConfirm && existingPayment.status !== 'confirmed';
 
       await this.paymentsService.updatePayment(paymentId, {
         confirmations,
-        ...(isNewlyConfirmed ? { status: 'confirmed' } : {}),
-        ...(isNewlyConfirmed && { confirmedAt: new Date() }),
+        ...(shouldConfirm ? { status: 'confirmed' } : {}),
+        ...(shouldConfirm && { confirmedAt: new Date() }),
       });
     } catch (error) {
+      // If payment not found, log and continue
+      if (
+        error instanceof Error &&
+        error.message.includes('Payment not found')
+      ) {
+        this.logger.warn(
+          `Payment ${paymentId} not found, may have been deleted`,
+        );
+        return;
+      }
+
       this.logger.error(
-        `Error processing confirmation: ${error instanceof Error ? error.message : String(error)}`,
+        `Error processing confirmation for payment ${paymentId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
         error instanceof Error ? error.stack : undefined,
       );
-      throw error;
+      // Don't throw - continue processing other payments
+      // Consider marking as failed if it's a persistent error, but for now
+      // we'll let it retry on the next block
     }
   }
 }

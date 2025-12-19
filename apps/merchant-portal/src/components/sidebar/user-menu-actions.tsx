@@ -10,7 +10,7 @@ import {
 import { useSidebar } from '@workspace/ui/components/sidebar';
 import { Copy, ExternalLink, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import { UserInfo } from './user-info';
 import { signOut } from '@/lib/auth-client';
 import { copyToClipboard, getBlockExplorerUrl } from '@/lib/utils';
@@ -18,7 +18,7 @@ import { copyToClipboard, getBlockExplorerUrl } from '@/lib/utils';
 export function UserMenuActions() {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const { chain, address } = useAccount();
+  const { chain, address } = useConnection();
 
   if (!address || !chain) return null;
 

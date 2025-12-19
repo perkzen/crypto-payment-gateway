@@ -4,7 +4,7 @@ import {
   AvatarImage,
 } from '@workspace/ui/components/avatar';
 import { cn } from '@workspace/ui/lib/utils';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 import { formatAddress } from '@/lib/utils';
 
 type UserInfoProps = {
@@ -12,7 +12,7 @@ type UserInfoProps = {
 };
 
 export function UserInfo({ className }: UserInfoProps) {
-  const { address } = useAccount();
+  const { address } = useConnection();
 
   return (
     <div className={cn('flex items-center gap-2 text-left text-sm', className)}>
