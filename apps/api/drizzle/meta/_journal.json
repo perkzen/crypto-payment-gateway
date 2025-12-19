@@ -113,6 +113,13 @@
       "when": 1765825354999,
       "tag": "0015_empty_valeria_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1766158369053,
+      "tag": "0016_legal_leper_queen",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,9 @@
 import { queryOptions } from '@tanstack/react-query';
-import axios from 'axios';
 import {
   type GetPaymentsQuery,
   type PaginatedPaymentsResponse,
 } from '@workspace/shared';
+import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000';
 

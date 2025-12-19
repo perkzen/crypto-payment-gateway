@@ -110,6 +110,15 @@ export class CheckoutSessionsService {
   }
 
   /**
+   * Find checkout session by payment ID
+   */
+  async findCheckoutSessionByPaymentId(paymentId: string) {
+    return this.databaseService.db.query.checkoutSession.findFirst({
+      where: eq(checkoutSession.paymentId, paymentId),
+    });
+  }
+
+  /**
    * Update checkout session
    */
   async updateCheckoutSession(id: string, data: UpdateCheckoutSessionDto) {

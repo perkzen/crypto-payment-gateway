@@ -2,6 +2,7 @@ import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth.schema';
 import { payment } from './payment.schema';
+import { webhookSubscription } from './webhook-subscription.schema';
 
 export const merchant = pgTable('merchants', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -26,4 +27,5 @@ export const merchantRelations = relations(merchant, ({ one, many }) => ({
     references: [user.id],
   }),
   payments: many(payment),
+  webhookSubscriptions: many(webhookSubscription),
 }));

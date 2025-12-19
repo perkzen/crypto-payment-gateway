@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Badge } from '@workspace/ui/components/badge';
-import type { Payment } from '@workspace/shared';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+import type { Payment } from '@workspace/shared';
 
 const columnHelper = createColumnHelper<Payment>();
 

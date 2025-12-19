@@ -1,10 +1,16 @@
 import { CheckoutSessionsService } from '@app/modules/checkout-sessions/checkout-sessions.service';
 import { PaymentsService } from '@app/modules/payments/payments.service';
 import { QueueName } from '@app/modules/queue/enums/queue-name.enum';
+import { WebhookQueueService } from '@app/modules/webhooks/services/webhook-queue.service';
+import { WebhooksService } from '@app/modules/webhooks/webhooks.service';
 import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { BlockchainEventName, PaidEvent } from '@workspace/shared';
+import {
+  BlockchainEventName,
+  PaidEvent,
+  WebhookEventName,
+} from '@workspace/shared';
 import { extractTokenAddress } from '@workspace/shared';
 import { Job } from 'bullmq';
 import { BlockchainEventJobData } from '../dtos/blockchain-event-job.dto';
@@ -17,6 +23,8 @@ export class BlockchainEventProcessor extends WorkerHost {
     private readonly paymentsService: PaymentsService,
     private readonly checkoutSessionsService: CheckoutSessionsService,
     private readonly walletsService: WalletsService,
+    private readonly webhooksService: WebhooksService,
+    private readonly webhookQueueService: WebhookQueueService,
   ) {
     super();
   }
@@ -77,12 +85,61 @@ export class BlockchainEventProcessor extends WorkerHost {
         paymentId: payment.id,
         completedAt: new Date(),
       });
+
+      // Trigger webhook for payment.created event
+      await this.triggerWebhook(
+        session.merchantId,
+        WebhookEventName.PaymentCreated,
+        payment,
+        session,
+      );
     } catch (error) {
       this.logger.error(
         `Error handling Paid event: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;
+    }
+  }
+
+  private async triggerWebhook(
+    merchantId: string,
+    event: WebhookEventName,
+    payment: unknown,
+    checkoutSession?: unknown,
+  ): Promise<void> {
+    try {
+      const subscriptions =
+        await this.webhooksService.findActiveSubscriptionsByMerchantIdAndEvent(
+          merchantId,
+          event,
+        );
+
+      if (subscriptions.length === 0) {
+        return;
+      }
+
+      await Promise.all(
+        subscriptions.map((subscription) =>
+          this.webhookQueueService.enqueueWebhookDelivery({
+            subscriptionId: subscription.id,
+            url: subscription.url,
+            event,
+            payload: {
+              payment,
+              ...(checkoutSession && { checkoutSession }),
+            },
+            secret: subscription.secret,
+          }),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to trigger webhook for merchant ${merchantId}, event ${event}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      // Don't throw - webhook failures shouldn't break payment processing
     }
   }
 }
