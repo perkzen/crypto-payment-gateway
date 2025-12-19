@@ -2,8 +2,8 @@ import { formOptions } from '@tanstack/react-form';
 import { z } from 'zod';
 
 const merchantSchema = z.object({
-  displayName: z.string().optional(),
-  contactEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
+  displayName: z.string(),
+  contactEmail: z.string(),
 });
 
 const defaultValues = {

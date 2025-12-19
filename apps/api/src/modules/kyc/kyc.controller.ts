@@ -2,8 +2,8 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { Session, type UserSession } from '@thallesp/nestjs-better-auth';
 import { ZodResponse } from 'nestjs-zod';
-import { KycService } from './kyc.service';
 import { KycStatusDto, SubmitKycDto } from './dtos';
+import { KycService } from './kyc.service';
 
 @Controller('kyc')
 export class KycController {

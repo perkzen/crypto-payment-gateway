@@ -2,9 +2,9 @@
 
 import { Button } from '@workspace/ui/components/button';
 import { Plus } from 'lucide-react';
-import { PageHeader } from '@/components/page-header';
-import { WebhookDialog } from './_components/webhook-edit-dialog';
 import { WebhooksListView } from './_components';
+import { WebhookDialog } from './_components/webhook-edit-dialog';
+import { PageHeader } from '@/components/page-header';
 
 export default function WebhooksPage() {
   return (

@@ -13,10 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from '@workspace/ui/components/table';
-import { WebhooksEmptyState } from './webhooks-empty-state';
 import { listWebhooksOptions } from '../_hooks/queries';
 import { useWebhooksTableColumns } from '../_hooks/use-webhooks-table-columns';
 import { type Webhook } from '../_types/webhook';
+import { WebhooksEmptyState } from './webhooks-empty-state';
 
 function WebhooksListContainer({ children }: { children: ReactNode }) {
   return <div>{children}</div>;

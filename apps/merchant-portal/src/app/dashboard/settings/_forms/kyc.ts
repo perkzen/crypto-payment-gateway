@@ -11,7 +11,7 @@ const kycSchema = z.object({
   address: z.object({
     street: z.string().min(1, 'Street address is required'),
     city: z.string().min(1, 'City is required'),
-    state: z.string().optional(),
+    state: z.string(),
     postalCode: z.string().min(1, 'Postal code is required'),
     country: z
       .string()
@@ -38,7 +38,7 @@ const defaultValues = {
     postalCode: '',
     country: '',
   },
-  documentType: 'passport' as const,
+  documentType: 'passport' as 'passport' | 'drivers_license' | 'national_id',
   documentNumber: '',
 };
 

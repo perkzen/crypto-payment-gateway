@@ -1,9 +1,9 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { webhookSubscription } from '@app/modules/database/schemas';
-import { WebhookEventName } from '@workspace/shared';
 import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
 import { TestAppBootstrap } from '@test/common/test-app-bootstrap';
 import { TestFactory } from '@test/common/test-factory';
+import { WebhookEventName } from '@workspace/shared';
 import { eq } from 'drizzle-orm';
 
 describe('Webhooks (e2e)', () => {

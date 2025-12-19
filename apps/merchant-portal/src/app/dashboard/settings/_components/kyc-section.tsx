@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { Badge } from '@workspace/ui/components/badge';
 import { Button } from '@workspace/ui/components/button';
 import { Calendar } from '@workspace/ui/components/calendar';
@@ -22,10 +20,11 @@ import {
   SelectValue,
 } from '@workspace/ui/components/select';
 import { toast } from '@workspace/ui/components/sonner';
-import { Calendar as CalendarIcon, CheckCircle2, Clock, XCircle, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon, CheckCircle2, Clock, FileText, XCircle } from 'lucide-react';
 import { kycFormOptions } from '../_forms/kyc';
 import { submitKycOptions } from '../_hooks/kyc-mutations';
-import { kycStatusOptions, type KycStatus } from '../_hooks/kyc-queries';
+import { type KycStatus, kycStatusOptions } from '../_hooks/kyc-queries';
 
 function getStatusBadge(status: KycStatus['status']) {
   switch (status) {
@@ -118,6 +117,7 @@ function KycSubmissionForm() {
         address: {
           ...value.address,
           country: value.address.country.toUpperCase(),
+          state: value.address.state?.trim() || undefined,
         },
       });
       formApi.reset();
@@ -374,7 +374,7 @@ function KycSubmissionForm() {
               <Select
                 value={field.state.value}
                 onValueChange={(value) => {
-                  field.handleChange(value);
+                  field.handleChange(value as 'passport' | 'drivers_license' | 'national_id');
                   field.handleBlur();
                 }}
               >
@@ -384,7 +384,7 @@ function KycSubmissionForm() {
                 <SelectContent>
                   <SelectItem value="passport">Passport</SelectItem>
                   <SelectItem value="drivers_license">
-                    Driver's License
+                    Driver&apos;s License
                   </SelectItem>
                   <SelectItem value="national_id">National ID</SelectItem>
                 </SelectContent>

@@ -2,6 +2,7 @@
   "name": "@workspace/blockchain",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Blockchain contracts and wagmi hooks for the crypto payment gateway",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

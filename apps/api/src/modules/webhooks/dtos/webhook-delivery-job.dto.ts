@@ -1,4 +1,4 @@
-import { WebhookEventName } from '@workspace/shared';
+import { type WebhookEventName } from '@workspace/shared';
 
 export interface WebhookDeliveryJobData {
   subscriptionId: string;

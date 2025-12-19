@@ -41,21 +41,10 @@ export function GeneralSettings() {
       contactEmail: merchant?.contactEmail ?? '',
     },
     onSubmit: async ({ value }) => {
-      const updateData: { displayName?: string; contactEmail?: string } = {};
-      
-      if (value.displayName !== undefined && value.displayName.trim() !== '') {
-        updateData.displayName = value.displayName.trim();
-      } else if (value.displayName === '') {
-        updateData.displayName = null;
-      }
-      
-      if (value.contactEmail !== undefined && value.contactEmail.trim() !== '') {
-        updateData.contactEmail = value.contactEmail.trim();
-      } else if (value.contactEmail === '') {
-        updateData.contactEmail = null;
-      }
-
-      await mutateAsync(updateData);
+      await mutateAsync({
+        displayName: value.displayName.trim() || null,
+        contactEmail: value.contactEmail.trim() || null,
+      });
     },
   });
 

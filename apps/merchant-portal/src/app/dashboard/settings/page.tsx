@@ -1,6 +1,6 @@
-import { PageHeader } from '@/components/page-header';
 import { GeneralSettings } from './_components/general-settings';
 import { KycSection } from './_components/kyc-section';
+import { PageHeader } from '@/components/page-header';
 
 export default function SettingsPage() {
   return (

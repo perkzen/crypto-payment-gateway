@@ -1,7 +1,7 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession } from '@app/modules/database/schemas';
-import { KycService } from '@app/modules/kyc/kyc.service';
 import { KycNotVerifiedException } from '@app/modules/kyc/exceptions';
+import { KycService } from '@app/modules/kyc/kyc.service';
 import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Injectable } from '@nestjs/common';

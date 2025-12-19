@@ -1,7 +1,7 @@
-import { mutationOptions } from '@tanstack/react-query';
 import axios from 'axios';
-import { apiClient } from '@/lib/api-config';
 import type { KycStatus } from './kyc-queries';
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-config';
 
 export interface SubmitKycData {
   firstName: string;
@@ -19,35 +19,42 @@ export interface SubmitKycData {
   documentNumber: string;
 }
 
-export const submitKycOptions = mutationOptions({
-  mutationFn: async (data: SubmitKycData): Promise<KycStatus> => {
-    try {
-      const response = await apiClient.post<KycStatus>('/kyc/submit', data);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        const responseData = error.response?.data;
-        
-        // Handle Zod validation errors
-        if (responseData?.issues && Array.isArray(responseData.issues)) {
-          const validationErrors = responseData.issues
-            .map((issue: { path: string[]; message: string }) => {
-              const field = issue.path.join('.');
-              return `${field}: ${issue.message}`;
-            })
-            .join(', ');
-          throw new Error(`Validation error: ${validationErrors}`);
-        }
-        
-        // Handle standard error messages
-        const message =
-          responseData?.message ||
-          responseData?.error ||
-          error.message ||
-          'Failed to submit KYC information';
-        throw new Error(message);
+async function submitKycMutationFn(data: SubmitKycData): Promise<KycStatus> {
+  try {
+    const response = await apiClient.post<KycStatus>('/kyc/submit', data);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      
+      // Handle Zod validation errors
+      if (responseData?.issues && Array.isArray(responseData.issues)) {
+        const validationErrors = responseData.issues
+          .map((issue: { path: string[]; message: string }) => {
+            const field = issue.path.join('.');
+            return `${field}: ${issue.message}`;
+          })
+          .join(', ');
+        throw new Error(`Validation error: ${validationErrors}`);
       }
-      throw error;
+      
+      // Handle standard error messages
+      const message =
+        responseData?.message ||
+        responseData?.error ||
+        error.message ||
+        'Failed to submit KYC information';
+      throw new Error(message);
     }
-  },
-});
+    throw error;
+  }
+}
+
+export const submitKycOptions: UseMutationOptions<
+  KycStatus,
+  unknown,
+  SubmitKycData,
+  unknown
+> = {
+  mutationFn: submitKycMutationFn,
+};
