@@ -11,6 +11,7 @@ import { BlockchainModule } from './modules/blockchain/blockchain.module';
 import { CheckoutSessionsModule } from './modules/checkout-sessions/checkout-sessions.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { ExchangeModule } from './modules/exchange/exchange.module';
+import { KycModule } from './modules/kyc/kyc.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
@@ -38,6 +39,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     ExchangeModule,
     WalletsModule,
     WebhooksModule,
+    KycModule,
   ],
   controllers: [AppController],
   providers: [AppService],

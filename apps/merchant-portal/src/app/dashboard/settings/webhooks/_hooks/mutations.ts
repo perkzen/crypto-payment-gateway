@@ -4,18 +4,13 @@ import {
   type UpdateWebhookSubscription,
   type WebhookSubscription,
 } from '@workspace/shared';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { apiClient } from '@/lib/api-config';
 
 export const createWebhookOptions = mutationOptions({
   mutationFn: async (input: CreateWebhookSubscription) => {
-    const response = await axios.post<WebhookSubscription>(
-      `${API_BASE_URL}/webhooks/subscriptions`,
+    const response = await apiClient.post<WebhookSubscription>(
+      '/webhooks/subscriptions',
       input,
-      {
-        withCredentials: true,
-      },
     );
     return response.data;
   },
@@ -26,12 +21,9 @@ export const updateWebhookOptions = mutationOptions({
     id: string;
     updates: UpdateWebhookSubscription;
   }) => {
-    const response = await axios.patch<WebhookSubscription>(
-      `${API_BASE_URL}/webhooks/subscriptions/${data.id}`,
+    const response = await apiClient.patch<WebhookSubscription>(
+      `/webhooks/subscriptions/${data.id}`,
       data.updates,
-      {
-        withCredentials: true,
-      },
     );
     return response.data;
   },
@@ -39,8 +31,6 @@ export const updateWebhookOptions = mutationOptions({
 
 export const deleteWebhookOptions = mutationOptions({
   mutationFn: async (id: string) => {
-    await axios.delete(`${API_BASE_URL}/webhooks/subscriptions/${id}`, {
-      withCredentials: true,
-    });
+    await apiClient.delete(`/webhooks/subscriptions/${id}`);
   },
 });

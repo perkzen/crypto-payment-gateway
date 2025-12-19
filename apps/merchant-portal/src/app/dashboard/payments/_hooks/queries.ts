@@ -3,19 +3,16 @@ import {
   type GetPaymentsQuery,
   type PaginatedPaymentsResponse,
 } from '@workspace/shared';
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8000';
+import { apiClient } from '@/lib/api-config';
 
 export function listPaymentsOptions(query?: Partial<GetPaymentsQuery>) {
   return queryOptions({
     queryKey: ['payments', query],
     queryFn: async (): Promise<PaginatedPaymentsResponse> => {
-      const response = await axios.get<PaginatedPaymentsResponse>(
-        `${API_BASE_URL}/payments`,
+      const response = await apiClient.get<PaginatedPaymentsResponse>(
+        '/payments',
         {
           params: query,
-          withCredentials: true,
         },
       );
       return response.data;
