@@ -1,6 +1,6 @@
 import { type getAuthConfig } from '@app/modules/auth/config/auth';
 import { DatabaseService } from '@app/modules/database/database.service';
-import { merchant, user, walletAddress } from '@app/modules/database/schemas';
+import { merchant, payment, user, walletAddress } from '@app/modules/database/schemas';
 import { faker } from '@faker-js/faker';
 import { type TestingModule } from '@nestjs/testing';
 import { AuthService } from '@thallesp/nestjs-better-auth';
@@ -142,5 +142,43 @@ export class TestFactory {
       apiKey: testApiKey,
       walletAddress: testWalletAddress,
     };
+  }
+
+  /**
+   * Create a test payment for a merchant
+   */
+  async createPayment(
+    merchantId: string,
+    overrides?: {
+      status?: 'pending' | 'confirmed' | 'failed';
+      network?: string;
+      address?: string;
+      txHash?: string;
+      tokenAddress?: string | null;
+      paidAmount?: string;
+      confirmations?: number;
+      blockNumber?: string;
+      confirmedAt?: Date | null;
+      createdAt?: Date;
+    },
+  ) {
+    const [testPayment] = await this.db
+      .insert(payment)
+      .values({
+        merchantId,
+        status: overrides?.status || 'pending',
+        network: overrides?.network || 'ethereum',
+        address: overrides?.address || faker.finance.ethereumAddress(),
+        txHash: overrides?.txHash || `0x${faker.string.hexadecimal({ length: 64 })}`,
+        tokenAddress: overrides?.tokenAddress ?? null,
+        paidAmount: overrides?.paidAmount || faker.string.numeric({ length: 18 }),
+        confirmations: overrides?.confirmations ?? 0,
+        blockNumber: overrides?.blockNumber || faker.string.numeric({ length: 10 }),
+        confirmedAt: overrides?.confirmedAt ?? null,
+        createdAt: overrides?.createdAt || new Date(),
+      })
+      .returning();
+
+    return testPayment;
   }
 }

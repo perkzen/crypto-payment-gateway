@@ -10,6 +10,7 @@
 export * from './schemas/health';
 export * from './schemas/checkout-session';
 export * from './schemas/exchange';
+export * from './schemas/pagination';
 export * from './schemas/payment';
 export * from './schemas/blockchain-events';
 export * from './types/exchange';

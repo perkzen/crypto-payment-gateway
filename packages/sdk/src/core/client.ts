@@ -9,6 +9,9 @@ import {
   CreateCheckoutSessionResultSchema,
   type ExchangeRate,
   ExchangeRateSchema,
+  type GetPaymentsQuery,
+  type PaginatedPaymentsResponse,
+  PaginatedPaymentsResponseSchema,
   type PublicCheckoutSession,
   PublicCheckoutSessionSchema,
 } from '@workspace/shared';
@@ -104,6 +107,27 @@ export class CryptoPayClient {
       return ExchangeRateSchema.parse(response.data);
     } catch (error) {
       this.handleError(error, 'Failed to get exchange rate');
+    }
+  }
+
+  /**
+   * Get paginated payments with optional filtering and sorting
+   * @param query - Query parameters for pagination, filtering, and sorting
+   * @returns Promise resolving to paginated payments response
+   * @throws Error if the API request fails
+   */
+  async getPayments(
+    query?: Partial<GetPaymentsQuery>,
+  ): Promise<PaginatedPaymentsResponse> {
+    try {
+      const response =
+        await this.axiosInstance.get<PaginatedPaymentsResponse>('/payments', {
+          params: query,
+        });
+
+      return PaginatedPaymentsResponseSchema.parse(response.data);
+    } catch (error) {
+      this.handleError(error, 'Failed to get payments');
     }
   }
 }
