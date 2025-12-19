@@ -14,6 +14,7 @@ export * from './schemas/webhook-subscription';
 export * from './schemas/pagination';
 export * from './schemas/payment';
 export * from './schemas/blockchain-events';
+export * from './schemas/merchant-stats';
 export * from './types/exchange';
 export * from './utils/calculations';
 export * from './utils/formatting';

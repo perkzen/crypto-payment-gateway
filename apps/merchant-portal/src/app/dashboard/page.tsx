@@ -1,9 +1,23 @@
-import { Button } from '@workspace/ui/components/button';
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import { CreditCard, DollarSign, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
+import { merchantStatsOptions } from './_hooks/queries';
+import { RecentPayments } from './_components/recent-payments';
+
+function formatCurrency(cents: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(cents / 100);
+}
 
 export default function DashboardPage() {
+  const { data: stats, isLoading: isLoadingStats } = useQuery(
+    merchantStatsOptions,
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
       <PageHeader
@@ -18,7 +32,11 @@ export default function DashboardPage() {
               <p className="text-muted-foreground text-sm font-medium">
                 Total Revenue
               </p>
-              <p className="text-2xl font-bold">$0.00</p>
+              <p className="text-2xl font-bold">
+                {isLoadingStats
+                  ? '...'
+                  : formatCurrency(stats?.totalRevenue ?? 0)}
+              </p>
             </div>
             <div className="bg-primary/10 rounded-full p-3">
               <DollarSign className="text-primary h-5 w-5" />
@@ -32,7 +50,9 @@ export default function DashboardPage() {
               <p className="text-muted-foreground text-sm font-medium">
                 Total Transactions
               </p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-2xl font-bold">
+                {isLoadingStats ? '...' : stats?.totalTransactions ?? 0}
+              </p>
             </div>
             <div className="bg-primary/10 rounded-full p-3">
               <CreditCard className="text-primary h-5 w-5" />
@@ -46,7 +66,13 @@ export default function DashboardPage() {
               <p className="text-muted-foreground text-sm font-medium">
                 Success Rate
               </p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-2xl font-bold">
+                {isLoadingStats
+                  ? '...'
+                  : stats?.successRate !== undefined
+                    ? `${stats.successRate.toFixed(1)}%`
+                    : '—'}
+              </p>
             </div>
             <div className="bg-primary/10 rounded-full p-3">
               <TrendingUp className="text-primary h-5 w-5" />
@@ -55,34 +81,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="bg-card rounded-lg border p-6">
-          <h2 className="mb-4 text-lg font-semibold">Recent Transactions</h2>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <p className="text-muted-foreground text-sm">No transactions yet</p>
-            <Button className="mt-4" variant="outline" asChild>
-              <Link href="/dashboard/payments">View All Payments</Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="bg-card rounded-lg border p-6">
-          <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href="/dashboard/payments">View Payments</Link>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href="/dashboard/settings/api-keys">Manage API Keys</Link>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <Link href="/dashboard/settings/webhooks">
-                Configure Webhooks
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+      <RecentPayments />
     </div>
   );
 }
