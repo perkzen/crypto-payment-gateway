@@ -12,7 +12,7 @@ import {
   type PaidEvent,
   PaidEventSchema,
 } from '@workspace/shared';
-import { cryptoPayAbi } from '@workspace/shared/contracts';
+import { cryptoPayAbi } from '@workspace/blockchain/contracts';
 import { type Address, type PublicClient } from 'viem';
 import { type z } from 'zod';
 

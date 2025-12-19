@@ -1,8 +1,8 @@
 {
-  "name": "@workspace/shared",
+  "name": "@workspace/blockchain",
   "version": "0.0.0",
   "private": true,
-  "description": "Shared Zod validation schemas and types for the crypto payment gateway monorepo",
+  "description": "Blockchain contracts and wagmi hooks for the crypto payment gateway",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -10,6 +10,11 @@
       "types": "./dist/index.d.ts",
       "require": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/generated.d.ts",
+      "require": "./dist/contracts/generated.js",
+      "default": "./dist/contracts/generated.js"
     }
   },
   "files": [
@@ -20,20 +25,23 @@
     "dev": "tsc --watch",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:contracts": "wagmi generate"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "viem": "^2.41.2"
+  },
+  "peerDependencies": {
+    "wagmi": "^3.1.0"
   },
   "devDependencies": {
     "@turbo/gen": "^2.5.5",
     "@types/node": "^20.19.9",
+    "@wagmi/cli": "^2.8.0",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.32.0",
-    "typescript": "^5.9.2"
-  },
-  "publishConfig": {
-    "access": "public"
+    "typescript": "^5.9.2",
+    "wagmi": "^3.1.0"
   }
 }

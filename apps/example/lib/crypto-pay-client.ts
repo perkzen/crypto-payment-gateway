@@ -1,10 +1,5 @@
-import { CryptoPayClient } from '@workspace/sdk';
+import { createApiClient } from './api-config';
 
-let cryptoPayClient: CryptoPayClient | null = null;
-
-export function getCryptoPayClient(apiKey?: string): CryptoPayClient {
-  if (!cryptoPayClient) {
-    cryptoPayClient = new CryptoPayClient({ apiKey });
-  }
-  return cryptoPayClient;
+export function getCryptoPayClient(apiKey?: string) {
+  return createApiClient(apiKey);
 }

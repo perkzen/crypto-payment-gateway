@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
+import { ExchangeRateSchema } from '@workspace/shared';
 import { getCryptoPayClient } from '@/lib/crypto-pay-client';
 
 export function exchangeRateOptions(crypto: string, fiat: string) {
@@ -6,7 +7,12 @@ export function exchangeRateOptions(crypto: string, fiat: string) {
     queryKey: ['exchange-rate', crypto, fiat],
     queryFn: async () => {
       const client = getCryptoPayClient();
-      return client.getExchangeRate(crypto, fiat);
+      const response = await client.get('/exchange/price', {
+        params: {
+          pair: `${crypto},${fiat}`,
+        },
+      });
+      return ExchangeRateSchema.parse(response.data);
     },
     enabled: !!crypto && !!fiat,
     refetchInterval: 5000, // Poll every 5 seconds
