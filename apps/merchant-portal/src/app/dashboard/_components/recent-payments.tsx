@@ -20,9 +20,10 @@ import { listPaymentsOptions } from '../payments/_hooks/queries';
 import { usePaymentsTableColumns } from '../payments/_hooks/use-payments-table-columns';
 
 export function RecentPayments() {
-  const { data, isLoading } = useQuery(
-    listPaymentsOptions({ page: 1, limit: 5, sortOrder: 'desc' }),
-  );
+  const { data, isLoading } = useQuery({
+    ...listPaymentsOptions({ page: 1, limit: 5, sortOrder: 'desc' }),
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
 
   const payments = data?.data || [];
   const columns = usePaymentsTableColumns();

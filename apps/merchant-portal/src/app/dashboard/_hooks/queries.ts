@@ -8,4 +8,5 @@ export const merchantStatsOptions = queryOptions({
     const response = await apiClient.get<MerchantStats>('/merchants/stats');
     return response.data;
   },
+  refetchInterval: 5000, // Poll every 5 seconds
 });

@@ -5,7 +5,7 @@ import {
   payment,
 } from '@app/modules/database/schemas';
 import { Injectable } from '@nestjs/common';
-import { and, count, eq, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gte, lte, sql } from 'drizzle-orm';
 import { MerchantNotFoundException } from './exceptions';
 
 @Injectable()
@@ -104,21 +104,20 @@ export class MerchantsService {
       );
     const totalRevenue = Number(revenueResult[0]?.total ?? 0);
 
-    // Get time-series data for the last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    thirtyDaysAgo.setHours(0, 0, 0, 0);
+    // Get weekly stats (last 7 days)
+    // Use SQL to get dates in the database timezone for consistency
+    const dateRangeResult = await this.databaseService.db.execute(
+      sql`SELECT generate_series(
+        CURRENT_DATE - INTERVAL '6 days',
+        CURRENT_DATE,
+        INTERVAL '1 day'
+      )::date::text AS date`,
+    );
+    const dateArray = (dateRangeResult.rows as { date: string }[]).map(
+      (row) => row.date,
+    );
 
-    // Generate all dates for the last 30 days
-    const dateArray: Date[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      dateArray.push(date);
-    }
-
-    // Get daily transaction counts
+    // Get daily transaction counts for the last 7 days
     const dailyTransactions = await this.databaseService.db
       .select({
         date: sql<string>`${payment.createdAt}::date::text`,
@@ -128,7 +127,7 @@ export class MerchantsService {
       .where(
         and(
           eq(payment.merchantId, merchant.id),
-          gte(payment.createdAt, thirtyDaysAgo),
+          gte(sql`${payment.createdAt}::date`, sql`CURRENT_DATE - INTERVAL '6 days'`),
         ),
       )
       .groupBy(sql`${payment.createdAt}::date`);
@@ -144,7 +143,7 @@ export class MerchantsService {
         and(
           eq(payment.merchantId, merchant.id),
           eq(payment.status, 'confirmed'),
-          gte(payment.createdAt, thirtyDaysAgo),
+          gte(sql`${payment.createdAt}::date`, sql`CURRENT_DATE - INTERVAL '6 days'`),
         ),
       )
       .groupBy(sql`${payment.createdAt}::date`);
@@ -159,7 +158,7 @@ export class MerchantsService {
         and(
           eq(payment.merchantId, merchant.id),
           eq(payment.status, 'failed'),
-          gte(payment.createdAt, thirtyDaysAgo),
+          gte(sql`${payment.createdAt}::date`, sql`CURRENT_DATE - INTERVAL '6 days'`),
         ),
       )
       .groupBy(sql`${payment.createdAt}::date`);
@@ -176,7 +175,7 @@ export class MerchantsService {
         and(
           eq(checkoutSession.merchantId, merchant.id),
           eq(payment.status, 'confirmed'),
-          gte(payment.createdAt, thirtyDaysAgo),
+          gte(sql`${payment.createdAt}::date`, sql`CURRENT_DATE - INTERVAL '6 days'`),
         ),
       )
       .groupBy(sql`${payment.createdAt}::date`);
@@ -195,9 +194,9 @@ export class MerchantsService {
       dailyRevenue.map((item) => [item.date, Number(item.total)]),
     );
 
-    // Build time-series data
-    const timeSeries = dateArray.map((date) => {
-      const dateStr = date.toISOString().split('T')[0];
+    // Build time-series data for the last 7 days
+    // dateArray is already in YYYY-MM-DD format from SQL
+    const timeSeries = dateArray.map((dateStr) => {
       const transactions = transactionsMap.get(dateStr) ?? 0;
       const confirmed = confirmedMap.get(dateStr) ?? 0;
       const failed = failedMap.get(dateStr) ?? 0;

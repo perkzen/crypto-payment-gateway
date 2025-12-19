@@ -97,9 +97,27 @@ export class BlockConfirmationProcessor extends WorkerHost {
     try {
       const { currentBlock, txHash, transactionBlockNumber } = data;
 
-      const receipt = await this.blockchain.getTransactionReceipt({
-        hash: txHash as `0x${string}`,
-      });
+      let receipt;
+      try {
+        receipt = await this.blockchain.getTransactionReceipt({
+          hash: txHash as `0x${string}`,
+        });
+      } catch (error) {
+        // Handle TransactionReceiptNotFound - transaction may not be mined yet
+        if (
+          error instanceof Error &&
+          (error.name === 'TransactionReceiptNotFound' ||
+            error.message.includes('could not be found') ||
+            error.message.includes('Transaction may not be processed'))
+        ) {
+          this.logger.debug(
+            `Receipt not found for payment ${paymentId}, transaction may not be mined yet (tx: ${txHash})`,
+          );
+          return;
+        }
+        // Re-throw other errors
+        throw error;
+      }
 
       // If receipt doesn't exist, transaction might not be mined yet
       // Skip for now - will be checked again on next block

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, XAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis } from 'recharts';
 import {
   Card,
   CardContent,
@@ -26,14 +26,15 @@ function formatCurrency(cents: number): string {
 }
 
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr + 'T00:00:00'); // Ensure we parse as local date
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function DashboardPage() {
-  const { data: stats, isLoading: isLoadingStats } = useQuery(
-    merchantStatsOptions,
-  );
+  const { data: stats, isLoading: isLoadingStats } = useQuery({
+    ...merchantStatsOptions,
+    refetchInterval: 5000, // Poll every 5 seconds
+  });
 
   const chartData = stats?.timeSeries.map((item) => ({
     date: formatDate(item.date),
@@ -97,7 +98,7 @@ export default function DashboardPage() {
               <div>
                 <CardTitle>Revenue Over Time</CardTitle>
                 <CardDescription>
-                  Daily revenue from confirmed payments (last 30 days)
+                  Daily revenue from confirmed payments (last 7 days)
                 </CardDescription>
               </div>
               <div className="text-right">
@@ -160,7 +161,7 @@ export default function DashboardPage() {
               <div>
                 <CardTitle>Transactions Over Time</CardTitle>
                 <CardDescription>
-                  Daily transaction count (last 30 days)
+                  Daily transaction count (last 7 days)
                 </CardDescription>
               </div>
               <div className="text-right">
@@ -180,7 +181,7 @@ export default function DashboardPage() {
               </div>
             ) : chartData.length > 0 ? (
               <ChartContainer config={transactionsChartConfig}>
-                <AreaChart data={chartData}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     dataKey="date"
@@ -192,14 +193,12 @@ export default function DashboardPage() {
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                   />
-                  <Area
-                    type="monotone"
+                  <Bar
                     dataKey="transactions"
-                    stroke="var(--chart-2)"
                     fill="var(--chart-2)"
-                    fillOpacity={0.2}
+                    radius={[4, 4, 0, 0]}
                   />
-                </AreaChart>
+                </BarChart>
               </ChartContainer>
             ) : (
               <div className="flex h-[300px] flex-col items-center justify-center gap-2">
