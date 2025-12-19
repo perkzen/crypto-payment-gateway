@@ -1,3 +1,5 @@
+'use client';
+
 import { type PropsWithChildren } from 'react';
 import { RainbowKitAuthenticationProvider } from '@rainbow-me/rainbowkit';
 import { useRainbowKitAuthAdapter } from '@/hooks/use-rainbow-kit-auth-adapter';

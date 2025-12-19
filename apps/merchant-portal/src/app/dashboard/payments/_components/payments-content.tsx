@@ -1,30 +1,87 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import {
-  CheckCircle2,
-  Clock,
-  CreditCard,
-  Filter,
-  Search,
-  XCircle,
-} from 'lucide-react';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@workspace/ui/components/table';
+import { CreditCard, Filter, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { listPaymentsOptions } from '../_hooks/queries';
+import { usePaymentsTableColumns } from '../_hooks/use-payments-table-columns';
+import { PaymentsPagination } from './payments-pagination';
+import type { Payment } from '@workspace/shared';
 import { PageHeader } from '@/components/page-header';
 
-type PaymentStatus = 'all' | 'pending' | 'completed' | 'failed';
+type PaymentStatus = 'all' | 'pending' | 'confirmed' | 'failed';
 
 export function PaymentsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const status = (searchParams.get('status') as PaymentStatus) || 'all';
+  // Get query params with defaults
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const limit = parseInt(searchParams.get('limit') || '20', 10);
+  const statusParam = searchParams.get('status') as PaymentStatus | null;
+  const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
 
-  const setStatus = (newStatus: PaymentStatus) => {
+  // Map UI status to API status (UI shows 'all', API doesn't need it)
+  const apiStatus: 'pending' | 'confirmed' | 'failed' | undefined =
+    statusParam && statusParam !== 'all' ? statusParam : undefined;
+
+  // Build query object
+  const query = useMemo(
+    () => ({
+      page,
+      limit,
+      status: apiStatus,
+      sortOrder,
+    }),
+    [page, limit, apiStatus, sortOrder],
+  );
+
+  // Fetch payments
+  const { data, isLoading, error } = useQuery(listPaymentsOptions(query));
+
+  const payments = useMemo(() => data?.data || [], [data]);
+  const meta = data?.meta;
+
+  // Client-side search filter
+  const filteredPayments = useMemo(() => {
+    if (!searchQuery) return payments;
+
+    const query = searchQuery.toLowerCase();
+    return payments.filter(
+      (payment: Payment) =>
+        payment.id.toLowerCase().includes(query) ||
+        payment.txHash.toLowerCase().includes(query),
+    );
+  }, [payments, searchQuery]);
+
+  const columns = usePaymentsTableColumns();
+
+  const table = useReactTable({
+    data: filteredPayments,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const handleStatusChange = (newStatus: PaymentStatus) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete('page'); // Reset to page 1 when filtering
     if (newStatus === 'all') {
       params.delete('status');
     } else {
@@ -33,53 +90,31 @@ export function PaymentsContent() {
     router.push(`/dashboard/payments?${params.toString()}`);
   };
 
-  // Mock data - replace with actual API calls
-  const payments: Array<{
-    id: string;
-    amount: string;
-    currency: string;
-    status: 'pending' | 'completed' | 'failed';
-    createdAt: string;
-    txHash?: string;
-  }> = [];
-
-  const filteredPayments = payments.filter((payment) => {
-    if (status !== 'all' && payment.status !== status) return false;
-    if (
-      searchQuery &&
-      !payment.id.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    return true;
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return null;
-    }
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`/dashboard/payments?${params.toString()}`);
   };
 
-  const getStatusBadge = (status: string) => {
-    const baseClasses =
-      'inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium';
-    switch (status) {
-      case 'completed':
-        return `${baseClasses} bg-green-500/10 text-green-500`;
-      case 'pending':
-        return `${baseClasses} bg-yellow-500/10 text-yellow-500`;
-      case 'failed':
-        return `${baseClasses} bg-red-500/10 text-red-500`;
-      default:
-        return `${baseClasses} bg-muted text-muted-foreground`;
-    }
-  };
+  const currentStatus: PaymentStatus = statusParam || 'all';
+
+  if (error) {
+    return (
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <PageHeader
+          title="Payments"
+          description="View and manage all your payment transactions"
+        />
+        <div className="bg-card flex flex-1 flex-col items-center justify-center rounded-lg border py-12">
+          <CreditCard className="text-muted-foreground mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-lg font-semibold">Error loading payments</h3>
+          <p className="text-muted-foreground mb-4 text-center text-sm">
+            {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
@@ -92,7 +127,7 @@ export function PaymentsContent() {
         <div className="relative max-w-sm flex-1">
           <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="Search payments..."
+            placeholder="Search by ID or transaction hash..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -103,45 +138,58 @@ export function PaymentsContent() {
           <Filter className="text-muted-foreground h-4 w-4" />
           <div className="flex gap-1 rounded-lg border p-1">
             <Button
-              variant={status === 'all' ? 'default' : 'ghost'}
+              variant={currentStatus === 'all' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setStatus('all')}
+              onClick={() => handleStatusChange('all')}
             >
               All
             </Button>
             <Button
-              variant={status === 'pending' ? 'default' : 'ghost'}
+              variant={currentStatus === 'pending' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setStatus('pending')}
+              onClick={() => handleStatusChange('pending')}
             >
               Pending
             </Button>
             <Button
-              variant={status === 'completed' ? 'default' : 'ghost'}
+              variant={currentStatus === 'confirmed' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setStatus('completed')}
+              onClick={() => handleStatusChange('confirmed')}
             >
-              Completed
+              Confirmed
+            </Button>
+            <Button
+              variant={currentStatus === 'failed' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleStatusChange('failed')}
+            >
+              Failed
             </Button>
           </div>
         </div>
       </div>
 
-      {filteredPayments.length === 0 ? (
+      {isLoading ? (
+        <div className="bg-card flex flex-1 flex-col items-center justify-center rounded-lg border py-12">
+          <div className="text-muted-foreground text-sm">
+            Loading payments...
+          </div>
+        </div>
+      ) : filteredPayments.length === 0 ? (
         <div className="bg-card flex flex-1 flex-col items-center justify-center rounded-lg border py-12">
           <CreditCard className="text-muted-foreground mb-4 h-12 w-12" />
           <h3 className="mb-2 text-lg font-semibold">No payments found</h3>
           <p className="text-muted-foreground mb-4 text-center text-sm">
-            {searchQuery || status !== 'all'
+            {searchQuery || currentStatus !== 'all'
               ? 'Try adjusting your filters or search query'
               : 'Your payment transactions will appear here'}
           </p>
-          {(searchQuery || status !== 'all') && (
+          {(searchQuery || currentStatus !== 'all') && (
             <Button
               variant="outline"
               onClick={() => {
                 setSearchQuery('');
-                setStatus('all');
+                handleStatusChange('all');
               }}
             >
               Clear Filters
@@ -149,66 +197,45 @@ export function PaymentsContent() {
           )}
         </div>
       ) : (
-        <div className="bg-card rounded-lg border">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
-                    ID
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
-                    Amount
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
-                    Status
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
-                    Transaction
-                  </th>
-                  <th className="text-muted-foreground px-4 py-3 text-left text-sm font-medium">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="border-b last:border-0">
-                    <td className="px-4 py-3 font-mono text-sm">
-                      {payment.id.slice(0, 8)}...
-                    </td>
-                    <td className="px-4 py-3 font-semibold">
-                      {payment.amount} {payment.currency}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={getStatusBadge(payment.status)}>
-                        {getStatusIcon(payment.status)}
-                        {payment.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {payment.txHash ? (
-                        <a
-                          href={`https://etherscan.io/tx/${payment.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary font-mono text-sm hover:underline"
-                        >
-                          {payment.txHash.slice(0, 10)}...
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="text-muted-foreground px-4 py-3 text-sm">
-                      {new Date(payment.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
+        <>
+          <div className="bg-card rounded-lg border">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </div>
+          {meta && (
+            <PaymentsPagination meta={meta} onPageChange={handlePageChange} />
+          )}
+        </>
       )}
     </div>
   );
