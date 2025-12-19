@@ -13,6 +13,7 @@ import { DatabaseModule } from './modules/database/database.module';
 import { ExchangeModule } from './modules/exchange/exchange.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     MerchantsModule,
     ExchangeModule,
     WalletsModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

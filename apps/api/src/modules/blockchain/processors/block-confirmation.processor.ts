@@ -1,9 +1,13 @@
 import { Blockchain } from '@app/modules/blockchain/decorators/blockchain.decorator';
+import { CheckoutSessionsService } from '@app/modules/checkout-sessions/checkout-sessions.service';
 import { PaymentsService } from '@app/modules/payments/payments.service';
 import { getMinConfirmationsForNetwork } from '@app/modules/payments/utils/network-confirmations';
 import { QueueName } from '@app/modules/queue/enums/queue-name.enum';
+import { WebhookQueueService } from '@app/modules/webhooks/services/webhook-queue.service';
+import { WebhooksService } from '@app/modules/webhooks/webhooks.service';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
+import { WebhookEventName } from '@workspace/shared';
 import { Job } from 'bullmq';
 import { type PublicClient } from 'viem';
 import {
@@ -19,6 +23,9 @@ export class BlockConfirmationProcessor extends WorkerHost {
     @Blockchain()
     private readonly blockchain: PublicClient,
     private readonly paymentsService: PaymentsService,
+    private readonly checkoutSessionsService: CheckoutSessionsService,
+    private readonly webhooksService: WebhooksService,
+    private readonly webhookQueueService: WebhookQueueService,
   ) {
     super();
   }
@@ -109,9 +116,19 @@ export class BlockConfirmationProcessor extends WorkerHost {
         this.logger.warn(
           `Transaction ${txHash} was reverted or failed for payment ${paymentId} (status: ${receipt.status})`,
         );
-        await this.paymentsService.updatePayment(paymentId, {
-          status: 'failed',
-        });
+        const failedPayment = await this.paymentsService.updatePayment(
+          paymentId,
+          {
+            status: 'failed',
+          },
+        );
+
+        // Trigger webhook for payment.failed event
+        await this.triggerWebhook(
+          failedPayment.merchantId,
+          WebhookEventName.PaymentFailed,
+          failedPayment,
+        );
         return;
       }
 
@@ -141,11 +158,28 @@ export class BlockConfirmationProcessor extends WorkerHost {
       // At this point, we know status is 'pending' (we already checked for 'confirmed' and 'failed')
       const shouldConfirm = confirmations >= minConfirmations;
 
-      await this.paymentsService.updatePayment(paymentId, {
-        confirmations,
-        ...(shouldConfirm ? { status: 'confirmed' } : {}),
-        ...(shouldConfirm && { confirmedAt: new Date() }),
-      });
+      const updatedPayment = await this.paymentsService.updatePayment(
+        paymentId,
+        {
+          confirmations,
+          ...(shouldConfirm ? { status: 'confirmed' } : {}),
+          ...(shouldConfirm && { confirmedAt: new Date() }),
+        },
+      );
+
+      // Trigger webhook for payment.completed event when payment is confirmed
+      if (shouldConfirm) {
+        const checkoutSession =
+          await this.checkoutSessionsService.findCheckoutSessionByPaymentId(
+            paymentId,
+          );
+        await this.triggerWebhook(
+          updatedPayment.merchantId,
+          WebhookEventName.PaymentCompleted,
+          updatedPayment,
+          checkoutSession || undefined,
+        );
+      }
     } catch (error) {
       // If payment not found, log and continue
       if (
@@ -167,6 +201,47 @@ export class BlockConfirmationProcessor extends WorkerHost {
       // Don't throw - continue processing other payments
       // Consider marking as failed if it's a persistent error, but for now
       // we'll let it retry on the next block
+    }
+  }
+
+  private async triggerWebhook(
+    merchantId: string,
+    event: WebhookEventName,
+    payment: unknown,
+    checkoutSession?: unknown,
+  ): Promise<void> {
+    try {
+      const subscriptions =
+        await this.webhooksService.findActiveSubscriptionsByMerchantIdAndEvent(
+          merchantId,
+          event,
+        );
+
+      if (subscriptions.length === 0) {
+        return;
+      }
+
+      await Promise.all(
+        subscriptions.map((subscription) =>
+          this.webhookQueueService.enqueueWebhookDelivery({
+            subscriptionId: subscription.id,
+            url: subscription.url,
+            event,
+            payload: {
+              payment,
+              ...(checkoutSession && { checkoutSession }),
+            },
+            secret: subscription.secret,
+          }),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to trigger webhook for merchant ${merchantId}, event ${event}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      // Don't throw - webhook failures shouldn't break payment processing
     }
   }
 }
