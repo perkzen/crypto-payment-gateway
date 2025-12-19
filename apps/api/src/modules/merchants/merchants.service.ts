@@ -5,7 +5,7 @@ import {
   payment,
 } from '@app/modules/database/schemas';
 import { Injectable } from '@nestjs/common';
-import { and, count, eq, sql } from 'drizzle-orm';
+import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { MerchantNotFoundException } from './exceptions';
 
 @Injectable()
@@ -104,12 +104,124 @@ export class MerchantsService {
       );
     const totalRevenue = Number(revenueResult[0]?.total ?? 0);
 
+    // Get time-series data for the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    // Generate all dates for the last 30 days
+    const dateArray: Date[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      dateArray.push(date);
+    }
+
+    // Get daily transaction counts
+    const dailyTransactions = await this.databaseService.db
+      .select({
+        date: sql<string>`${payment.createdAt}::date::text`,
+        count: count(),
+      })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.merchantId, merchant.id),
+          gte(payment.createdAt, thirtyDaysAgo),
+        ),
+      )
+      .groupBy(sql`${payment.createdAt}::date`);
+
+    // Get daily confirmed and failed counts
+    const dailyConfirmed = await this.databaseService.db
+      .select({
+        date: sql<string>`${payment.createdAt}::date::text`,
+        count: count(),
+      })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.merchantId, merchant.id),
+          eq(payment.status, 'confirmed'),
+          gte(payment.createdAt, thirtyDaysAgo),
+        ),
+      )
+      .groupBy(sql`${payment.createdAt}::date`);
+
+    const dailyFailed = await this.databaseService.db
+      .select({
+        date: sql<string>`${payment.createdAt}::date::text`,
+        count: count(),
+      })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.merchantId, merchant.id),
+          eq(payment.status, 'failed'),
+          gte(payment.createdAt, thirtyDaysAgo),
+        ),
+      )
+      .groupBy(sql`${payment.createdAt}::date`);
+
+    // Get daily revenue
+    const dailyRevenue = await this.databaseService.db
+      .select({
+        date: sql<string>`${payment.createdAt}::date::text`,
+        total: sql<number>`COALESCE(SUM(${checkoutSession.amountFiat}), 0)`,
+      })
+      .from(checkoutSession)
+      .innerJoin(payment, eq(checkoutSession.paymentId, payment.id))
+      .where(
+        and(
+          eq(checkoutSession.merchantId, merchant.id),
+          eq(payment.status, 'confirmed'),
+          gte(payment.createdAt, thirtyDaysAgo),
+        ),
+      )
+      .groupBy(sql`${payment.createdAt}::date`);
+
+    // Create maps for quick lookup
+    const transactionsMap = new Map(
+      dailyTransactions.map((item) => [item.date, Number(item.count)]),
+    );
+    const confirmedMap = new Map(
+      dailyConfirmed.map((item) => [item.date, Number(item.count)]),
+    );
+    const failedMap = new Map(
+      dailyFailed.map((item) => [item.date, Number(item.count)]),
+    );
+    const revenueMap = new Map(
+      dailyRevenue.map((item) => [item.date, Number(item.total)]),
+    );
+
+    // Build time-series data
+    const timeSeries = dateArray.map((date) => {
+      const dateStr = date.toISOString().split('T')[0];
+      const transactions = transactionsMap.get(dateStr) ?? 0;
+      const confirmed = confirmedMap.get(dateStr) ?? 0;
+      const failed = failedMap.get(dateStr) ?? 0;
+      const revenue = revenueMap.get(dateStr) ?? 0;
+      const successRateForDay =
+        confirmed + failed > 0 ? (confirmed / (confirmed + failed)) * 100 : 0;
+
+      return {
+        date: dateStr,
+        transactions,
+        revenue,
+        successRate: Math.round(successRateForDay * 100) / 100,
+        confirmed,
+        failed,
+      };
+    });
+
     return {
       totalRevenue,
       totalTransactions,
       successRate: Math.round(successRate * 100) / 100, // Round to 2 decimal places
       confirmedCount,
       failedCount,
+      timeSeries,
     };
   }
 }
