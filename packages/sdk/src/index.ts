@@ -5,9 +5,3 @@
 
 // Core exports (framework-agnostic)
 export * from './core';
-
-// React-specific exports
-export * from './react';
-
-// Re-export types for convenience
-export * from './types';

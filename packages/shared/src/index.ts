@@ -14,7 +14,6 @@ export * from './schemas/pagination';
 export * from './schemas/payment';
 export * from './schemas/blockchain-events';
 export * from './types/exchange';
-export * from './contracts/generated';
 export * from './utils/calculations';
 export * from './utils/formatting';
 export * from './utils/token-address';

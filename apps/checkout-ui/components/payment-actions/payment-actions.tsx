@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useWriteCryptoPayPayNative } from '@workspace/shared';
+import { useWriteCryptoPayPayNative } from '@workspace/shared/contracts';
 import { parseEther } from 'viem';
 import {
   useBalance,
