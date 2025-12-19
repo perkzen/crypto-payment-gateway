@@ -3,10 +3,8 @@ import { WebhookEventName } from '../constants/webhook-events';
 
 const webhookEventNameEnum = z.enum([
   WebhookEventName.PaymentCreated,
-  WebhookEventName.PaymentPending,
   WebhookEventName.PaymentCompleted,
   WebhookEventName.PaymentFailed,
-  WebhookEventName.PaymentExpired,
 ]);
 
 export const CreateWebhookSubscriptionSchema = z.object({
