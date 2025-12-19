@@ -1,9 +1,9 @@
 import { CheckoutSessionsService } from '@app/modules/checkout-sessions/checkout-sessions.service';
 import { PaymentsService } from '@app/modules/payments/payments.service';
 import { QueueName } from '@app/modules/queue/enums/queue-name.enum';
+import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { WebhookQueueService } from '@app/modules/webhooks/services/webhook-queue.service';
 import { WebhooksService } from '@app/modules/webhooks/webhooks.service';
-import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import {

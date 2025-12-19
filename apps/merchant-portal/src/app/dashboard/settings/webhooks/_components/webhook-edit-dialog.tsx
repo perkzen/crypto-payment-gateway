@@ -2,12 +2,11 @@ import { type ReactNode, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  WebhookEventName,
-  type WebhookEventName as WebhookEventNameType,
   type CreateWebhookSubscription,
   type UpdateWebhookSubscription,
+  WebhookEventName,
+  type WebhookEventName as WebhookEventNameType,
 } from '@workspace/shared';
-import type { WebhookFormValues } from '../_forms/webhook';
 import { Button } from '@workspace/ui/components/button';
 import {
   Dialog,

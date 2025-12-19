@@ -1,5 +1,7 @@
 import { DatabaseService } from '@app/modules/database/database.service';
 import { checkoutSession } from '@app/modules/database/schemas';
+import { KycNotVerifiedException } from '@app/modules/kyc/exceptions';
+import { KycService } from '@app/modules/kyc/kyc.service';
 import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { WalletsService } from '@app/modules/wallets/wallets.service';
 import { Injectable } from '@nestjs/common';
@@ -18,6 +20,7 @@ export class CheckoutSessionsService {
     private readonly configService: ConfigService,
     private readonly merchantsService: MerchantsService,
     private readonly walletsService: WalletsService,
+    private readonly kycService: KycService,
   ) {}
 
   async createCheckoutSession(
@@ -28,6 +31,12 @@ export class CheckoutSessionsService {
     const { userId } = session;
 
     const merchant = await this.merchantsService.findMerchantByUserId(userId);
+
+    // Check KYC status
+    const isKycVerified = await this.kycService.checkKycStatus(merchant.id);
+    if (!isKycVerified) {
+      throw new KycNotVerifiedException();
+    }
 
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);

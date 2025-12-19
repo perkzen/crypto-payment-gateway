@@ -24,6 +24,32 @@ export class MerchantsService {
     return result;
   }
 
+  async updateMerchant(
+    userId: string,
+    data: { displayName?: string | null; contactEmail?: string | null },
+  ) {
+    const merchantRecord = await this.findMerchantByUserId(userId);
+
+    const updateData: {
+      displayName?: string | null;
+      contactEmail?: string | null;
+    } = {};
+    if (data.displayName !== undefined) {
+      updateData.displayName = data.displayName === '' ? null : data.displayName;
+    }
+    if (data.contactEmail !== undefined) {
+      updateData.contactEmail = data.contactEmail === '' ? null : data.contactEmail;
+    }
+
+    const [updated] = await this.databaseService.db
+      .update(merchant)
+      .set(updateData)
+      .where(eq(merchant.id, merchantRecord.id))
+      .returning();
+
+    return updated;
+  }
+
   async getMerchantStats(userId: string) {
     const merchant = await this.findMerchantByUserId(userId);
 

@@ -1,9 +1,9 @@
 import { DatabaseService } from '@app/modules/database/database.service';
-import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { webhookSubscription } from '@app/modules/database/schemas';
+import { MerchantsService } from '@app/modules/merchants/merchants.service';
 import { Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
 import { WebhookEventName } from '@workspace/shared';
+import { and, eq } from 'drizzle-orm';
 import {
   CreateWebhookSubscriptionDto,
   UpdateWebhookSubscriptionDto,

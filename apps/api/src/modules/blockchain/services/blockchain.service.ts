@@ -7,12 +7,12 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { cryptoPayAbi } from '@workspace/blockchain/contracts';
 import {
   BlockchainEventName,
   type PaidEvent,
   PaidEventSchema,
 } from '@workspace/shared';
-import { cryptoPayAbi } from '@workspace/shared/contracts';
 import { type Address, type PublicClient } from 'viem';
 import { type z } from 'zod';
 

@@ -1,5 +1,5 @@
-import { Webhook } from 'lucide-react';
 import { Button } from '@workspace/ui/components/button';
+import { Webhook } from 'lucide-react';
 import { WebhookDialog } from './webhook-edit-dialog';
 
 export function WebhooksEmptyState() {

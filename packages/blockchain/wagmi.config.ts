@@ -1,7 +1,7 @@
-import { defineConfig, type Config } from '@wagmi/cli';
+import { type Config, defineConfig } from '@wagmi/cli';
 import { hardhat, react } from '@wagmi/cli/plugins';
 
-const config = defineConfig({
+export const config = defineConfig({
   out: 'src/contracts/generated.ts',
   contracts: [],
   plugins: [
@@ -12,5 +12,3 @@ const config = defineConfig({
     react(),
   ],
 }) as Config;
-
-export default config;

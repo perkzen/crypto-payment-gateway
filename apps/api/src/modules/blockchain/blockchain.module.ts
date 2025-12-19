@@ -4,8 +4,8 @@ import { CheckoutSessionsModule } from '@app/modules/checkout-sessions/checkout-
 import { PaymentsModule } from '@app/modules/payments/payments.module';
 import { QueueName } from '@app/modules/queue/enums/queue-name.enum';
 import { configureQueue } from '@app/modules/queue/utils/configure-queue';
-import { WebhooksModule } from '@app/modules/webhooks/webhooks.module';
 import { WalletsModule } from '@app/modules/wallets/wallets.module';
+import { WebhooksModule } from '@app/modules/webhooks/webhooks.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BlockConfirmationProcessor } from './processors/block-confirmation.processor';

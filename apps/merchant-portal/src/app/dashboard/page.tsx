@@ -2,9 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, DollarSign, TrendingUp } from 'lucide-react';
-import { PageHeader } from '@/components/page-header';
-import { merchantStatsOptions } from './_hooks/queries';
 import { RecentPayments } from './_components/recent-payments';
+import { merchantStatsOptions } from './_hooks/queries';
+import { PageHeader } from '@/components/page-header';
 
 function formatCurrency(cents: number): string {
   return new Intl.NumberFormat('en-US', {

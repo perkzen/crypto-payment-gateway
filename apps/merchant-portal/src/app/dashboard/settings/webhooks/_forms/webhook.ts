@@ -1,6 +1,6 @@
 import { formOptions } from '@tanstack/react-form';
+import { WebhookEventName } from '@workspace/shared';
 import { z } from 'zod';
-import { WebhookEventName, type WebhookEventName as WebhookEventNameType } from '@workspace/shared';
 
 const webhookEventNameEnum = z.enum([
   WebhookEventName.PaymentCreated,

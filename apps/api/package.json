@@ -40,6 +40,7 @@
     "@nestjs/swagger": "^11.2.3",
     "@scalar/nestjs-api-reference": "^1.0.4",
     "@thallesp/nestjs-better-auth": "^2.1.0",
+    "@workspace/blockchain": "workspace:*",
     "@workspace/shared": "workspace:*",
     "axios": "^1.13.2",
     "better-auth": "1.4.2",

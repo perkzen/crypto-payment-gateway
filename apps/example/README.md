@@ -148,7 +148,7 @@ apps/example/
 - **Next.js 16**: React framework with App Router
 - **TanStack Form**: Form state management and validation
 - **TanStack Query**: Data fetching and caching
-- **@workspace/sdk**: Crypto Payment Gateway SDK
+- **axios**: HTTP client for API requests
 - **@workspace/shared**: Shared types and utilities
 - **@workspace/ui**: Shared UI component library
 
